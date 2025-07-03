@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Beyhive Admin - App Store Notifications</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #fffbe6; }
+    h1 { color: #e6b800; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #ffe066; }
+    pre { max-width: 400px; overflow-x: auto; }
+    .push-form { background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 40px; }
+    .push-form input, .push-form textarea, .push-form select { width: 100%; margin-bottom: 10px; padding: 8px; }
+    .push-form button { background: #e6b800; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; }
+    .push-form button:disabled { background: #ccc; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <a href="device-tokens.html" style="display:inline-block;margin-bottom:20px;font-weight:bold;color:#e6b800;">Device Token Log</a>
+  <h1>Beyhive Admin</h1>
+  <form class="push-form" id="pushForm">
+    <h2>Send Push Notification</h2>
+    <div id="passwordDiv">
+      <input type="password" id="password" placeholder="Admin Password" required />
+    </div>
+    <input type="text" id="notifTitle" placeholder="Notification Title" required />
+    <input type="text" id="notifMessage" placeholder="Notification Message" required />
+    <select id="notifType" required>
+      <option value="concertStart">Concert Start</option>
+      <option value="beyonceOnStage">Beyoncé on Stage</option>
+      <option value="americaHasAProblem">AMERICA HAS A PROBLEM starts</option>
+      <option value="tyrant">TYRANT starts</option>
+      <option value="lastAct">Last Act starts</option>
+      <option value="sixteenCarriages">16 CARRIAGES starts</option>
+      <option value="amen">AMEN starts</option>
+    </select>
+    <button type="submit">Send Notification</button>
+    <div id="pushStatus"></div>
+  </form>
+  <div id="lastNotification" style="background:#fff3cd; padding:12px; border-radius:8px; margin-bottom:30px; display:none;"></div>
+  <h2>Notification History</h2>
+  <table id="historyTable" style="width:100%; margin-bottom:30px; display:none;">
+    <thead>
+      <tr><th>Time</th><th>Type</th><th>Title</th><th>Message</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <h2>App Store Server Notifications</h2>
+  <table id="notifTable">
+    <thead>
+      <tr><th>Received At</th><th>Type</th><th>Raw Data</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <h2>App Stats</h2>
+  <div id="userCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Users (App Downloads): 0</div>
+  <div id="activeUserCount" style="font-size: 1.2em; margin-bottom: 30px;">Active Users: 0</div>
+  <h2>Livestreams Management</h2>
+  <div id="livestreams"></div>
+  <button onclick="addRow()">Add Row</button>
+  <button onclick="saveLivestreams()">Save</button>
+  <script src="admin.js"></script>
+  <script>
+    const platforms = ["TikTok", "Instagram", "YouTube", "Discord", "Twitch"];
+    function renderRows(data) {
+      const container = document.getElementById('livestreams');
+      container.innerHTML = '';
+      data.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.innerHTML = `
+          <select onchange="updatePlatform(${idx}, this.value)">
+            ${platforms.map(p => `<option${p === item.platform ? ' selected' : ''}>${p}</option>`).join('')}
+          </select>
+          <input type="text" value="${item.url || ''}" placeholder="Paste link here" onchange="updateUrl(${idx}, this.value)" />
+          <button onclick="removeRow(${idx})">Remove</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+    let livestreams = [];
+    function addRow() {
+      livestreams.push({ platform: platforms[0], url: '' });
+      renderRows(livestreams);
+    }
+    function removeRow(idx) {
+      livestreams.splice(idx, 1);
+      renderRows(livestreams);
+    }
+    function updatePlatform(idx, value) {
+      livestreams[idx].platform = value;
+    }
+    function updateUrl(idx, value) {
+      livestreams[idx].url = value;
+    }
+    function saveLivestreams() {
+      fetch('/api/livestreams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(livestreams)
+      }).then(() => alert('Saved!'));
+    }
+    fetch('/api/livestreams')
+      .then(res => res.json())
+      .then(data => { livestreams = data; renderRows(livestreams); });
+  </script>
+</body>
+</html> 

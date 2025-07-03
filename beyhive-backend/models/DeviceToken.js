@@ -1,0 +1,1 @@
+// Placeholder for DeviceToken model. Add schema or logic here if needed in the future. 
