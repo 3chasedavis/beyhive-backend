@@ -1,0 +1,19 @@
+{
+  "name": "simple-push-server",
+  "version": "1.0.0",
+  "description": "Simple push notification server",
+  "main": "simple-push-server.js",
+  "scripts": {
+    "start": "node simple-push-server.js",
+    "dev": "nodemon simple-push-server.js"
+  },
+  "dependencies": {
+    "apn": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

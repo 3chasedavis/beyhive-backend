@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>IBMPlexMono-Medium.ttf</string>
+		<string>IBMPlexMono-Light.ttf</string>
+		<string>IBMPlexMono-Bold.ttf</string>
+		<string>IBMPlexMono-Regular.ttf</string>
+	</array>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app needs access to your calendar to add Beyoncé tour events.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>This app needs to send you notifications about Beyoncé tour updates and concert alerts.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app may use your location to show nearby tour events and provide location-based notifications.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app may use your location to show nearby tour events and provide location-based notifications.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app needs local network access to connect to the push notification server.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

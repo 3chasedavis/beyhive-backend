@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyhive Alert - Push Notification Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .devices {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .preset-btn {
+            background: #6c757d;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐝 Beyhive Alert - Push Notifications</h1>
+        
+        <div class="preset-buttons">
+            <button class="preset-btn" onclick="sendPreset('Concert Start', 'Beyoncé is about to take the stage! Get ready! ✨')">Concert Start</button>
+            <button class="preset-btn" onclick="sendPreset('Beyoncé on Stage', 'The Queen is here! 👑')">Beyoncé on Stage</button>
+            <button class="preset-btn" onclick="sendPreset('AMERICA HAS A PROBLEM', '🇺🇸 AMERICA HAS A PROBLEM is starting!')">AMERICA HAS A PROBLEM</button>
+            <button class="preset-btn" onclick="sendPreset('TYRANT', '👑 TYRANT is starting!')">TYRANT</button>
+            <button class="preset-btn" onclick="sendPreset('Last Act', '🎭 The final act is beginning!')">Last Act</button>
+            <button class="preset-btn" onclick="sendPreset('16 CARRIAGES', '🐎 16 CARRIAGES is starting!')">16 CARRIAGES</button>
+        </div>
+
+        <form id="notificationForm">
+            <div class="form-group">
+                <label for="title">Notification Title:</label>
+                <input type="text" id="title" name="title" placeholder="Beyhive Alert" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="body">Notification Message:</label>
+                <textarea id="body" name="body" rows="3" placeholder="Enter your notification message..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="type">Notification Type:</label>
+                <select id="type" name="type">
+                    <option value="general">General</option>
+                    <option value="concert">Concert</option>
+                    <option value="song">Song</option>
+                    <option value="emergency">Emergency</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="preferenceKey">Target Preference (optional):</label>
+                <select id="preferenceKey" name="preferenceKey">
+                    <option value="">Everyone</option>
+                    <option value="beyonceOnStage">Beyoncé on Stage</option>
+                    <option value="concertStart">Concert Start</option>
+                    <option value="americaHasAProblem">AMERICA HAS A PROBLEM</option>
+                    <option value="tyrant">TYRANT</option>
+                    <option value="lastAct">Last Act</option>
+                    <option value="sixteenCarriages">16 CARRIAGES</option>
+                    <option value="amen">AMEN</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="sendBtn">🚀 Send Push Notification</button>
+        </form>
+        
+        <div id="status"></div>
+        
+        <div class="devices">
+            <h3>📱 Registered Devices</h3>
+            <p id="deviceCount">Loading...</p>
+            <button onclick="refreshDevices()" style="width: auto; margin-top: 10px;">🔄 Refresh</button>
+        </div>
+
+        <div class="devices" style="margin-top: 32px;">
+            <h3>🧾 Purchase Log</h3>
+            <table id="purchaseTable" style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding: 4px;">Device Token</th>
+                        <th style="text-align:left; padding: 4px;">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="purchaseTableBody">
+                    <tr><td colspan="2">Loading...</td></tr>
+                </tbody>
+            </table>
+            <button onclick="refreshPurchases()" style="width: auto; margin-top: 10px;">🔄 Refresh</button>
+        </div>
+
+        <div class="devices" style="margin-top: 32px;">
+            <h3>📊 App Stats</h3>
+            <p><b>Total Downloads:</b> <span id="totalDownloads">0</span></p>
+            <p><b>Estimated Downloads:</b> <span id="totalUsers">0</span></p>
+            <p><b>Active Users (last 7 days):</b> <span id="activeUsers">0</span></p>
+            <p><b>Currently Online:</b> <span id="onlineUsers">0</span></p>
+            <button onclick="refreshStats()" style="width: auto; margin-top: 10px;">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        function sendPreset(title, body) {
+            document.getElementById('title').value = title;
+            document.getElementById('body').value = body;
+            sendNotification(title, body);
+        }
+        
+        async function sendNotification(title, body) {
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳ Sending...';
+            
+            try {
+                const preferenceKey = document.getElementById('preferenceKey').value;
+                const response = await fetch(`${API_BASE}/send-notification`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        body: body,
+                        data: {
+                            type: document.getElementById('type').value,
+                            timestamp: new Date().toISOString()
+                        },
+                        preferenceKey: preferenceKey || undefined
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`✅ Notification sent successfully to ${result.devices} devices!`, 'success');
+                } else {
+                    showStatus(`❌ Error: ${result.message || result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '🚀 Send Push Notification';
+            }
+        }
+        
+        async function refreshDevices() {
+            try {
+                const response = await fetch(`${API_BASE}/devices`);
+                const result = await response.json();
+                document.getElementById('deviceCount').textContent = 
+                    `${result.count} device(s) registered`;
+            } catch (error) {
+                document.getElementById('deviceCount').textContent = 'Error loading devices';
+            }
+        }
+        
+        async function refreshPurchases() {
+            try {
+                const response = await fetch(`${API_BASE}/purchases`);
+                const result = await response.json();
+                const tbody = document.getElementById('purchaseTableBody');
+                tbody.innerHTML = '';
+                if (result.purchases.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2">No purchases yet</td></tr>';
+                } else {
+                    for (const purchase of result.purchases) {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td style='padding:4px;word-break:break-all;'>${purchase.deviceToken}</td><td style='padding:4px;'>${new Date(purchase.timestamp).toLocaleString()}</td>`;
+                        tbody.appendChild(tr);
+                    }
+                }
+            } catch (error) {
+                document.getElementById('purchaseTableBody').innerHTML = '<tr><td colspan="2">Error loading purchases</td></tr>';
+            }
+        }
+        
+        async function refreshStats() {
+            // Estimated downloads: from /devices
+            // Active users: from /active-users
+            // Online users: from /online-users
+            try {
+                const devicesResp = await fetch(`${API_BASE}/devices`);
+                const devicesResult = await devicesResp.json();
+                document.getElementById('totalUsers').textContent = devicesResult.count;
+            } catch {
+                document.getElementById('totalUsers').textContent = '0';
+            }
+            try {
+                const activeResp = await fetch(`${API_BASE}/active-users`);
+                const activeResult = await activeResp.json();
+                document.getElementById('activeUsers').textContent = `${activeResult.active} / ${activeResult.total}`;
+            } catch {
+                document.getElementById('activeUsers').textContent = '0';
+            }
+            try {
+                const onlineResp = await fetch(`${API_BASE}/online-users`);
+                const onlineResult = await onlineResp.json();
+                document.getElementById('onlineUsers').textContent = `${onlineResult.online} / ${onlineResult.total}`;
+            } catch {
+                document.getElementById('onlineUsers').textContent = '0';
+            }
+        }
+        
+        document.getElementById('notificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const body = document.getElementById('body').value;
+            sendNotification(title, body);
+        });
+        
+        // Load devices, purchases, and stats on page load
+        refreshDevices();
+        refreshPurchases();
+        refreshStats();
+    </script>
+</body>
+</html> 

@@ -29,9 +29,55 @@
 		4F9D931D2E14661700829250 /* Beyhive Alert 2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Beyhive Alert 2UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4F2DAC832E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppDelegate.swift,
+				Assets.xcassets,
+				Beyhive_Alert_2App.swift,
+				ContentView.swift,
+				"GoogleService-Info.plist",
+				"IBMPlexMono-Bold.ttf",
+				"IBMPlexMono-Light.ttf",
+				"IBMPlexMono-Medium.ttf",
+				"IBMPlexMono-Regular.ttf",
+				LivestreamsView.swift,
+			);
+			target = 4F9D93052E14661600829250 /* Beyhive Alert 2 */;
+		};
+		4F2DAC842E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppDelegate.swift,
+				Assets.xcassets,
+				Beyhive_Alert_2App.swift,
+				"GoogleService-Info.plist",
+				"IBMPlexMono-Bold.ttf",
+				"IBMPlexMono-Light.ttf",
+				"IBMPlexMono-Medium.ttf",
+				"IBMPlexMono-Regular.ttf",
+			);
+			target = 4F9D931C2E14661700829250 /* Beyhive Alert 2UITests */;
+		};
+		4FD689692E15FEEA00A7018A /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ContentView.swift,
+				LivestreamsView.swift,
+			);
+			target = 4F9D93122E14661700829250 /* Beyhive Alert 2Tests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4F9D93082E14661600829250 /* Beyhive Alert 2 */ = {
+		4F2DAC7F2E14781E00CAA57C /* Beyhive Alert 2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4F2DAC832E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */,
+				4FD689692E15FEEA00A7018A /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */,
+				4F2DAC842E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */,
+			);
 			path = "Beyhive Alert 2";
 			sourceTree = "<group>";
 		};
@@ -75,7 +121,7 @@
 		4F9D92FD2E14661600829250 = {
 			isa = PBXGroup;
 			children = (
-				4F9D93082E14661600829250 /* Beyhive Alert 2 */,
+				4F2DAC7F2E14781E00CAA57C /* Beyhive Alert 2 */,
 				4F9D93162E14661700829250 /* Beyhive Alert 2Tests */,
 				4F9D93202E14661700829250 /* Beyhive Alert 2UITests */,
 				4F9D93072E14661600829250 /* Products */,
@@ -107,12 +153,7 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				4F9D93082E14661600829250 /* Beyhive Alert 2 */,
-			);
 			name = "Beyhive Alert 2";
-			packageProductDependencies = (
-			);
 			productName = "Beyhive Alert 2";
 			productReference = 4F9D93062E14661600829250 /* Beyhive Alert 2.app */;
 			productType = "com.apple.product-type.application";
@@ -134,8 +175,6 @@
 				4F9D93162E14661700829250 /* Beyhive Alert 2Tests */,
 			);
 			name = "Beyhive Alert 2Tests";
-			packageProductDependencies = (
-			);
 			productName = "Beyhive Alert 2Tests";
 			productReference = 4F9D93132E14661700829250 /* Beyhive Alert 2Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -154,11 +193,10 @@
 				4F9D931F2E14661700829250 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				4F2DAC7F2E14781E00CAA57C /* Beyhive Alert 2 */,
 				4F9D93202E14661700829250 /* Beyhive Alert 2UITests */,
 			);
 			name = "Beyhive Alert 2UITests";
-			packageProductDependencies = (
-			);
 			productName = "Beyhive Alert 2UITests";
 			productReference = 4F9D931D2E14661700829250 /* Beyhive Alert 2UITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -395,11 +433,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Beyhive Alert 2/Beyhive Alert 2.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A46AH86Z73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Beyhive-Alert-2-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -412,6 +452,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chasedavis.Beyhive-Alert-2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -423,11 +466,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Beyhive Alert 2/Beyhive Alert 2.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A46AH86Z73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Beyhive-Alert-2-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -440,6 +485,9 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chasedavis.Beyhive-Alert-2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
