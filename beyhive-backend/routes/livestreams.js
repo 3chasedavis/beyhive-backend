@@ -19,6 +19,10 @@ router.get('/', (req, res) => {
 
 // POST livestreams
 router.post('/', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  res.set('Surrogate-Control', 'no-store');
   fs.writeFile(DATA_FILE, JSON.stringify(req.body, null, 2), err => {
     if (err) return res.status(500).send('Error saving');
     res.send('OK');
