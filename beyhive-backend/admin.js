@@ -57,7 +57,7 @@ window.addEventListener('DOMContentLoaded', function() {
     setPasswordAndLoadAll(pw);
   }
 
-  // Preset button logic for new HTML
+  // Preset button logic (moved here for reliability)
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.onclick = function() {
       document.getElementById('notifTitle').value = btn.getAttribute('data-title');
@@ -111,67 +111,4 @@ function loadNotificationHistory() {
         table.style.display = 'none';
       }
     });
-}
-// --- Livestreams Management ---
-function renderLivestreams(livestreams) {
-  const container = document.getElementById('livestreams');
-  container.innerHTML = '';
-  livestreams.forEach((ls, idx) => {
-    const row = document.createElement('div');
-    row.className = 'livestream-row';
-    row.innerHTML = `
-      <input type="text" placeholder="Title" value="${ls.title || ''}" style="width: 20%; margin-right: 8px;" />
-      <input type="text" placeholder="URL" value="${ls.url || ''}" style="width: 40%; margin-right: 8px;" />
-      <input type="text" placeholder="Time" value="${ls.time || ''}" style="width: 20%; margin-right: 8px;" />
-      <button onclick="this.parentNode.remove();">Delete</button>
-    `;
-    container.appendChild(row);
-  });
-}
-
-function loadLivestreams() {
-  fetch('/api/livestreams')
-    .then(res => res.json())
-    .then(data => renderLivestreams(data || []));
-}
-
-function addRow() {
-  const container = document.getElementById('livestreams');
-  const row = document.createElement('div');
-  row.className = 'livestream-row';
-  row.innerHTML = `
-    <input type="text" placeholder="Title" style="width: 20%; margin-right: 8px;" />
-    <input type="text" placeholder="URL" style="width: 40%; margin-right: 8px;" />
-    <input type="text" placeholder="Time" style="width: 20%; margin-right: 8px;" />
-    <button onclick="this.parentNode.remove();">Delete</button>
-  `;
-  container.appendChild(row);
-}
-
-function saveLivestreams() {
-  const rows = document.querySelectorAll('#livestreams .livestream-row');
-  const data = Array.from(rows).map(row => {
-    const inputs = row.querySelectorAll('input');
-    return {
-      title: inputs[0].value,
-      url: inputs[1].value,
-      time: inputs[2].value
-    };
-  }).filter(ls => ls.title || ls.url || ls.time);
-  fetch('/api/livestreams', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(res => {
-    if (res.ok) {
-      alert('Livestreams saved!');
-      loadLivestreams();
-    } else {
-      alert('Error saving livestreams');
-    }
-  });
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-  loadLivestreams();
-}); 
+} 

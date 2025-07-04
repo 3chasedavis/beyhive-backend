@@ -45,8 +45,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func sendDeviceTokenToServer(token: String) {
-        // Use your laptop's IP address
-        guard let url = URL(string: "http://192.168.7.208:3000/register-device") else { return }
+        // Use your public backend URL
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/register-device") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

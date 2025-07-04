@@ -67,40 +67,16 @@ app.get('/api/device-tokens', async (req, res) => {
   }
 });
 
-// Register device token from iOS app (both root and API paths)
+// Register device token from iOS app
 app.post('/register-device', async (req, res) => {
   const { deviceToken } = req.body;
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
-  try {
-    const result = await DeviceToken.updateOne(
-      { token: deviceToken },
-      { $set: {} },
-      { upsert: true }
-    );
-    console.log('DeviceToken upsert result:', result);
-    res.json({ message: 'Device token registered', result });
-  } catch (err) {
-    console.error('DeviceToken upsert error:', err);
-    res.status(500).json({ error: 'Failed to register device token', details: err.message });
-  }
-});
-
-// Also register under /api for compatibility
-app.post('/api/register-device', async (req, res) => {
-  const { deviceToken } = req.body;
-  if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
-  try {
-    const result = await DeviceToken.updateOne(
-      { token: deviceToken },
-      { $set: {} },
-      { upsert: true }
-    );
-    console.log('DeviceToken upsert result (API):', result);
-    res.json({ message: 'Device token registered', result });
-  } catch (err) {
-    console.error('DeviceToken upsert error (API):', err);
-    res.status(500).json({ error: 'Failed to register device token', details: err.message });
-  }
+  await DeviceToken.updateOne(
+    { token: deviceToken },
+    { $set: {} },
+    { upsert: true }
+  );
+  res.json({ message: 'Device token registered' });
 });
 
 // Health check endpoint

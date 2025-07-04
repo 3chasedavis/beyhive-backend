@@ -1602,13 +1602,13 @@ struct ScheduleView: View {
                             HStack(alignment: .top, spacing: 16) {
                                 VStack(alignment: .leading) {
                                     Text(eventDateTimeString(for: event.date))
-                                        .font(.system(size: 18, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.blue)
                                     Text(event.city)
-                                        .font(.system(size: 18, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium))
                                         .fontWeight(.bold)
                                     Text(event.venue)
-                                        .font(.system(size: 18, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.gray)
                                 }
                                 Spacer()
@@ -2011,7 +2011,7 @@ struct TrackersView: View {
                 // Main content
                 if selectedTab == .setlist {
                     Text("Trackers")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.top, 32)
                         .padding(.horizontal)
@@ -2021,7 +2021,7 @@ struct TrackersView: View {
                         .padding(.horizontal)
                         .padding(.top, 4)
                     Text("Setlist")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.black)
                         .padding(.leading)
                         .padding(.top, 24)
@@ -2284,7 +2284,7 @@ class StoreKitManager: ObservableObject {
 
     func logPurchaseToServer() {
         guard let token = UIApplication.deviceTokenString else { return }
-        guard let url = URL(string: "http://192.168.7.208:3000/log-purchase") else { return }
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/log-purchase") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -2476,7 +2476,7 @@ func updateNotificationPreferences(preferences: [String: Bool]) {
         print("No device token available yet.")
         return
     }
-    guard let url = URL(string: "http://192.168.7.208:3000/register-device") else { return }
+    guard let url = URL(string: "https://beyhive-backend.onrender.com/register-device") else { return }
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")

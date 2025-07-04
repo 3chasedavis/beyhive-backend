@@ -1,34 +1,22 @@
 #!/bin/bash
 
-echo "🚀 Testing Beyhive Alert Backend..."
+echo "Testing Beyhive Backend Endpoints"
+echo "=================================="
 
-# Check if we're in the right directory
-if [ ! -d "beyhive-backend" ]; then
-    echo "❌ Error: beyhive-backend directory not found"
-    echo "Please run this script from the project root"
-    exit 1
-fi
+BASE_URL="https://beyhive-backend.onrender.com"
 
-cd beyhive-backend
+echo "1. Testing health endpoint..."
+curl -s "$BASE_URL/api/health" | jq '.'
 
-# Check if node_modules exists
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    npm install
-fi
+echo -e "\n2. Testing livestreams endpoint..."
+curl -s "$BASE_URL/api/livestreams" | jq '.'
 
-# Check if .env exists
-if [ ! -f ".env" ]; then
-    echo "⚠️  Warning: .env file not found"
-    echo "Creating .env from example..."
-    cp env.example .env
-    echo "Please update .env with your actual values"
-fi
+echo -e "\n3. Testing device token registration..."
+curl -s -X POST "$BASE_URL/register-device" \
+  -H "Content-Type: application/json" \
+  -d '{"deviceToken":"test-token-123","username":"testuser","email":"test@example.com"}' | jq '.'
 
-echo "🔧 Starting backend server..."
-echo "The server will start on http://localhost:3000"
-echo "Press Ctrl+C to stop"
-echo ""
+echo -e "\n4. Testing device tokens endpoint..."
+curl -s "$BASE_URL/api/device-tokens" | jq '.'
 
-# Start the server
-npm start 
+echo -e "\nBackend test completed!" 
