@@ -55,6 +55,17 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
 
+// Public endpoint to get all device tokens
+const User = require('./models/User');
+app.get('/api/device-tokens', async (req, res) => {
+  try {
+    const users = await User.find({}, 'email deviceTokens');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch device tokens' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 

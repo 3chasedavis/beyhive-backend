@@ -56,7 +56,10 @@
   </table>
   <h2>App Stats</h2>
   <div id="userCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Users (App Downloads): 0</div>
-  <div id="activeUserCount" style="font-size: 1.2em; margin-bottom: 30px;">Active Users: 0</div>
+  <div id="registeredDevices" style="font-size: 1.2em; margin-bottom: 10px;">Registered Devices: 0</div>
+  <div id="deviceTokenCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Device Tokens: 0</div>
+  <div id="activeUserCount" style="font-size: 1.2em; margin-bottom: 10px;">Active Users: 0</div>
+  <div id="onlineNow" style="font-size: 1.2em; margin-bottom: 30px;">Users Online Now: 0</div>
   <h2>Livestreams Management</h2>
   <div id="livestreams"></div>
   <button onclick="addRow()">Add Row</button>
@@ -104,6 +107,33 @@
     fetch('/api/livestreams')
       .then(res => res.json())
       .then(data => { livestreams = data; renderRows(livestreams); });
+
+    function loadAnalytics() {
+      fetch('/api/admin/registereddevices?password=' + encodeURIComponent(password))
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('registeredDevices').textContent = `Registered Devices: ${data.count}`;
+        });
+      fetch('/api/admin/devicetokencount?password=' + encodeURIComponent(password))
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('deviceTokenCount').textContent = `Total Device Tokens: ${data.count}`;
+        });
+      fetch('/api/admin/onlinenow?password=' + encodeURIComponent(password))
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('onlineNow').textContent = `Users Online Now: ${data.count}`;
+        });
+    }
+    // Call analytics loader after login
+    function setPasswordAndLoadAll(pw) {
+      password = pw;
+      loadNotifications();
+      loadUserCount();
+      loadNotificationHistory();
+      loadAnalytics();
+      document.getElementById('passwordDiv').style.display = 'none';
+    }
   </script>
 </body>
 </html> 

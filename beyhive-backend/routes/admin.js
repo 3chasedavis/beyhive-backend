@@ -126,4 +126,24 @@ router.get('/device-tokens', async (req, res) => {
     res.json(tokens);
 });
 
+// API to get total registered devices (unique device tokens)
+router.get('/registereddevices', async (req, res) => {
+    const count = await DeviceToken.countDocuments();
+    res.json({ count });
+});
+
+// API to get total device tokens (across all users)
+router.get('/devicetokencount', async (req, res) => {
+    const users = await User.find({}, 'deviceTokens');
+    const allTokens = users.reduce((acc, user) => acc.concat(user.deviceTokens || []), []);
+    res.json({ count: allTokens.length });
+});
+
+// API to get currently online users (lastLogin within 5 minutes)
+router.get('/onlinenow', async (req, res) => {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const count = await User.countDocuments({ lastLogin: { $gte: fiveMinutesAgo } });
+    res.json({ count });
+});
+
 module.exports = router; 
