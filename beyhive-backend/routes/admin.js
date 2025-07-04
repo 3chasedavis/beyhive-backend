@@ -7,7 +7,7 @@ const { sendPushNotification } = require('../utils/pushService'); // You need to
 const User = require('../models/User');
 const SentNotification = require('../models/SentNotification');
 const DeviceToken = require('../models/DeviceToken');
-const admin = require('firebase-admin');
+// REMOVE: const admin = require('firebase-admin');
 
 const ADMIN_PASSWORD = 'chase3870';
 
@@ -90,12 +90,9 @@ router.post('/notifications/send', async (req, res) => {
       tokens = await DeviceToken.find({ [`preferences.${notifType}`]: true }).distinct('token');
     }
     if (!tokens.length) return res.status(400).json({ error: 'No tokens found for this group' });
-    const payload = {
-      notification: { title, body: message }
-    };
     try {
-      const response = await admin.messaging().sendToDevice(tokens, payload);
-      return res.json({ success: true, response });
+      const result = await sendPushNotification(title, message, notifType, tokens);
+      return res.json({ success: true, result });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }

@@ -5,9 +5,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
-const admin = require('firebase-admin');
-console.log('Attempting to initialize Firebase Admin...');
-const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -43,19 +40,6 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// Firebase Admin initialization
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    console.log('Firebase Admin initialized from env variable');
-  } catch (err) {
-    console.error('Failed to initialize Firebase Admin:', err.message);
-  }
-}
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/beyhive-alert', {
