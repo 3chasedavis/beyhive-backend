@@ -244,4 +244,4 @@ GoogleService-Info.plist
 beyhive-alert-firebase-adminsdk-fbsvc-b97b379ccb.json
 
 # Local development
-devices.json 
+devices.json serviceAccountKey.json
