@@ -80,18 +80,22 @@ router.get('/notifications/api', async (req, res) => {
 
 // Send notification to selected group
 router.post('/notifications/send', async (req, res) => {
-  const { title, message, notifType } = req.body;
-  if (!notifType) return res.status(400).json({ error: 'Notification type required' });
-  const tokens = await DeviceToken.find({ [`preferences.${notifType}`]: true }).distinct('token');
-  if (!tokens.length) return res.status(400).json({ error: 'No tokens found for this group' });
-  const payload = {
-    notification: { title, body: message }
-  };
   try {
-    const response = await admin.messaging().sendToDevice(tokens, payload);
-    res.json({ success: true, response });
+    const { title, message, notifType } = req.body;
+    if (!notifType) return res.status(400).json({ error: 'Notification type required' });
+    const tokens = await DeviceToken.find({ [`preferences.${notifType}`]: true }).distinct('token');
+    if (!tokens.length) return res.status(400).json({ error: 'No tokens found for this group' });
+    const payload = {
+      notification: { title, body: message }
+    };
+    try {
+      const response = await admin.messaging().sendToDevice(tokens, payload);
+      return res.json({ success: true, response });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message || 'Unknown error' });
   }
 });
 
