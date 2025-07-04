@@ -105,6 +105,12 @@ window.addEventListener('DOMContentLoaded', function() {
       body: JSON.stringify(livestreams)
     }).then(() => alert('Saved!'));
   }
+  // Attach to window for global access
+  window.addRow = addRow;
+  window.removeRow = removeRow;
+  window.updatePlatform = updatePlatform;
+  window.updateUrl = updateUrl;
+  window.saveLivestreams = saveLivestreams;
   fetch('/api/livestreams')
     .then(res => res.json())
     .then(data => { livestreams = data; renderRows(livestreams); });
