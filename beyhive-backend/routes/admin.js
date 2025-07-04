@@ -83,7 +83,12 @@ router.post('/notifications/send', async (req, res) => {
   try {
     const { title, message, notifType } = req.body;
     if (!notifType) return res.status(400).json({ error: 'Notification type required' });
-    const tokens = await DeviceToken.find({ [`preferences.${notifType}`]: true }).distinct('token');
+    let tokens = [];
+    if (notifType === 'everyone') {
+      tokens = await DeviceToken.find().distinct('token');
+    } else {
+      tokens = await DeviceToken.find({ [`preferences.${notifType}`]: true }).distinct('token');
+    }
     if (!tokens.length) return res.status(400).json({ error: 'No tokens found for this group' });
     const payload = {
       notification: { title, body: message }
