@@ -67,7 +67,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         if #available(iOS 14.0, *) {
             completionHandler([.banner, .badge, .sound])
         } else {
-            completionHandler([.alert, .badge, .sound])
+        completionHandler([.alert, .badge, .sound])
         }
     }
 }
