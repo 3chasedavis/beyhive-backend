@@ -65,6 +65,49 @@ window.addEventListener('DOMContentLoaded', function() {
       document.getElementById('notifType').value = btn.getAttribute('data-type');
     };
   });
+
+  // --- Livestreams Management ---
+  const platforms = ["TikTok", "Instagram", "YouTube", "Discord", "Twitch"];
+  let livestreams = [];
+  function renderRows(data) {
+    const container = document.getElementById('livestreams');
+    container.innerHTML = '';
+    data.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.innerHTML = `
+        <select onchange="updatePlatform(${idx}, this.value)">
+          ${platforms.map(p => `<option${p === item.platform ? ' selected' : ''}>${p}</option>`).join('')}
+        </select>
+        <input type="text" value="${item.url || ''}" placeholder="Paste link here" onchange="updateUrl(${idx}, this.value)" />
+        <button onclick="removeRow(${idx})">Remove</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+  function addRow() {
+    livestreams.push({ platform: platforms[0], url: '' });
+    renderRows(livestreams);
+  }
+  function removeRow(idx) {
+    livestreams.splice(idx, 1);
+    renderRows(livestreams);
+  }
+  function updatePlatform(idx, value) {
+    livestreams[idx].platform = value;
+  }
+  function updateUrl(idx, value) {
+    livestreams[idx].url = value;
+  }
+  function saveLivestreams() {
+    fetch('/api/livestreams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(livestreams)
+    }).then(() => alert('Saved!'));
+  }
+  fetch('/api/livestreams')
+    .then(res => res.json())
+    .then(data => { livestreams = data; renderRows(livestreams); });
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))
