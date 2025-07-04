@@ -50,11 +50,21 @@ document.getElementById('pushForm').addEventListener('submit', function(e) {
 });
 // On page load, if password is in URL, use it
 window.addEventListener('DOMContentLoaded', function() {
+  // Existing password logic
   const urlParams = new URLSearchParams(window.location.search);
   const pw = urlParams.get('password');
   if (pw) {
     setPasswordAndLoadAll(pw);
   }
+
+  // Preset button logic for new HTML
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.onclick = function() {
+      document.getElementById('notifTitle').value = btn.getAttribute('data-title');
+      document.getElementById('notifMessage').value = btn.getAttribute('data-message');
+      document.getElementById('notifType').value = btn.getAttribute('data-type');
+    };
+  });
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))
