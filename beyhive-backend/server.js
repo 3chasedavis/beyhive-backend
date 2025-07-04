@@ -11,6 +11,7 @@ const userRoutes = require('./routes/user');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 const livestreamsRouter = require('./routes/livestreams');
+const DeviceToken = require('./models/DeviceToken'); // Add this after requiring User
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,6 +64,42 @@ app.get('/api/device-tokens', async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch device tokens' });
+  }
+});
+
+// Register device token from iOS app (both root and API paths)
+app.post('/register-device', async (req, res) => {
+  const { deviceToken } = req.body;
+  if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
+  try {
+    const result = await DeviceToken.updateOne(
+      { token: deviceToken },
+      { $set: {} },
+      { upsert: true }
+    );
+    console.log('DeviceToken upsert result:', result);
+    res.json({ message: 'Device token registered', result });
+  } catch (err) {
+    console.error('DeviceToken upsert error:', err);
+    res.status(500).json({ error: 'Failed to register device token', details: err.message });
+  }
+});
+
+// Also register under /api for compatibility
+app.post('/api/register-device', async (req, res) => {
+  const { deviceToken } = req.body;
+  if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
+  try {
+    const result = await DeviceToken.updateOne(
+      { token: deviceToken },
+      { $set: {} },
+      { upsert: true }
+    );
+    console.log('DeviceToken upsert result (API):', result);
+    res.json({ message: 'Device token registered', result });
+  } catch (err) {
+    console.error('DeviceToken upsert error (API):', err);
+    res.status(500).json({ error: 'Failed to register device token', details: err.message });
   }
 });
 
