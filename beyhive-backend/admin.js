@@ -9,12 +9,15 @@ function setPasswordAndLoadAll(pw) {
 }
 document.getElementById('pushForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  const submitBtn = this.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
   if (!password) {
     // First time: get password from field
     const pw = document.getElementById('password').value;
     if (!pw) {
       document.getElementById('pushStatus').textContent = 'Please enter the admin password.';
       document.getElementById('pushStatus').className = 'error';
+      submitBtn.disabled = false;
       return;
     }
     setPasswordAndLoadAll(pw);
@@ -34,6 +37,7 @@ document.getElementById('pushForm').addEventListener('submit', function(e) {
   })
   .then(res => res.json())
   .then(data => {
+    submitBtn.disabled = false;
     if (data.success) {
       document.getElementById('pushStatus').textContent = 'Notification sent!';
       document.getElementById('pushStatus').className = 'success';
@@ -44,6 +48,7 @@ document.getElementById('pushForm').addEventListener('submit', function(e) {
     }
   })
   .catch(err => {
+    submitBtn.disabled = false;
     document.getElementById('pushStatus').textContent = 'Error: ' + err;
     document.getElementById('pushStatus').className = 'error';
   });
