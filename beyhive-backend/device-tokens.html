@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Device Tokens - Beyhive Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #fffbe6; }
+    h1 { color: #e6b800; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #ffe066; }
+    .back-link { display:inline-block;margin-bottom:20px;font-weight:bold;color:#e6b800; }
+  </style>
+</head>
+<body>
+  <a href="admin.html" class="back-link">&larr; Back to Admin Panel</a>
+  <h1>Device Tokens</h1>
+  <table id="tokensTable">
+    <thead>
+      <tr><th>User Email</th><th>Device Tokens</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    fetch('/api/device-tokens')
+      .then(res => res.json())
+      .then(users => {
+        const tbody = document.querySelector('#tokensTable tbody');
+        tbody.innerHTML = '';
+        users.forEach(user => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${user.email}</td><td><pre>${JSON.stringify(user.deviceTokens, null, 2)}</pre></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+  </script>
+</body>
+</html> 
