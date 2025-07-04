@@ -1,226 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beyhive Admin Panel</title>
+  <title>Beyhive Admin - App Store Notifications</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #fffbe6;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 700px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px #0001;
-      padding: 32px 24px 32px 24px;
-    }
-    h1 {
-      color: #e6b800;
-      font-size: 2.2em;
-      margin-bottom: 0.2em;
-      text-align: center;
-    }
-    .preset-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 24px;
-    }
-    .preset-btn {
-      background: #fff;
-      border: 2px solid #e6b800;
-      color: #e6b800;
-      font-weight: bold;
-      border-radius: 6px;
-      padding: 8px 18px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    .preset-btn:hover, .preset-btn:focus {
-      background: #e6b800;
-      color: #fff;
-      outline: none;
-    }
-    .form-group {
-      margin-bottom: 18px;
-    }
-    label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: #333;
-    }
-    input[type="text"], input[type="password"], select {
-      width: 100%;
-      padding: 10px;
-      border: 1.5px solid #e6b800;
-      border-radius: 6px;
-      font-size: 1em;
-      margin-bottom: 4px;
-      background: #fffbe6;
-    }
-    button[type="submit"] {
-      background: #e6b800;
-      color: #fff;
-      border: none;
-      padding: 12px 28px;
-      border-radius: 6px;
-      font-size: 1.1em;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.2s;
-    }
-    button[type="submit"]:hover, button[type="submit"]:focus {
-      background: #bfa000;
-      outline: none;
-    }
-    .status-message {
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 1em;
-    }
-    .status-message.error { color: #d32f2f; }
-    .status-message.success { color: #388e3c; }
-    .stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px;
-      margin: 30px 0 18px 0;
-      justify-content: center;
-    }
-    .stat-box {
-      background: #fffbe6;
-      border: 1.5px solid #e6b800;
-      border-radius: 8px;
-      padding: 14px 22px;
-      text-align: center;
-      min-width: 120px;
-    }
-    .stat-label {
-      color: #bfa000;
-      font-size: 0.95em;
-      margin-bottom: 2px;
-    }
-    .stat-value {
-      font-size: 1.3em;
-      font-weight: bold;
-      color: #222;
-    }
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 18px;
-      background: #fffbe6;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .history-table th, .history-table td {
-      border: 1px solid #e6b800;
-      padding: 8px 10px;
-      text-align: left;
-      font-size: 0.98em;
-    }
-    .history-table th {
-      background: #ffe066;
-      color: #222;
-    }
-    .history-table tr:nth-child(even) {
-      background: #fff9d6;
-    }
-    @media (max-width: 600px) {
-      .container { padding: 12px 2vw; }
-      .stats { flex-direction: column; align-items: stretch; }
-      .preset-buttons { flex-direction: column; gap: 8px; }
-    }
-    .top-link {
-      display: inline-block;
-      margin-bottom: 18px;
-      font-weight: bold;
-      color: #e6b800;
-      text-decoration: none;
-      font-size: 1.1em;
-    }
-    .top-link:hover { text-decoration: underline; }
+    body { font-family: Arial, sans-serif; margin: 40px; background: #fffbe6; }
+    h1 { color: #e6b800; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #ffe066; }
+    pre { max-width: 400px; overflow-x: auto; }
+    .push-form { background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 40px; }
+    .push-form input, .push-form textarea, .push-form select { width: 100%; margin-bottom: 10px; padding: 8px; }
+    .push-form button { background: #e6b800; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px; }
+    .push-form button:disabled { background: #ccc; }
+    .error { color: red; }
+    .success { color: green; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="device-tokens.html" class="top-link">Device Token Log</a>
-    <h1>Beyhive Admin</h1>
-    <div class="preset-buttons">
-      <button type="button" class="preset-btn" data-type="concertStart" data-title="Concert Starting!" data-message="The concert is about to begin!">Concert Start</button>
-      <button type="button" class="preset-btn" data-type="beyonceOnStage" data-title="Beyoncé is on stage!" data-message="Beyoncé has taken the stage! Tune in now!">Beyoncé on Stage</button>
-      <button type="button" class="preset-btn" data-type="americaHasAProblem" data-title="AMERICA HAS A PROBLEM" data-message="AMERICA HAS A PROBLEM is starting!">AMERICA HAS A PROBLEM</button>
-      <button type="button" class="preset-btn" data-type="tyrant" data-title="TYRANT" data-message="TYRANT is starting!">TYRANT</button>
-      <button type="button" class="preset-btn" data-type="lastAct" data-title="Last Act" data-message="The last act is starting!">Last Act</button>
-      <button type="button" class="preset-btn" data-type="sixteenCarriages" data-title="16 CARRIAGES" data-message="16 CARRIAGES is starting!">16 CARRIAGES</button>
-      <button type="button" class="preset-btn" data-type="amen" data-title="AMEN" data-message="AMEN is starting!">AMEN</button>
-      <button type="button" class="preset-btn" data-type="everyone" data-title="Announcement" data-message="A new announcement for everyone!">Everyone</button>
-    </div>
-    <form class="push-form" id="pushForm" autocomplete="off">
-      <h2 style="text-align:center; margin-bottom:18px;">Send Push Notification</h2>
-      <div class="form-group">
-        <label for="password">Admin Password</label>
-        <input type="password" id="password" placeholder="Admin Password" required />
-      </div>
-      <div class="form-group">
-        <label for="notifTitle">Notification Title</label>
-        <input type="text" id="notifTitle" placeholder="Notification Title" required />
-      </div>
-      <div class="form-group">
-        <label for="notifMessage">Notification Message</label>
-        <input type="text" id="notifMessage" placeholder="Notification Message" required />
-      </div>
-      <div class="form-group">
-        <label for="notifType">Notification Type</label>
-        <select id="notifType" required>
-          <option value="everyone">Everyone</option>
-          <option value="concertStart">Concert Start</option>
-          <option value="beyonceOnStage">Beyoncé on Stage</option>
-          <option value="americaHasAProblem">AMERICA HAS A PROBLEM starts</option>
-          <option value="tyrant">TYRANT starts</option>
-          <option value="lastAct">Last Act starts</option>
-          <option value="sixteenCarriages">16 CARRIAGES starts</option>
-          <option value="amen">AMEN starts</option>
-        </select>
-      </div>
-      <button type="submit">Send Notification</button>
-      <div id="pushStatus" class="status-message"></div>
-    </form>
-    <div class="stats">
-      <div class="stat-box"><div class="stat-label">Total Users</div><div id="userCount" class="stat-value">0</div></div>
-      <div class="stat-box"><div class="stat-label">Registered Devices</div><div id="registeredDevices" class="stat-value">0</div></div>
-      <div class="stat-box"><div class="stat-label">Device Tokens</div><div id="deviceTokenCount" class="stat-value">0</div></div>
-      <div class="stat-box"><div class="stat-label">Active Users</div><div id="activeUserCount" class="stat-value">0</div></div>
-      <div class="stat-box"><div class="stat-label">Online Now</div><div id="onlineNow" class="stat-value">0</div></div>
-    </div>
-    <h2 style="margin-top:32px;">Livestreams Management</h2>
-    <div id="livestreams"></div>
-    <button onclick="addRow()">Add Row</button>
-    <button onclick="saveLivestreams()">Save</button>
-    <h2 style="margin-top:32px;">Notification History</h2>
-    <table id="historyTable" class="history-table" style="display:none;">
-      <thead>
-        <tr><th>Time</th><th>Type</th><th>Title</th><th>Message</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <h2 style="margin-top:32px;">App Store Server Notifications</h2>
-    <table id="notifTable" class="history-table">
-      <thead>
-        <tr><th>Received At</th><th>Type</th><th>Raw Data</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <a href="device-tokens.html" style="display:inline-block;margin-bottom:20px;font-weight:bold;color:#e6b800;">Device Token Log</a>
+  <h1>Beyhive Admin</h1>
+  <div id="presetButtons" style="margin-bottom: 20px;">
+    <button type="button" class="preset-btn" data-type="concertStart" data-title="Concert Starting!" data-message="The concert is about to begin!">Concert Start</button>
+    <button type="button" class="preset-btn" data-type="beyonceOnStage" data-title="Beyoncé is on stage!" data-message="Beyoncé has taken the stage! Tune in now!">Beyoncé on Stage</button>
+    <button type="button" class="preset-btn" data-type="americaHasAProblem" data-title="AMERICA HAS A PROBLEM" data-message="AMERICA HAS A PROBLEM is starting!">AMERICA HAS A PROBLEM</button>
+    <button type="button" class="preset-btn" data-type="tyrant" data-title="TYRANT" data-message="TYRANT is starting!">TYRANT</button>
+    <button type="button" class="preset-btn" data-type="lastAct" data-title="Last Act" data-message="The last act is starting!">Last Act</button>
+    <button type="button" class="preset-btn" data-type="sixteenCarriages" data-title="16 CARRIAGES" data-message="16 CARRIAGES is starting!">16 CARRIAGES</button>
+    <button type="button" class="preset-btn" data-type="amen" data-title="AMEN" data-message="AMEN is starting!">AMEN</button>
+    <button type="button" class="preset-btn" data-type="everyone" data-title="Announcement" data-message="A new announcement for everyone!">Everyone</button>
   </div>
-  <script src="admin.js?v=3"></script>
+  <form class="push-form" id="pushForm">
+    <h2>Send Push Notification</h2>
+    <div id="passwordDiv">
+      <input type="password" id="password" placeholder="Admin Password" required />
+    </div>
+    <input type="text" id="notifTitle" placeholder="Notification Title" required />
+    <input type="text" id="notifMessage" placeholder="Notification Message" required />
+    <select id="notifType" required>
+      <option value="everyone">Everyone</option>
+      <option value="concertStart">Concert Start</option>
+      <option value="beyonceOnStage">Beyoncé on Stage</option>
+      <option value="americaHasAProblem">AMERICA HAS A PROBLEM starts</option>
+      <option value="tyrant">TYRANT starts</option>
+      <option value="lastAct">Last Act starts</option>
+      <option value="sixteenCarriages">16 CARRIAGES starts</option>
+      <option value="amen">AMEN starts</option>
+    </select>
+    <button type="submit">Send Notification</button>
+    <div id="pushStatus"></div>
+  </form>
+  <div id="lastNotification" style="background:#fff3cd; padding:12px; border-radius:8px; margin-bottom:30px; display:none;"></div>
+  <h2>Notification History</h2>
+  <table id="historyTable" style="width:100%; margin-bottom:30px; display:none;">
+    <thead>
+      <tr><th>Time</th><th>Type</th><th>Title</th><th>Message</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <h2>App Store Server Notifications</h2>
+  <table id="notifTable">
+    <thead>
+      <tr><th>Received At</th><th>Type</th><th>Raw Data</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <h2>App Stats</h2>
+  <div id="userCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Users (App Downloads): 0</div>
+  <div id="registeredDevices" style="font-size: 1.2em; margin-bottom: 10px;">Registered Devices: 0</div>
+  <div id="deviceTokenCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Device Tokens: 0</div>
+  <div id="activeUserCount" style="font-size: 1.2em; margin-bottom: 10px;">Active Users: 0</div>
+  <div id="onlineNow" style="font-size: 1.2em; margin-bottom: 30px;">Users Online Now: 0</div>
+  <h2>Livestreams Management</h2>
+  <div id="livestreams"></div>
+  <button onclick="addRow()">Add Row</button>
+  <button onclick="saveLivestreams()">Save</button>
+  <script src="admin.js"></script>
 </body>
 </html> 
