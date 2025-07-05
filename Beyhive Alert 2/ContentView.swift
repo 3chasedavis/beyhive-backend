@@ -2107,19 +2107,8 @@ struct TrackersView: View {
                         .padding(.top, 8)
                     }
                 } else {
-                    // Outfit Tracker Placeholder
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            Text("Outfit Tracker coming soon!")
-                                .font(.system(size: 21, weight: .medium))
-                                .foregroundColor(.gray)
-                                .multilineTextAlignment(.center)
-                            Spacer()
-                        }
-                        Spacer()
-                    }
+                    // Outfit Tracker Section
+                    OutfitsView()
                 }
             }
         }
