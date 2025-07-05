@@ -13,6 +13,7 @@ const adminRoutes = require('./routes/admin');
 const livestreamsRouter = require('./routes/livestreams');
 const DeviceToken = require('./models/DeviceToken'); // Add this after requiring User
 const eventsRoutes = require('./routes/events');
+const outfitsRoutes = require('./routes/outfits');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from the backend directory
 app.use(express.static(__dirname));
 app.use('/api/admin/events', express.json(), eventsRoutes);
+app.use('/api/outfits', express.json(), outfitsRoutes);
 
 // Public events endpoint for iOS app
 app.use('/api/events', eventsRoutes);
