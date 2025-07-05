@@ -12,12 +12,14 @@ const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 const livestreamsRouter = require('./routes/livestreams');
 const DeviceToken = require('./models/DeviceToken'); // Add this after requiring User
+const eventsRoutes = require('./routes/events');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Serve static files from the backend directory
 app.use(express.static(__dirname));
+app.use('/api/admin/events', eventsRoutes);
 
 // Security middleware
 app.use(helmet());

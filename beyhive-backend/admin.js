@@ -119,6 +119,111 @@ window.addEventListener('DOMContentLoaded', function() {
   fetch('/api/livestreams')
     .then(res => res.json())
     .then(data => { livestreams = data; renderRows(livestreams); });
+
+  // === Calendar Events Management ===
+  const eventForm = document.getElementById('eventForm');
+  const eventTitle = document.getElementById('eventTitle');
+  const eventDate = document.getElementById('eventDate');
+  const eventDescription = document.getElementById('eventDescription');
+  const eventFormStatus = document.getElementById('eventFormStatus');
+  const eventsTable = document.getElementById('eventsTable');
+  const eventsTableBody = eventsTable.querySelector('tbody');
+
+  let editingEventId = null;
+
+  function fetchEvents() {
+    fetch('/api/admin/events')
+      .then(res => res.json())
+      .then(events => {
+        renderEvents(events);
+      });
+  }
+
+  function renderEvents(events) {
+    eventsTableBody.innerHTML = '';
+    if (!events.length) {
+      eventsTable.style.display = 'none';
+      return;
+    }
+    eventsTable.style.display = '';
+    events.forEach(event => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${event.title}</td>
+        <td>${event.date}</td>
+        <td>${event.description || ''}</td>
+        <td>
+          <button onclick="editEvent('${event.id}')">Edit</button>
+          <button onclick="deleteEvent('${event.id}')">Delete</button>
+        </td>
+      `;
+      eventsTableBody.appendChild(tr);
+    });
+  }
+
+  eventForm.onsubmit = function(e) {
+    e.preventDefault();
+    eventFormStatus.textContent = '';
+    const data = {
+      title: eventTitle.value,
+      date: eventDate.value,
+      description: eventDescription.value
+    };
+    if (editingEventId) {
+      // Update event
+      fetch(`/api/admin/events/${editingEventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          eventFormStatus.textContent = 'Event updated!';
+          eventForm.reset();
+          editingEventId = null;
+          fetchEvents();
+        });
+    } else {
+      // Add event
+      fetch('/api/admin/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          eventFormStatus.textContent = 'Event added!';
+          eventForm.reset();
+          fetchEvents();
+        });
+    }
+  };
+
+  window.editEvent = function(id) {
+    fetch(`/api/admin/events`)
+      .then(res => res.json())
+      .then(events => {
+        const event = events.find(e => e.id === id);
+        if (!event) return;
+        eventTitle.value = event.title;
+        eventDate.value = event.date;
+        eventDescription.value = event.description || '';
+        editingEventId = id;
+        eventFormStatus.textContent = 'Editing event...';
+      });
+  };
+
+  window.deleteEvent = function(id) {
+    if (!confirm('Delete this event?')) return;
+    fetch(`/api/admin/events/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(result => {
+        fetchEvents();
+      });
+  };
+
+  // Initial load
+  fetchEvents();
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))
