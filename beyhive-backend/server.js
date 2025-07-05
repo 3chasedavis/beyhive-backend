@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 
 // Serve static files from the backend directory
 app.use(express.static(__dirname));
-app.use('/api/admin/events', eventsRoutes);
+app.use('/api/admin/events', express.json(), eventsRoutes);
 
 // Security middleware
 app.use(helmet());
