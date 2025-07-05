@@ -43,6 +43,9 @@
 				"IBMPlexMono-Medium.ttf",
 				"IBMPlexMono-Regular.ttf",
 				LivestreamsView.swift,
+				OutfitsView.swift,
+				OutfitsViewModel.swift,
+				ScheduleViewPatch.swift,
 			);
 			target = 4F9D93052E14661600829250 /* Beyhive Alert 2 */;
 		};
@@ -57,6 +60,10 @@
 				"IBMPlexMono-Light.ttf",
 				"IBMPlexMono-Medium.ttf",
 				"IBMPlexMono-Regular.ttf",
+				LivestreamsView.swift,
+				OutfitsView.swift,
+				OutfitsViewModel.swift,
+				ScheduleViewPatch.swift,
 			);
 			target = 4F9D931C2E14661700829250 /* Beyhive Alert 2UITests */;
 		};
@@ -65,6 +72,7 @@
 			membershipExceptions = (
 				ContentView.swift,
 				LivestreamsView.swift,
+				ScheduleViewPatch.swift,
 			);
 			target = 4F9D93122E14661700829250 /* Beyhive Alert 2Tests */;
 		};
