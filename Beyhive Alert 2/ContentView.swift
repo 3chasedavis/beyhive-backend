@@ -1056,6 +1056,13 @@ struct HomeView: View {
         username: "beyonceupdatesz",
         profileLink: "https://www.instagram.com/beyonceupdatesz/"
     )
+    @StateObject private var beyonceUpdatesFeed2 = InstagramFeedViewModel(
+        feedURL: URL(string: "https://rss.app/feeds/hNOfPNF6axfNGdZ1.xml")!,
+        profileImageURL: "https://scontent.cdninstagram.com/v/t51.2885-19/371740556_655542613307846_5563033253291836190_n.jpg?stp=dst-jpg_s240x240_tt6&_nc_ht=scontent.cdninstagram.com&_nc_cat=102&_nc_oc=Q6cZ2QGew2DgeCcgB8IgoalUe6k2lOR7J7pojlKENTMGvCvKsKGDmNxXm9ysvzBmfTizSiY&_nc_ohc=0RyXw3KU5y4Q7kNvwFirGQa&_nc_gid=3kbOnK7uKoz1GPXEuDyq4g&edm=APs17CUBAAAA&ccb=7-5&oh=00_AfTVGzbG4EnmOof_qicXGG476agnABMv5sIjsSqcld7Ebw&oe=686E919D&_nc_sid=10d13b",
+        profileName: "Arionce 🤍",
+        username: "arionce.lifee",
+        profileLink: "https://www.instagram.com/arionce.lifee/"
+    )
     let pubDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -1164,6 +1171,31 @@ struct HomeView: View {
                                 username: beyonceUpdatesFeed.user,
                                 daysAgo: post.pubDate.daysAgo(from: pubDateFormatter) ?? "",
                                 profileLink: beyonceUpdatesFeed.link,
+                                postImageURL: post.imageURL,
+                                postLink: post.link,
+                                caption: post.title
+                            )
+                        }
+                    }
+                    
+                    // Arionce Instagram Account
+                    Text("Arionce 🤍")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.black)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                    
+                    if beyonceUpdatesFeed2.posts.isEmpty {
+                        ProgressView("Loading Arionce posts...")
+                            .padding()
+                    } else {
+                        ForEach(beyonceUpdatesFeed2.posts.prefix(2)) { post in
+                            InstagramPostCard(
+                                profileImageURL: beyonceUpdatesFeed2.profileImage,
+                                profileName: beyonceUpdatesFeed2.name,
+                                username: beyonceUpdatesFeed2.user,
+                                daysAgo: post.pubDate.daysAgo(from: pubDateFormatter) ?? "",
+                                profileLink: beyonceUpdatesFeed2.link,
                                 postImageURL: post.imageURL,
                                 postLink: post.link,
                                 caption: post.title

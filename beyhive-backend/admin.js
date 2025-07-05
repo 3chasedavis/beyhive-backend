@@ -258,6 +258,41 @@ window.addEventListener('DOMContentLoaded', function() {
       });
   }
 
+  // === Update Overlay Control ===
+  const updateOverlayForm = document.getElementById('updateOverlayForm');
+  const updateRequiredToggle = document.getElementById('updateRequiredToggle');
+  const minVersionInput = document.getElementById('minVersionInput');
+  const updateOverlayStatus = document.getElementById('updateOverlayStatus');
+
+  function fetchUpdateOverlay() {
+    fetch('/api/admin/update-required')
+      .then(res => res.json())
+      .then(data => {
+        updateRequiredToggle.checked = !!data.updateRequired;
+        minVersionInput.value = data.minVersion || '';
+      });
+  }
+
+  updateOverlayForm.onsubmit = function(e) {
+    e.preventDefault();
+    updateOverlayStatus.textContent = '';
+    fetch('/api/admin/update-required', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        updateRequired: updateRequiredToggle.checked,
+        minVersion: minVersionInput.value.trim()
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        updateOverlayStatus.textContent = 'Saved!';
+        fetchUpdateOverlay();
+      });
+  };
+
+  fetchUpdateOverlay();
+
   // Call these on page load
   fetchDeviceStats();
   fetchDeviceTokens();

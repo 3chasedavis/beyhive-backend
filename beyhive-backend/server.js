@@ -21,6 +21,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname));
 app.use('/api/admin/events', express.json(), eventsRoutes);
 
+// Public events endpoint for iOS app
+app.use('/api/events', eventsRoutes);
+
 // Security middleware
 app.use(helmet());
 

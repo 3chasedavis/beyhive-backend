@@ -25,6 +25,12 @@
       cursor: pointer;
       margin-left: 6px;
     }
+    .subtitle {
+      font-size: 0.6em;
+      color: #444;
+      margin-top: 0.2em;
+      margin-bottom: 1em;
+    }
   </style>
 </head>
 <body>
@@ -110,6 +116,16 @@
       <tbody></tbody>
     </table>
   </div>
+  <hr/>
+  <h2>Update Overlay Control</h2>
+  <form id="updateOverlayForm" style="margin-bottom: 20px;">
+    <label>
+      <input type="checkbox" id="updateRequiredToggle" /> Show Update Overlay
+    </label>
+    <input type="text" id="minVersionInput" placeholder="Minimum Required Version (e.g. 1.2.0)" style="margin-left:10px;" />
+    <button type="submit">Save</button>
+    <span id="updateOverlayStatus" style="margin-left:10px;"></span>
+  </form>
   <script src="admin.js"></script>
 </body>
 </html> 

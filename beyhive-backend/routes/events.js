@@ -17,7 +17,12 @@ function writeEvents(events) {
 
 // GET all events
 router.get('/', (req, res) => {
-  res.json(readEvents());
+  const events = readEvents();
+  res.json({
+    events: events,
+    success: true,
+    message: 'Events fetched successfully'
+  });
 });
 
 // POST new event

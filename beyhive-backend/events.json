@@ -4,5 +4,11 @@
     "title": "Test Event",
     "date": "2025-01-15",
     "description": "This is a test event"
+  },
+  {
+    "id": "1751730765339",
+    "title": "New Test Event",
+    "date": "2025-02-01",
+    "description": "This is a new test event"
   }
 ]

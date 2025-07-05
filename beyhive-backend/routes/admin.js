@@ -11,6 +11,9 @@ const DeviceToken = require('../models/DeviceToken');
 
 const ADMIN_PASSWORD = 'chase3870';
 
+const fs = require('fs');
+const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
+
 // Middleware for password protection
 function requirePassword(req, res, next) {
     const password = req.query.password || req.body.password;
@@ -150,6 +153,26 @@ router.get('/onlinenow', async (req, res) => {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const count = await User.countDocuments({ lastLogin: { $gte: fiveMinutesAgo } });
     res.json({ count });
+});
+
+// GET update-required status
+router.get('/update-required', (req, res) => {
+  if (!fs.existsSync(updateRequiredPath)) {
+    return res.json({ updateRequired: false, minVersion: '' });
+  }
+  const data = JSON.parse(fs.readFileSync(updateRequiredPath, 'utf8'));
+  res.json(data);
+});
+
+// POST update-required status
+router.post('/update-required', (req, res) => {
+  const { updateRequired, minVersion } = req.body;
+  const data = {
+    updateRequired: !!updateRequired,
+    minVersion: minVersion || ''
+  };
+  fs.writeFileSync(updateRequiredPath, JSON.stringify(data, null, 2));
+  res.json({ success: true, ...data });
 });
 
 module.exports = router; 

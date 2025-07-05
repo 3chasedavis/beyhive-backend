@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftUI
+import Combine
+import UIKit
 
 @MainActor
 class EventsViewModel: ObservableObject {
@@ -16,11 +18,17 @@ class EventsViewModel: ObservableObject {
     @Published var showError = false
     
     private let baseURL = "https://beyhive-alert-backend.onrender.com"
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         Task {
             await fetchEvents()
         }
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { [weak self] _ in
+                Task { await self?.refreshEvents() }
+            }
+            .store(in: &cancellables)
     }
     
     func fetchEvents() async {
@@ -45,7 +53,12 @@ class EventsViewModel: ObservableObject {
             }
             
             if httpResponse.statusCode == 200 {
-                let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
+                let decoder = JSONDecoder()
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                
+                let eventsResponse = try decoder.decode(EventsResponse.self, from: data)
                 self.events = eventsResponse.events.sorted { $0.date < $1.date }
             } else {
                 errorMessage = "Failed to fetch events (Status: \(httpResponse.statusCode))"
