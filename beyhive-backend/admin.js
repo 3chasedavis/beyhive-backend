@@ -225,6 +225,123 @@ window.addEventListener('DOMContentLoaded', function() {
   // Initial load
   fetchEvents();
 
+  // === Outfits Management ===
+  const outfitForm = document.getElementById('outfitForm');
+  const outfitName = document.getElementById('outfitName');
+  const outfitLocation = document.getElementById('outfitLocation');
+  const outfitImageName = document.getElementById('outfitImageName');
+  const outfitIsNew = document.getElementById('outfitIsNew');
+  const outfitSection = document.getElementById('outfitSection');
+  const outfitDescription = document.getElementById('outfitDescription');
+  const outfitFormStatus = document.getElementById('outfitFormStatus');
+  const outfitsTable = document.getElementById('outfitsTable');
+  const outfitsTableBody = outfitsTable.querySelector('tbody');
+
+  let editingOutfitId = null;
+
+  function fetchOutfits() {
+    fetch('/api/outfits')
+      .then(res => res.json())
+      .then(data => {
+        renderOutfits(data.outfits || []);
+      });
+  }
+
+  function renderOutfits(outfits) {
+    outfitsTableBody.innerHTML = '';
+    if (!outfits.length) {
+      outfitsTable.style.display = 'none';
+      return;
+    }
+    outfitsTable.style.display = '';
+    outfits.forEach(outfit => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${outfit.name}</td>
+        <td>${outfit.location}</td>
+        <td>${outfit.imageName}</td>
+        <td>${outfit.section}</td>
+        <td>${outfit.isNew ? 'Yes' : 'No'}</td>
+        <td>${outfit.description || ''}</td>
+        <td>
+          <button onclick="editOutfit('${outfit.id}')">Edit</button>
+          <button class="remove-event-btn" onclick="deleteOutfit('${outfit.id}')">Remove</button>
+        </td>
+      `;
+      outfitsTableBody.appendChild(tr);
+    });
+  }
+
+  outfitForm.onsubmit = function(e) {
+    e.preventDefault();
+    outfitFormStatus.textContent = '';
+    const data = {
+      name: outfitName.value,
+      location: outfitLocation.value,
+      imageName: outfitImageName.value,
+      isNew: outfitIsNew.checked,
+      section: outfitSection.value,
+      description: outfitDescription.value
+    };
+    if (editingOutfitId) {
+      // Update outfit
+      fetch(`/api/outfits/${editingOutfitId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          outfitFormStatus.textContent = 'Outfit updated!';
+          outfitForm.reset();
+          editingOutfitId = null;
+          fetchOutfits();
+        });
+    } else {
+      // Add outfit
+      fetch('/api/outfits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          outfitFormStatus.textContent = 'Outfit added!';
+          outfitForm.reset();
+          fetchOutfits();
+        });
+    }
+  };
+
+  window.editOutfit = function(id) {
+    fetch('/api/outfits')
+      .then(res => res.json())
+      .then(data => {
+        const outfit = (data.outfits || []).find(o => o.id === id);
+        if (!outfit) return;
+        outfitName.value = outfit.name;
+        outfitLocation.value = outfit.location;
+        outfitImageName.value = outfit.imageName;
+        outfitIsNew.checked = !!outfit.isNew;
+        outfitSection.value = outfit.section;
+        outfitDescription.value = outfit.description || '';
+        editingOutfitId = id;
+        outfitFormStatus.textContent = 'Editing outfit...';
+      });
+  };
+
+  window.deleteOutfit = function(id) {
+    if (!confirm('Delete this outfit?')) return;
+    fetch(`/api/outfits/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(result => {
+        fetchOutfits();
+      });
+  };
+
+  // Initial load
+  fetchOutfits();
+
   // === Device Token Stats and Table ===
   const ADMIN_PASSWORD = 'chase3870';
 

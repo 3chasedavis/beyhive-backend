@@ -107,6 +107,26 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <!-- Outfits Management Section -->
+  <hr/>
+  <h2>Manage Outfits</h2>
+  <form id="outfitForm" style="margin-bottom: 20px;">
+    <input type="text" id="outfitName" placeholder="Outfit Name" required />
+    <input type="text" id="outfitLocation" placeholder="Location" required />
+    <input type="text" id="outfitImageName" placeholder="Image Name (asset or URL)" required />
+    <input type="checkbox" id="outfitIsNew" /> <label for="outfitIsNew">Is New?</label>
+    <input type="text" id="outfitSection" placeholder="Section (e.g. Houston)" required />
+    <input type="text" id="outfitDescription" placeholder="Description (optional)" />
+    <button type="submit">Add Outfit</button>
+    <span id="outfitFormStatus" style="margin-left:10px;"></span>
+  </form>
+  <table id="outfitsTable" style="width:100%; margin-bottom:30px; display:none;">
+    <thead>
+      <tr><th>Name</th><th>Location</th><th>Image</th><th>Section</th><th>Is New?</th><th>Description</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
   <div id="deviceTokensSection">
     <h2>Device Tokens</h2>
     <table id="deviceTokensTable" style="width:100%; margin-bottom:30px; display:none;">
