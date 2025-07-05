@@ -15,6 +15,16 @@
     .push-form button:disabled { background: #ccc; }
     .error { color: red; }
     .success { color: green; }
+    .remove-event-btn {
+      background: #ff4d4f;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +101,15 @@
     </thead>
     <tbody></tbody>
   </table>
+  <div id="deviceTokensSection">
+    <h2>Device Tokens</h2>
+    <table id="deviceTokensTable" style="width:100%; margin-bottom:30px; display:none;">
+      <thead>
+        <tr><th>Token</th><th>Created At</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
   <script src="admin.js"></script>
 </body>
 </html> 

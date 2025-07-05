@@ -154,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function() {
         <td>${event.description || ''}</td>
         <td>
           <button onclick="editEvent('${event.id}')">Edit</button>
-          <button onclick="deleteEvent('${event.id}')">Delete</button>
+          <button class="remove-event-btn" onclick="deleteEvent('${event.id}')">Remove</button>
         </td>
       `;
       eventsTableBody.appendChild(tr);
@@ -224,6 +224,43 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // Initial load
   fetchEvents();
+
+  // === Device Token Stats and Table ===
+  const ADMIN_PASSWORD = 'chase3870';
+
+  function fetchDeviceStats() {
+    fetch('/api/admin/registereddevices')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('registeredDevices').textContent = 'Registered Devices: ' + (data.count || 0);
+      });
+    fetch('/api/admin/devicetokencount')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('deviceTokenCount').textContent = 'Total Device Tokens: ' + (data.count || 0);
+      });
+  }
+
+  function fetchDeviceTokens() {
+    fetch('/api/admin/device-tokens?password=' + encodeURIComponent(ADMIN_PASSWORD))
+      .then(res => res.json())
+      .then(tokens => {
+        const table = document.getElementById('deviceTokensTable');
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        tokens.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${t.token}</td><td>${t.createdAt ? new Date(t.createdAt).toLocaleString() : ''}</td>`;
+          tbody.appendChild(tr);
+        });
+        table.style.display = tokens.length ? '' : 'none';
+      });
+  }
+
+  // Call these on page load
+  fetchDeviceStats();
+  fetchDeviceTokens();
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))
