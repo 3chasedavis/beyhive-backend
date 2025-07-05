@@ -5,7 +5,7 @@ const path = require('path');
 // APNs provider setup (sandbox)
 const apnProvider = new apn.Provider({
   token: {
-    key: path.join(__dirname, '..', process.env.APN_KEY_FILE), // e.g., AuthKey_8M48VV84A3.p8
+    key: process.env.APN_KEY_FILE, // Use the environment variable directly
     keyId: process.env.APN_KEY_ID, // e.g., 8M48VV84A3
     teamId: process.env.APN_TEAM_ID, // e.g., A46AH86Z73
   },
