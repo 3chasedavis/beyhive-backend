@@ -47,6 +47,10 @@ class EventsViewModel: ObservableObject {
             if httpResponse.statusCode == 200 {
                 let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
                 self.events = eventsResponse.events.sorted { $0.date < $1.date }
+                print("Loaded \(self.events.count) events from backend")
+                for event in self.events {
+                    print("Event: \(event.title) on \(event.date)")
+                }
             } else {
                 errorMessage = "Failed to fetch events (Status: \(httpResponse.statusCode))"
                 showError = true

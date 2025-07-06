@@ -37,6 +37,8 @@
 				Assets.xcassets,
 				Beyhive_Alert_2App.swift,
 				ContentView.swift,
+				Events/Event.swift,
+				Events/EventsViewModel.swift,
 				"GoogleService-Info.plist",
 				"IBMPlexMono-Bold.ttf",
 				"IBMPlexMono-Light.ttf",
@@ -71,6 +73,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				ContentView.swift,
+				Events/Event.swift,
+				Events/EventsViewModel.swift,
 				LivestreamsView.swift,
 				ScheduleViewPatch.swift,
 			);

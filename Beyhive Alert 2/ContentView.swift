@@ -1490,7 +1490,11 @@ struct CustomCalendarView: View {
         calendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
     }
     private func eventForDate(_ date: Date) -> Event? {
-        events.first { calendar.isDate($0.date, inSameDayAs: date) }
+        let event = events.first { calendar.isDate($0.date, inSameDayAs: date) }
+        if event != nil {
+            print("Found event for date \(date): \(event?.title ?? "")")
+        }
+        return event
     }
 }
 
