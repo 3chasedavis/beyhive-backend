@@ -14,14 +14,16 @@ struct Event: Identifiable, Codable {
     let date: Date
     let location: String?
     let createdAt: Date
+    let time: String? // New: time in HH:mm format
     
-    init(id: String = UUID().uuidString, title: String, description: String, date: Date, location: String? = nil, createdAt: Date = Date()) {
+    init(id: String = UUID().uuidString, title: String, description: String, date: Date, location: String? = nil, createdAt: Date = Date(), time: String? = nil) {
         self.id = id
         self.title = title
         self.description = description
         self.date = date
         self.location = location
         self.createdAt = createdAt
+        self.time = time
     }
 }
 

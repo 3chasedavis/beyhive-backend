@@ -1389,10 +1389,18 @@ fileprivate struct RoundedCorner: Shape {
 }
 
 struct TourEvent: Identifiable {
-    let id = UUID()
+    let id: UUID
     let date: Date
     let city: String
     let venue: String
+    let isCustom: Bool
+    init(date: Date, city: String, venue: String, isCustom: Bool = false) {
+        self.id = UUID()
+        self.date = date
+        self.city = city
+        self.venue = venue
+        self.isCustom = isCustom
+    }
 }
 
 struct CustomCalendarView: View {
@@ -1505,7 +1513,8 @@ struct ScheduleView: View {
     @State private var showingCalendarAlert = false
     @State private var lastAddedEvent: TourEvent?
     @State private var addedEventIDs: Set<UUID> = []
-    let events: [TourEvent] = [
+    @StateObject private var eventsViewModel = EventsViewModel()
+    let mainEvents: [TourEvent] = [
         // Los Angeles
         TourEvent(date: dateFrom("2024-04-28", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
         TourEvent(date: dateFrom("2024-05-01", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
@@ -1548,25 +1557,35 @@ struct ScheduleView: View {
         TourEvent(date: dateFrom("2025-07-25", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Las Vegas", venue: "Allegiant Stadium"),
         TourEvent(date: dateFrom("2025-07-26", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Las Vegas", venue: "Allegiant Stadium")
     ]
-
-    // Helper function to parse date strings with time and time zone
-    static func dateFrom(_ date: String, time: String, timeZoneID: String) -> Date {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        formatter.timeZone = TimeZone(identifier: timeZoneID)
-        return formatter.date(from: "\(date) \(time)") ?? Date()
+    var allEvents: [TourEvent] {
+        let customEvents = eventsViewModel.events.compactMap { event in
+            // Combine date and time string into a Date
+            let dateWithTime: Date = {
+                if let timeStr = event.time, !timeStr.isEmpty {
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+                    dateFormatter.timeZone = TimeZone.current
+                    let dateString = ISO8601DateFormatter().string(from: event.date).prefix(10) + " " + timeStr
+                    return dateFormatter.date(from: String(dateString)) ?? event.date
+                } else {
+                    return event.date
+                }
+            }()
+            return TourEvent(
+                date: dateWithTime,
+                city: event.title,
+                venue: event.description.isEmpty ? "" : event.description,
+                isCustom: true
+            )
+        }
+        return (mainEvents + customEvents).sorted { $0.date < $1.date }
     }
-
     var filteredEvents: [TourEvent] {
         let now = Date()
         if showUpcoming {
-            // Upcoming: soonest to latest
-            return events.filter { $0.date >= now }
-                .sorted { $0.date < $1.date }
+            return allEvents.filter { $0.date >= now }
         } else {
-            // Past: most recent first
-            return events.filter { $0.date < now }
-                .sorted { $0.date > $1.date }
+            return allEvents.filter { $0.date < now }.reversed()
         }
     }
 
@@ -1636,9 +1655,16 @@ struct ScheduleView: View {
                                     Text(eventDateTimeString(for: event.date))
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.blue)
-                                    Text(event.city)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .fontWeight(.bold)
+                                    HStack(spacing: 6) {
+                                        if event.isCustom {
+                                            Circle()
+                                                .fill(Color.yellow)
+                                                .frame(width: 10, height: 10)
+                                        }
+                                        Text(event.city)
+                                            .font(.system(size: 12, weight: .medium))
+                                            .fontWeight(.bold)
+                                    }
                                     Text(event.venue)
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.gray)

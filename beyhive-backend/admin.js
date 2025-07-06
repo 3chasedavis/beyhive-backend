@@ -130,6 +130,7 @@ window.addEventListener('DOMContentLoaded', function() {
       row.innerHTML = `
         <input type="text" value="${item.title || ''}" placeholder="Title" onchange="updateEventField(${idx}, 'title', this.value)" />
         <input type="date" value="${item.date || ''}" placeholder="Date" onchange="updateEventField(${idx}, 'date', this.value)" />
+        <input type="time" value="${item.time || ''}" placeholder="Time" onchange="updateEventField(${idx}, 'time', this.value)" />
         <input type="text" value="${item.description || ''}" placeholder="Description" onchange="updateEventField(${idx}, 'description', this.value)" />
         <button onclick="removeEventRow(${idx})">Remove</button>
       `;
@@ -137,7 +138,7 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
   function addEventRow() {
-    events.push({ title: '', date: '', description: '' });
+    events.push({ title: '', date: '', time: '', description: '' });
     renderEventRows(events);
   }
   function removeEventRow(idx) {
