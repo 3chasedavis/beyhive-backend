@@ -25,15 +25,12 @@ router.get('/', (req, res) => {
   });
 });
 
-// POST new event
+// POST events (overwrite entire list)
 router.post('/', (req, res) => {
-  const events = readEvents();
-  const { title, date, description } = req.body;
-  if (!title || !date) return res.status(400).json({ error: 'Title and date required' });
-  const newEvent = { id: Date.now().toString(), title, date, description };
-  events.push(newEvent);
-  writeEvents(events);
-  res.json(newEvent);
+  fs.writeFile(EVENTS_FILE, JSON.stringify(req.body, null, 2), err => {
+    if (err) return res.status(500).send('Error saving');
+    res.send('OK');
+  });
 });
 
 // PUT update event

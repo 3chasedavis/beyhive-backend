@@ -94,19 +94,9 @@
   <!-- Calendar Events Section -->
   <hr/>
   <h2>Manage Calendar Events</h2>
-  <form id="eventForm" style="margin-bottom: 20px;">
-    <input type="text" id="eventTitle" placeholder="Event Title" required />
-    <input type="date" id="eventDate" required />
-    <input type="text" id="eventDescription" placeholder="Description" />
-    <button type="submit">Add Event</button>
-    <span id="eventFormStatus" style="margin-left:10px;"></span>
-  </form>
-  <table id="eventsTable" style="width:100%; margin-bottom:30px; display:none;">
-    <thead>
-      <tr><th>Title</th><th>Date</th><th>Description</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="events"></div>
+  <button onclick="addEventRow()">Add Row</button>
+  <button onclick="saveEvents()">Save</button>
 
   <!-- Outfits Management Section -->
   <hr/>
