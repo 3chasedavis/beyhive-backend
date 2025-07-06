@@ -1521,26 +1521,7 @@ struct ScheduleView: View {
     
     var body: some View {
         VStack(spacing: 24) {
-            CustomCalendarView(selectedDate: $selectedDate, events: filteredEvents, showUpcoming: showUpcoming)
-            
-            // Public Calendar Button
-            Button(action: {
-                if let url = URL(string: "https://beyhive-backend.onrender.com/calendar.html") {
-                    UIApplication.shared.open(url)
-                }
-            }) {
-                HStack {
-                    Image(systemName: "globe")
-                        .foregroundColor(.blue)
-                    Text("View Full Tour Calendar")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.blue)
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 20)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
-            }
+            CustomCalendarView(selectedDate: $selectedDate, events: eventsViewModel.events, showUpcoming: showUpcoming)
             
             // Toggle for Upcoming/Past Events
             HStack(spacing: 16) {

@@ -25,6 +25,39 @@ struct Event: Identifiable, Codable {
         self.createdAt = createdAt
         self.time = time
     }
+    
+    enum CodingKeys: String, CodingKey {
+        case id, title, description, date, location, createdAt, time
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        
+        // Custom date decoding
+        let dateString = try container.decode(String.self, forKey: .date)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        if let decodedDate = dateFormatter.date(from: dateString) {
+            date = decodedDate
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .date, in: container, debugDescription: "Invalid date format")
+        }
+        
+        location = try container.decodeIfPresent(String.self, forKey: .location)
+        time = try container.decodeIfPresent(String.self, forKey: .time)
+        
+        // Handle createdAt date
+        if let createdAtString = try? container.decode(String.self, forKey: .createdAt) {
+            let createdAtFormatter = DateFormatter()
+            createdAtFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            createdAt = createdAtFormatter.date(from: createdAtString) ?? Date()
+        } else {
+            createdAt = Date()
+        }
+    }
 }
 
 // MARK: - Event Response Models
