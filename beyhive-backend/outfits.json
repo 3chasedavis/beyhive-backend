@@ -1,14 +1,5 @@
 [
   {
-    "id": "la1",
-    "name": "Custom Mugler White Western",
-    "location": "Los Angeles N1",
-    "imageName": "91012b8c-603b-441e-ac99-c3f7d1567115",
-    "isNew": true,
-    "section": "Los Angeles",
-    "description": "Jacket, corset bodysuit, buckled chaps, cowboy hat & boots (1,740 fringes)"
-  },
-  {
     "id": "washington1",
     "name": "Shiny Stars Bodysuit",
     "location": "Washington N1",
@@ -16,5 +7,14 @@
     "isNew": true,
     "section": "Washington",
     "description": "Shiny bodysuit with stars and American flag coat"
+  },
+  {
+    "id": "la1",
+    "name": "Custom Mugler White Western",
+    "location": "Los Angeles N1",
+    "imageName": "91012b8c-603b-441e-ac99-c3f7d1567115",
+    "isNew": true,
+    "section": "Los Angeles",
+    "description": "Jacket, corset bodysuit, buckled chaps, cowboy hat & boots (1,740 fringes)"
   }
 ] 
