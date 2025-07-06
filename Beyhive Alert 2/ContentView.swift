@@ -2206,7 +2206,7 @@ struct NotificationsPaywallView: View {
     var body: some View {
         ZStack {
             GameView()
-                .allowsHitTesting(false)
+                .allowsHitTesting(!storeKit.hasPurchased && !isEUUser())
             
             if !isEUUser() && !storeKit.hasPurchased {
                 Color.white.opacity(0.7)
@@ -2291,6 +2291,7 @@ extension UIApplication {
 }
 #Preview {
     ContentView()
+        .environmentObject(EventsViewModel())
 }
 
 func requestNotificationPermissions() {
@@ -2381,3 +2382,21 @@ func dateFrom(_ date: String, time: String, timeZoneID: String) -> Date {
     formatter.timeZone = TimeZone(identifier: timeZoneID)
     return formatter.date(from: "\(date) \(time)") ?? Date()
 }
+
+#if DEBUG
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .environmentObject(EventsViewModel())
+    }
+}
+#endif
+
+#if DEBUG
+struct ScheduleView_Previews: PreviewProvider {
+    static var previews: some View {
+        ScheduleView()
+            .environmentObject(EventsViewModel())
+    }
+}
+#endif

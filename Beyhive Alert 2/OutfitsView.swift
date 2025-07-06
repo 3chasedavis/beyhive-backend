@@ -72,5 +72,6 @@ struct OutfitsView: View {
 struct OutfitsView_Previews: PreviewProvider {
     static var previews: some View {
         OutfitsView()
+            .environmentObject(EventsViewModel())
     }
 } 

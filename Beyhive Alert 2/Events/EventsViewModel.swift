@@ -18,49 +18,68 @@ class EventsViewModel: ObservableObject {
     private let baseURL = "https://beyhive-backend.onrender.com"
     
     init() {
+#if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            // Load mock data for preview
+            self.events = [
+                Event(id: "1", title: "Preview Event", description: "This is a preview event.", date: Date(), location: "Preview Venue, Preview City, PC", createdAt: Date(), time: "19:00", timezone: "America/New_York")
+            ]
+            return
+        }
+#endif
         Task {
             await fetchEvents()
         }
     }
     
     func fetchEvents() async {
+        print("🔄 Starting to fetch events from backend...")
         isLoading = true
         errorMessage = nil
         
         guard let url = URL(string: "\(baseURL)/api/events") else {
+            print("❌ Invalid URL")
             errorMessage = "Invalid URL"
             showError = true
             isLoading = false
             return
         }
         
+        print("📡 Making request to: \(url)")
+        
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             
             guard let httpResponse = response as? HTTPURLResponse else {
+                print("❌ Invalid response")
                 errorMessage = "Invalid response"
                 showError = true
                 isLoading = false
                 return
             }
             
+            print("📊 Response status: \(httpResponse.statusCode)")
+            
             if httpResponse.statusCode == 200 {
                 let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
                 self.events = eventsResponse.events.sorted { $0.date < $1.date }
-                print("Loaded \(self.events.count) events from backend")
+                print("✅ Successfully loaded \(self.events.count) events from backend")
                 for event in self.events {
-                    print("Event: \(event.title) on \(event.date)")
+                    print("📅 Event: \(event.title) on \(event.date)")
                 }
             } else {
+                print("❌ Failed to fetch events (Status: \(httpResponse.statusCode))")
                 errorMessage = "Failed to fetch events (Status: \(httpResponse.statusCode))"
                 showError = true
             }
         } catch {
+            print("❌ Error fetching events: \(error.localizedDescription)")
             errorMessage = "Error fetching events: \(error.localizedDescription)"
             showError = true
         }
         
         isLoading = false
+        print("🏁 Finished fetching events")
     }
     
     func removeEvent(_ event: Event) async {
@@ -102,6 +121,7 @@ class EventsViewModel: ObservableObject {
     }
     
     func refreshEvents() async {
+        print("🔄 Refreshing events...")
         await fetchEvents()
     }
 }

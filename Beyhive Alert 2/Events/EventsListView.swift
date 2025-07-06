@@ -142,6 +142,11 @@ struct EventRowView: View {
     }
 }
 
-#Preview {
-    EventsListView(viewModel: EventsViewModel())
+#if DEBUG
+struct EventsListView_Previews: PreviewProvider {
+    static var previews: some View {
+        EventsListView()
+            .environmentObject(EventsViewModel())
+    }
 }
+#endif
