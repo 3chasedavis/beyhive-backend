@@ -25,12 +25,23 @@ router.get('/', (req, res) => {
   });
 });
 
-// POST outfits (overwrite entire list)
+// POST new outfit
 router.post('/', (req, res) => {
-  fs.writeFile(OUTFITS_FILE, JSON.stringify(req.body, null, 2), err => {
-    if (err) return res.status(500).send('Error saving');
-    res.send('OK');
-  });
+  const outfits = readOutfits();
+  const { name, location, imageName, isNew, section, description } = req.body;
+  if (!name || !location || !imageName || !section) return res.status(400).json({ error: 'Name, location, imageName, and section required' });
+  const newOutfit = {
+    id: Date.now().toString(),
+    name,
+    location,
+    imageName,
+    isNew: !!isNew,
+    section,
+    description: description || null
+  };
+  outfits.push(newOutfit);
+  writeOutfits(outfits);
+  res.json(newOutfit);
 });
 
 // PUT update outfit
