@@ -10,10 +10,20 @@ import SwiftUI
 @main
 struct Beyhive_Alert_2App: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var eventsViewModel = EventsViewModel()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
             SplashScreenView()
+                .environmentObject(eventsViewModel)
+                .onChange(of: scenePhase) { newPhase in
+                    if newPhase == .active {
+                        Task {
+                            await eventsViewModel.refreshEvents()
+                        }
+                    }
+                }
         }
     }
 }
@@ -24,6 +34,7 @@ struct SplashScreenView: View {
     var body: some View {
         if isActive {
             ContentView()
+                .environmentObject(EventsViewModel())
         } else {
             ZStack {
                 LinearGradient(

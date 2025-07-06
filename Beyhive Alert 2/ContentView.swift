@@ -1435,10 +1435,19 @@ struct CustomCalendarView: View {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(days, id: \ .self) { date in
                     ZStack {
-                        if eventForDate(date) != nil {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(showUpcoming ? Color.yellow.opacity(0.3) : Color.gray.opacity(0.4))
-                                .frame(width: 36, height: 36)
+                        if let event = eventForDate(date) {
+                            let now = Date()
+                            if showUpcoming && (event.localStartDate ?? event.date) >= now {
+                                // Upcoming event: yellow highlight
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.yellow.opacity(0.3))
+                                    .frame(width: 36, height: 36)
+                            } else if !showUpcoming && (event.localStartDate ?? event.date) < now {
+                                // Past event: gray highlight
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.gray.opacity(0.4))
+                                    .frame(width: 36, height: 36)
+                            }
                         }
                         if calendar.isDateInToday(date) {
                             RoundedRectangle(cornerRadius: 10)
@@ -1504,23 +1513,31 @@ struct ScheduleView: View {
     @State private var showingCalendarAlert = false
     @State private var lastAddedEvent: Event?
     @State private var addedEventIDs: Set<String> = []
-    @StateObject private var eventsViewModel = EventsViewModel()
+    @EnvironmentObject var eventsViewModel: EventsViewModel
     
     var filteredEvents: [Event] {
         let now = Date()
         if showUpcoming {
-            return eventsViewModel.events.filter { $0.date >= now }
+            return eventsViewModel.events.filter {
+                ($0.localStartDate ?? $0.date) >= now
+            }
         } else {
-            return eventsViewModel.events.filter { $0.date < now }.reversed()
+            return eventsViewModel.events.filter {
+                ($0.localStartDate ?? $0.date) < now
+            }.reversed()
         }
     }
     
-    private func eventDateTimeString(for date: Date) -> String {
+    private func eventDateTimeString(for event: Event) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        formatter.timeZone = .current
-        return formatter.string(from: date)
+        formatter.timeZone = .current // User's local time zone
+        if let localStart = event.localStartDate {
+            return formatter.string(from: localStart)
+        } else {
+            return formatter.string(from: event.date)
+        }
     }
     
     var body: some View {
@@ -1578,14 +1595,15 @@ struct ScheduleView: View {
                         }) {
                             HStack(alignment: .top, spacing: 16) {
                                 VStack(alignment: .leading) {
-                                    Text(eventDateTimeString(for: event.date))
+                                    Text(eventDateTimeString(for: event))
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.blue)
                                     Text(event.title)
                                         .font(.system(size: 12, weight: .medium))
                                         .fontWeight(.bold)
                                     if let location = event.location {
-                                        Text(location)
+                                        let venue = location.components(separatedBy: ",").first ?? location
+                                        Text(venue)
                                             .font(.system(size: 12, weight: .medium))
                                             .foregroundColor(.gray)
                                     }
@@ -1616,7 +1634,7 @@ struct ScheduleView: View {
             Button("OK") { }
         } message: {
             if let event = lastAddedEvent {
-                Text("'Beyoncé - \(event.title) @ \(event.location != nil ? event.location! : "")' has been added to your calendar.")
+                Text("'Beyoncé - \(event.title)' has been added to your calendar.")
             }
         }
         .background(Color.white.ignoresSafeArea())
@@ -1629,7 +1647,7 @@ struct ScheduleView: View {
             DispatchQueue.main.async {
                 if granted && error == nil {
                     let ekEvent = EKEvent(eventStore: eventStore)
-                    ekEvent.title = event.title + (event.location != nil ? " @ " + event.location! : "")
+                    ekEvent.title = event.title
                     ekEvent.startDate = event.date
                     ekEvent.endDate = event.date.addingTimeInterval(2 * 60 * 60) // 2 hours duration
                     ekEvent.calendar = eventStore.defaultCalendarForNewEvents
@@ -1653,7 +1671,7 @@ struct ScheduleView: View {
             DispatchQueue.main.async {
                 if granted && error == nil {
                     let predicate = eventStore.predicateForEvents(withStart: event.date, end: event.date.addingTimeInterval(2 * 60 * 60), calendars: nil)
-                    let matchingEvents = eventStore.events(matching: predicate).filter { $0.title == event.title + (event.location != nil ? " @ " + event.location! : "") }
+                    let matchingEvents = eventStore.events(matching: predicate).filter { $0.title == event.title }
                     for ekEvent in matchingEvents {
                         do {
                             try eventStore.remove(ekEvent, span: .thisEvent)
