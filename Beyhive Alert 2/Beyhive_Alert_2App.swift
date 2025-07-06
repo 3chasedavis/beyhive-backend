@@ -17,7 +17,7 @@ struct Beyhive_Alert_2App: App {
         WindowGroup {
             SplashScreenView()
                 .environmentObject(eventsViewModel)
-                .onChange(of: scenePhase) { newPhase in
+                .onChange(of: scenePhase) { oldPhase, newPhase in
                     if newPhase == .active {
                         Task {
                             await eventsViewModel.refreshEvents()
@@ -30,11 +30,12 @@ struct Beyhive_Alert_2App: App {
 
 struct SplashScreenView: View {
     @State private var isActive = false
+    @EnvironmentObject var eventsViewModel: EventsViewModel
 
     var body: some View {
         if isActive {
             ContentView()
-                .environmentObject(EventsViewModel())
+                .environmentObject(eventsViewModel)
         } else {
             ZStack {
                 LinearGradient(
