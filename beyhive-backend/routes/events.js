@@ -28,9 +28,16 @@ router.get('/', (req, res) => {
 // POST new event
 router.post('/', (req, res) => {
   const events = readEvents();
-  const { title, date, description } = req.body;
+  const { title, date, time, location, description } = req.body;
   if (!title || !date) return res.status(400).json({ error: 'Title and date required' });
-  const newEvent = { id: Date.now().toString(), title, date, description };
+  const newEvent = { 
+    id: Date.now().toString(), 
+    title, 
+    date, 
+    time: time || null,
+    location: location || null,
+    description: description || null 
+  };
   events.push(newEvent);
   writeEvents(events);
   res.json(newEvent);
@@ -41,8 +48,15 @@ router.put('/:id', (req, res) => {
   const events = readEvents();
   const idx = events.findIndex(e => e.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Event not found' });
-  const { title, date, description } = req.body;
-  events[idx] = { ...events[idx], title, date, description };
+  const { title, date, time, location, description } = req.body;
+  events[idx] = { 
+    ...events[idx], 
+    title, 
+    date, 
+    time: time || null,
+    location: location || null,
+    description: description || null 
+  };
   writeEvents(events);
   res.json(events[idx]);
 });

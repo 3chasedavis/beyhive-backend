@@ -120,51 +120,118 @@ window.addEventListener('DOMContentLoaded', function() {
     .then(res => res.json())
     .then(data => { livestreams = data; renderRows(livestreams); });
 
-  // === Calendar Events Management (Batch Editable) ===
-  let events = [];
-  function renderEventRows(data) {
-    const container = document.getElementById('events');
-    container.innerHTML = '';
-    data.forEach((item, idx) => {
-      const row = document.createElement('div');
-      row.innerHTML = `
-        <input type="text" value="${item.title || ''}" placeholder="Title" onchange="updateEventField(${idx}, 'title', this.value)" />
-        <input type="date" value="${item.date || ''}" placeholder="Date" onchange="updateEventField(${idx}, 'date', this.value)" />
-        <input type="time" value="${item.time || ''}" placeholder="Time" onchange="updateEventField(${idx}, 'time', this.value)" />
-        <input type="text" value="${item.description || ''}" placeholder="Description" onchange="updateEventField(${idx}, 'description', this.value)" />
-        <button onclick="removeEventRow(${idx})">Remove</button>
+  // === Calendar Events Management ===
+  const eventForm = document.getElementById('eventForm');
+  const eventTitle = document.getElementById('eventTitle');
+  const eventDate = document.getElementById('eventDate');
+  const eventTime = document.getElementById('eventTime');
+  const eventLocation = document.getElementById('eventLocation');
+  const eventDescription = document.getElementById('eventDescription');
+  const eventFormStatus = document.getElementById('eventFormStatus');
+  const eventsTable = document.getElementById('eventsTable');
+  const eventsTableBody = eventsTable.querySelector('tbody');
+
+  let editingEventId = null;
+
+  function fetchEvents() {
+    fetch('/api/events')
+      .then(res => res.json())
+      .then(data => {
+        renderEvents(data.events || []);
+      });
+  }
+
+  function renderEvents(events) {
+    eventsTableBody.innerHTML = '';
+    if (!events.length) {
+      eventsTable.style.display = 'none';
+      return;
+    }
+    eventsTable.style.display = '';
+    events.forEach(event => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${event.title}</td>
+        <td>${event.date}</td>
+        <td>${event.time || ''}</td>
+        <td>${event.location || ''}</td>
+        <td>${event.description || ''}</td>
+        <td>
+          <button onclick="editEvent('${event.id}')">Edit</button>
+          <button class="remove-event-btn" onclick="deleteEvent('${event.id}')">Remove</button>
+        </td>
       `;
-      container.appendChild(row);
+      eventsTableBody.appendChild(tr);
     });
   }
-  function addEventRow() {
-    events.push({ title: '', date: '', time: '', description: '' });
-    renderEventRows(events);
-  }
-  function removeEventRow(idx) {
-    events.splice(idx, 1);
-    renderEventRows(events);
-  }
-  function updateEventField(idx, field, value) {
-    events[idx][field] = value;
-  }
-  function saveEvents() {
-    // Add IDs if missing
-    events.forEach(ev => { if (!ev.id) ev.id = Date.now().toString() + Math.floor(Math.random()*10000); });
-    fetch('/api/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(events)
-    }).then(() => alert('Saved!'));
-  }
-  // Attach to window for global access
-  window.addEventRow = addEventRow;
-  window.removeEventRow = removeEventRow;
-  window.updateEventField = updateEventField;
-  window.saveEvents = saveEvents;
-  fetch('/api/events')
-    .then(res => res.json())
-    .then(data => { events = data.events || []; renderEventRows(events); });
+
+  eventForm.onsubmit = function(e) {
+    e.preventDefault();
+    eventFormStatus.textContent = '';
+    const data = {
+      title: eventTitle.value,
+      date: eventDate.value,
+      time: eventTime.value,
+      location: eventLocation.value,
+      description: eventDescription.value
+    };
+    if (editingEventId) {
+      // Update event
+      fetch(`/api/events/${editingEventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          eventFormStatus.textContent = 'Event updated!';
+          eventForm.reset();
+          editingEventId = null;
+          fetchEvents();
+        });
+    } else {
+      // Add event
+      fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          eventFormStatus.textContent = 'Event added!';
+          eventForm.reset();
+          fetchEvents();
+        });
+    }
+  };
+
+  window.editEvent = function(id) {
+    fetch('/api/events')
+      .then(res => res.json())
+      .then(data => {
+        const event = (data.events || []).find(e => e.id === id);
+        if (!event) return;
+        eventTitle.value = event.title;
+        eventDate.value = event.date;
+        eventTime.value = event.time || '';
+        eventLocation.value = event.location || '';
+        eventDescription.value = event.description || '';
+        editingEventId = id;
+        eventFormStatus.textContent = 'Editing event...';
+      });
+  };
+
+  window.deleteEvent = function(id) {
+    if (!confirm('Delete this event?')) return;
+    fetch(`/api/events/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(result => {
+        fetchEvents();
+      });
+  };
+
+  // Initial load
+  fetchEvents();
 
   // === Outfits Management ===
   const outfitForm = document.getElementById('outfitForm');
