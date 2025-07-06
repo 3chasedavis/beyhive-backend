@@ -12,7 +12,7 @@ class LivestreamsViewModel: ObservableObject {
 
     func fetchLivestreams() {
         print("fetchLivestreams called")
-        guard let url = URL(string: "http://localhost:3000/api/livestreams") else { return }
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/livestreams") else { return }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data {
                 print(String(data: data, encoding: .utf8) ?? "No data") // Debug print statement

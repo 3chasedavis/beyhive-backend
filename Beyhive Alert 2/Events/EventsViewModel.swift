@@ -15,7 +15,7 @@ class EventsViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showError = false
     
-    private let baseURL = "http://localhost:3000"
+    private let baseURL = "https://beyhive-backend.onrender.com"
     
     init() {
         Task {

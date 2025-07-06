@@ -6,7 +6,7 @@ class OutfitsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let baseURL = "http://localhost:3000"
+    private let baseURL = "https://beyhive-backend.onrender.com"
 
     func fetchOutfits() async {
         isLoading = true
