@@ -71,4 +71,13 @@ router.delete('/:id', (req, res) => {
   res.json(removed[0]);
 });
 
+// GET calendar URL
+router.get('/calendar-url', (req, res) => {
+  res.json({
+    calendarUrl: 'https://beyhive-backend.onrender.com/calendar.html',
+    success: true,
+    message: 'Calendar URL fetched successfully'
+  });
+});
+
 module.exports = router; 
