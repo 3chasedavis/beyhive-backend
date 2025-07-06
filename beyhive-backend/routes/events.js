@@ -6,8 +6,19 @@ const Event = require('../models/Event');
 router.get('/', async (req, res) => {
   try {
     const events = await Event.find().sort({ date: 1, time: 1 });
+    // Map MongoDB _id to id and fill in defaults for all required fields
+    const mappedEvents = events.map(e => ({
+      id: e._id.toString(),
+      title: e.title || '',
+      description: e.description || '',
+      date: e.date || '',
+      location: e.location || '',
+      createdAt: e.createdAt || new Date(),
+      time: e.time || '',
+      timezone: e.timezone || 'America/New_York'
+    }));
     res.json({
-      events: events,
+      events: mappedEvents,
       success: true,
       message: 'Events fetched successfully'
     });
