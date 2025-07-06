@@ -49,8 +49,8 @@ router.put('/:id', (req, res) => {
   const outfits = readOutfits();
   const idx = outfits.findIndex(o => o.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Outfit not found' });
-  const { name, location, imageUrl, isNew } = req.body;
-  outfits[idx] = { ...outfits[idx], name, location, imageUrl, isNew: !!isNew };
+  const { name, location, imageName, isNew, section, description } = req.body;
+  outfits[idx] = { ...outfits[idx], name, location, imageName, isNew: !!isNew, section, description };
   writeOutfits(outfits);
   res.json(outfits[idx]);
 });

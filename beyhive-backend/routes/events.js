@@ -32,6 +32,11 @@ router.post('/', async (req, res) => {
   try {
     let { title, date, time, location, timezone, description } = req.body;
     if (!title || !date) return res.status(400).json({ error: 'Title and date required' });
+    // Validate date format (yyyy-MM-dd)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({ error: 'Date must be in yyyy-MM-dd format' });
+    }
     // Provide defaults for missing fields
     if (!timezone) timezone = 'America/New_York';
     if (!description) description = '';

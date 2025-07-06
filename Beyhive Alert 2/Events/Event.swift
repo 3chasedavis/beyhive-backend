@@ -45,7 +45,8 @@ struct Event: Identifiable, Codable {
         if let decodedDate = dateFormatter.date(from: dateString) {
             date = decodedDate
         } else {
-            throw DecodingError.dataCorruptedError(forKey: .date, in: container, debugDescription: "Invalid date format")
+            print("[Event Decoding Error] Invalid date format: \(dateString)")
+            throw DecodingError.dataCorruptedError(forKey: .date, in: container, debugDescription: "Invalid date format: \(dateString)")
         }
         
         location = try container.decodeIfPresent(String.self, forKey: .location)
