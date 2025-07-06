@@ -12,6 +12,8 @@ import EventKit
 import UserNotifications
 import StoreKit
 import UIKit
+// Import EventsViewModel
+// If needed, add: import Events
 
 enum BeyhiveTab: Int, CaseIterable {
     case home, videos, game, trackers, schedule
@@ -1388,24 +1390,9 @@ fileprivate struct RoundedCorner: Shape {
     }
 }
 
-struct TourEvent: Identifiable {
-    let id: UUID
-    let date: Date
-    let city: String
-    let venue: String
-    let isCustom: Bool
-    init(date: Date, city: String, venue: String, isCustom: Bool = false) {
-        self.id = UUID()
-        self.date = date
-        self.city = city
-        self.venue = venue
-        self.isCustom = isCustom
-    }
-}
-
 struct CustomCalendarView: View {
     @Binding var selectedDate: Date
-    let events: [TourEvent]
+    let events: [Event]
     let showUpcoming: Bool
     
     @State private var currentMonth: Date = Date()
@@ -1502,7 +1489,7 @@ struct CustomCalendarView: View {
     private func isInCurrentMonth(_ date: Date) -> Bool {
         calendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
     }
-    private func eventForDate(_ date: Date) -> TourEvent? {
+    private func eventForDate(_ date: Date) -> Event? {
         events.first { calendar.isDate($0.date, inSameDayAs: date) }
     }
 }
@@ -1511,96 +1498,50 @@ struct ScheduleView: View {
     @State private var selectedDate = Date()
     @State private var showUpcoming = true
     @State private var showingCalendarAlert = false
-    @State private var lastAddedEvent: TourEvent?
-    @State private var addedEventIDs: Set<UUID> = []
+    @State private var lastAddedEvent: Event?
+    @State private var addedEventIDs: Set<String> = []
     @StateObject private var eventsViewModel = EventsViewModel()
-    let mainEvents: [TourEvent] = [
-        // Los Angeles
-        TourEvent(date: dateFrom("2024-04-28", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
-        TourEvent(date: dateFrom("2024-05-01", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
-        TourEvent(date: dateFrom("2024-05-04", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
-        TourEvent(date: dateFrom("2024-05-07", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
-        TourEvent(date: dateFrom("2024-05-09", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Los Angeles", venue: "SoFi Stadium"),
-        // Chicago
-        TourEvent(date: dateFrom("2024-05-15", time: "20:00", timeZoneID: "America/Chicago"), city: "Chicago", venue: "Soldier Field"),
-        TourEvent(date: dateFrom("2024-05-17", time: "20:00", timeZoneID: "America/Chicago"), city: "Chicago", venue: "Soldier Field"),
-        TourEvent(date: dateFrom("2024-05-18", time: "20:00", timeZoneID: "America/Chicago"), city: "Chicago", venue: "Soldier Field"),
-        // New Jersey
-        TourEvent(date: dateFrom("2024-05-22", time: "20:00", timeZoneID: "America/New_York"), city: "New Jersey", venue: "MetLife Stadium"),
-        TourEvent(date: dateFrom("2024-05-24", time: "20:00", timeZoneID: "America/New_York"), city: "New Jersey", venue: "MetLife Stadium"),
-        TourEvent(date: dateFrom("2024-05-25", time: "20:00", timeZoneID: "America/New_York"), city: "New Jersey", venue: "MetLife Stadium"),
-        TourEvent(date: dateFrom("2024-05-28", time: "20:00", timeZoneID: "America/New_York"), city: "New Jersey", venue: "MetLife Stadium"),
-        TourEvent(date: dateFrom("2024-05-29", time: "20:00", timeZoneID: "America/New_York"), city: "New Jersey", venue: "MetLife Stadium"),
-        // London
-        TourEvent(date: dateFrom("2024-06-05", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        TourEvent(date: dateFrom("2024-06-07", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        TourEvent(date: dateFrom("2024-06-10", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        TourEvent(date: dateFrom("2024-06-12", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        TourEvent(date: dateFrom("2024-06-14", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        TourEvent(date: dateFrom("2024-06-16", time: "20:00", timeZoneID: "Europe/London"), city: "London", venue: "Tottenham Hotspur Stadium"),
-        // Paris
-        TourEvent(date: dateFrom("2024-06-19", time: "20:00", timeZoneID: "Europe/Paris"), city: "Paris", venue: "Stade de France"),
-        TourEvent(date: dateFrom("2024-06-21", time: "20:00", timeZoneID: "Europe/Paris"), city: "Paris", venue: "Stade de France"),
-        TourEvent(date: dateFrom("2024-06-22", time: "20:00", timeZoneID: "Europe/Paris"), city: "Paris", venue: "Stade de France"),
-        // Houston
-        TourEvent(date: dateFrom("2024-06-28", time: "20:00", timeZoneID: "America/Chicago"), city: "Houston", venue: "NRG Stadium"),
-        TourEvent(date: dateFrom("2024-06-29", time: "20:00", timeZoneID: "America/Chicago"), city: "Houston", venue: "NRG Stadium"),
-        // Washington DC (future for demo)
-        TourEvent(date: dateFrom("2025-07-04", time: "20:00", timeZoneID: "America/New_York"), city: "Washington DC", venue: "FedExField"),
-        TourEvent(date: dateFrom("2025-07-07", time: "20:00", timeZoneID: "America/New_York"), city: "Washington DC", venue: "FedExField"),
-        // Atlanta (future for demo)
-        TourEvent(date: dateFrom("2025-07-10", time: "20:00", timeZoneID: "America/New_York"), city: "Atlanta", venue: "Mercedes-Benz Stadium"),
-        TourEvent(date: dateFrom("2025-07-11", time: "20:00", timeZoneID: "America/New_York"), city: "Atlanta", venue: "Mercedes-Benz Stadium"),
-        TourEvent(date: dateFrom("2025-07-13", time: "20:00", timeZoneID: "America/New_York"), city: "Atlanta", venue: "Mercedes-Benz Stadium"),
-        TourEvent(date: dateFrom("2025-07-14", time: "20:00", timeZoneID: "America/New_York"), city: "Atlanta", venue: "Mercedes-Benz Stadium"),
-        // Las Vegas (future for demo)
-        TourEvent(date: dateFrom("2025-07-25", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Las Vegas", venue: "Allegiant Stadium"),
-        TourEvent(date: dateFrom("2025-07-26", time: "20:00", timeZoneID: "America/Los_Angeles"), city: "Las Vegas", venue: "Allegiant Stadium")
-    ]
-    var allEvents: [TourEvent] {
-        let customEvents = eventsViewModel.events.compactMap { event in
-            // Combine date and time string into a Date
-            let dateWithTime: Date = {
-                if let timeStr = event.time, !timeStr.isEmpty {
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-                    dateFormatter.timeZone = TimeZone.current
-                    let dateString = ISO8601DateFormatter().string(from: event.date).prefix(10) + " " + timeStr
-                    return dateFormatter.date(from: String(dateString)) ?? event.date
-                } else {
-                    return event.date
-                }
-            }()
-            return TourEvent(
-                date: dateWithTime,
-                city: event.title,
-                venue: event.description.isEmpty ? "" : event.description,
-                isCustom: true
-            )
-        }
-        return (mainEvents + customEvents).sorted { $0.date < $1.date }
-    }
-    var filteredEvents: [TourEvent] {
+    
+    var filteredEvents: [Event] {
         let now = Date()
         if showUpcoming {
-            return allEvents.filter { $0.date >= now }
+            return eventsViewModel.events.filter { $0.date >= now }
         } else {
-            return allEvents.filter { $0.date < now }.reversed()
+            return eventsViewModel.events.filter { $0.date < now }.reversed()
         }
     }
-
-    // Display event in user's local time zone
+    
     private func eventDateTimeString(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        formatter.timeZone = .current // User's local time zone
+        formatter.timeZone = .current
         return formatter.string(from: date)
     }
-
+    
     var body: some View {
         VStack(spacing: 24) {
             CustomCalendarView(selectedDate: $selectedDate, events: filteredEvents, showUpcoming: showUpcoming)
+            
+            // Public Calendar Button
+            Button(action: {
+                if let url = URL(string: "https://beyhive-backend.onrender.com/calendar.html") {
+                    UIApplication.shared.open(url)
+                }
+            }) {
+                HStack {
+                    Image(systemName: "globe")
+                        .foregroundColor(.blue)
+                    Text("View Full Tour Calendar")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.blue)
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 20)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+            }
+            
             // Toggle for Upcoming/Past Events
             HStack(spacing: 16) {
                 Button(action: { showUpcoming = true }) {
@@ -1655,19 +1596,14 @@ struct ScheduleView: View {
                                     Text(eventDateTimeString(for: event.date))
                                         .font(.system(size: 12, weight: .medium))
                                         .foregroundColor(.blue)
-                                    HStack(spacing: 6) {
-                                        if event.isCustom {
-                                            Circle()
-                                                .fill(Color.yellow)
-                                                .frame(width: 10, height: 10)
-                                        }
-                                        Text(event.city)
-                                            .font(.system(size: 12, weight: .medium))
-                                            .fontWeight(.bold)
-                                    }
-                                    Text(event.venue)
+                                    Text(event.title)
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(.gray)
+                                        .fontWeight(.bold)
+                                    if let location = event.location {
+                                        Text(location)
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(.gray)
+                                    }
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing) {
@@ -1695,20 +1631,20 @@ struct ScheduleView: View {
             Button("OK") { }
         } message: {
             if let event = lastAddedEvent {
-                Text("'Beyoncé - \(event.city) @ \(event.venue)' has been added to your calendar.")
+                Text("'Beyoncé - \(event.title) @ \(event.location != nil ? event.location! : "")' has been added to your calendar.")
             }
         }
         .background(Color.white.ignoresSafeArea())
     }
     
     // Add event to user's calendar using EventKit
-    private func addEventToCalendar(event: TourEvent) {
+    private func addEventToCalendar(event: Event) {
         let eventStore = EKEventStore()
         eventStore.requestFullAccessToEvents { granted, error in
             DispatchQueue.main.async {
                 if granted && error == nil {
                     let ekEvent = EKEvent(eventStore: eventStore)
-                    ekEvent.title = "Beyoncé - " + event.city + " @ " + event.venue
+                    ekEvent.title = event.title + (event.location != nil ? " @ " + event.location! : "")
                     ekEvent.startDate = event.date
                     ekEvent.endDate = event.date.addingTimeInterval(2 * 60 * 60) // 2 hours duration
                     ekEvent.calendar = eventStore.defaultCalendarForNewEvents
@@ -1726,13 +1662,13 @@ struct ScheduleView: View {
         }
     }
     // Remove event from user's calendar using EventKit
-    private func removeEventFromCalendar(event: TourEvent) {
+    private func removeEventFromCalendar(event: Event) {
         let eventStore = EKEventStore()
         eventStore.requestFullAccessToEvents { granted, error in
             DispatchQueue.main.async {
                 if granted && error == nil {
                     let predicate = eventStore.predicateForEvents(withStart: event.date, end: event.date.addingTimeInterval(2 * 60 * 60), calendars: nil)
-                    let matchingEvents = eventStore.events(matching: predicate).filter { $0.title == "Beyoncé - " + event.city + " @ " + event.venue }
+                    let matchingEvents = eventStore.events(matching: predicate).filter { $0.title == event.title + (event.location != nil ? " @ " + event.location! : "") }
                     for ekEvent in matchingEvents {
                         do {
                             try eventStore.remove(ekEvent, span: .thisEvent)
@@ -2433,4 +2369,12 @@ func updateNotificationPreferences(preferences: [String: Bool]) {
             print("Preferences sent successfully!")
         }
     }.resume()
+}
+
+// Helper function for event dates
+func dateFrom(_ date: String, time: String, timeZoneID: String) -> Date {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd HH:mm"
+    formatter.timeZone = TimeZone(identifier: timeZoneID)
+    return formatter.date(from: "\(date) \(time)") ?? Date()
 }
