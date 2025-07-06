@@ -80,12 +80,47 @@ app.get('/api/device-tokens', async (req, res) => {
 app.post('/register-device', async (req, res) => {
   const { deviceToken, preferences } = req.body;
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
+  const DeviceToken = require('./models/DeviceToken');
+  // Provide defaults for all known preferences
+  const defaultPrefs = {
+    beyonceOnStage: false,
+    concertStart: false,
+    americaHasAProblem: false,
+    tyrant: false,
+    lastAct: false,
+    sixteenCarriages: false,
+    amen: false
+  };
+  const mergedPrefs = { ...defaultPrefs, ...(preferences || {}) };
   await DeviceToken.updateOne(
     { token: deviceToken },
-    { $set: { preferences: preferences || {} } },
+    { $set: { preferences: mergedPrefs } },
     { upsert: true }
   );
-  res.json({ message: 'Device token and preferences registered' });
+  res.json({ message: 'Device token and preferences registered', preferences: mergedPrefs });
+});
+
+// GET notification preferences for a device token
+app.get('/device-preferences/:deviceToken', async (req, res) => {
+  try {
+    const { deviceToken } = req.params;
+    const DeviceToken = require('./models/DeviceToken');
+    const doc = await DeviceToken.findOne({ token: deviceToken });
+    // Provide defaults for all known preferences
+    const defaultPrefs = {
+      beyonceOnStage: false,
+      concertStart: false,
+      americaHasAProblem: false,
+      tyrant: false,
+      lastAct: false,
+      sixteenCarriages: false,
+      amen: false
+    };
+    const prefs = { ...defaultPrefs, ...(doc?.preferences || {}) };
+    res.json({ preferences: prefs });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch preferences' });
+  }
 });
 
 // Health check endpoint
