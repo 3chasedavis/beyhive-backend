@@ -64,9 +64,6 @@ class EventsViewModel: ObservableObject {
                 let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
                 self.events = eventsResponse.events.sorted { $0.date < $1.date }
                 print("✅ Successfully loaded \(self.events.count) events from backend")
-                for event in self.events {
-                    print("📅 Event: \(event.title) on \(event.date)")
-                }
             } else {
                 print("❌ Failed to fetch events (Status: \(httpResponse.statusCode))")
                 errorMessage = "Failed to fetch events (Status: \(httpResponse.statusCode))"
@@ -121,7 +118,6 @@ class EventsViewModel: ObservableObject {
     }
     
     func refreshEvents() async {
-        print("🔄 Refreshing events...")
         await fetchEvents()
     }
 }

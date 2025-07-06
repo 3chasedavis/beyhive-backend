@@ -74,6 +74,9 @@
             ReferencedContainer = "container:Beyhive Alert 2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../Beyhive Alert 2/StoreKit Configuration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

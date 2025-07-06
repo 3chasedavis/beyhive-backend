@@ -1816,6 +1816,13 @@ struct GameView: View {
         }
         .background(Color.white.ignoresSafeArea())
         .onAppear {
+            if let deviceToken = UIApplication.deviceTokenString {
+                tilesViewModel.fetchPreferencesFromBackend(deviceToken: deviceToken) { prefs in
+                    DispatchQueue.main.async {
+                        tilesViewModel.applyPreferences(prefs)
+                    }
+                }
+            }
             requestNotificationPermission()
         }
         .alert("Error", isPresented: $showError) {
@@ -2405,6 +2412,44 @@ class TilesViewModel: ObservableObject {
         GameTile(title: "16 CARRIAGES starts", imageName: "Cattalaic", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
         GameTile(title: "AMEN starts", imageName: "americanflag", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true)
     ]
+
+    // Fetch preferences from backend and apply to tiles
+    func fetchPreferencesFromBackend(deviceToken: String, completion: @escaping ([String: Bool]) -> Void) {
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/device-preferences/\(deviceToken)") else { return }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let prefs = json["preferences"] as? [String: Bool] else {
+                completion([:]) // fallback to defaults
+                return
+            }
+            completion(prefs)
+        }.resume()
+    }
+
+    func applyPreferences(_ prefs: [String: Bool]) {
+        for i in tiles.indices {
+            let title = tiles[i].title
+            switch title {
+            case "Beyoncé on Stage":
+                tiles[i].isOn = prefs["beyonceOnStage"] ?? false
+            case "Concert Start":
+                tiles[i].isOn = prefs["concertStart"] ?? false
+            case "AMERICA HAS A PROBLEM starts":
+                tiles[i].isOn = prefs["americaHasAProblem"] ?? false
+            case "TYRANT starts":
+                tiles[i].isOn = prefs["tyrant"] ?? false
+            case "Last Act starts":
+                tiles[i].isOn = prefs["lastAct"] ?? false
+            case "16 CARRIAGES starts":
+                tiles[i].isOn = prefs["sixteenCarriages"] ?? false
+            case "AMEN starts":
+                tiles[i].isOn = prefs["amen"] ?? false
+            default:
+                break
+            }
+        }
+    }
 
     // Add this function to get the current preferences for all tiles
     func currentPreferences() -> [String: Bool] {

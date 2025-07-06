@@ -11,12 +11,16 @@ import SwiftUI
 struct Beyhive_Alert_2App: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var eventsViewModel = EventsViewModel()
+    @StateObject private var storeKit = StoreKitManager()
+    @StateObject private var tilesViewModel = TilesViewModel()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
             SplashScreenView()
                 .environmentObject(eventsViewModel)
+                .environmentObject(storeKit)
+                .environmentObject(tilesViewModel)
                 .onChange(of: scenePhase) { oldPhase, newPhase in
                     if newPhase == .active {
                         Task {

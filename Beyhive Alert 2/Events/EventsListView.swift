@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct EventsListView: View {
-    @ObservedObject var viewModel: EventsViewModel
+    @EnvironmentObject var eventsViewModel: EventsViewModel
     @State private var showingRemoveAlert = false
     @State private var eventToRemove: Event?
     
@@ -22,7 +22,7 @@ struct EventsListView: View {
                 Spacer()
                 Button(action: {
                     Task {
-                        await viewModel.refreshEvents()
+                        await eventsViewModel.refreshEvents()
                     }
                 }) {
                     Image(systemName: "arrow.clockwise")
@@ -32,10 +32,10 @@ struct EventsListView: View {
             }
             .padding(.horizontal)
             
-            if viewModel.isLoading {
+            if eventsViewModel.isLoading {
                 ProgressView("Loading events...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.events.isEmpty {
+            } else if eventsViewModel.events.isEmpty {
                 VStack(spacing: 12) {
                     Image(systemName: "calendar.badge.plus")
                         .font(.system(size: 48))
@@ -53,7 +53,7 @@ struct EventsListView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(viewModel.events) { event in
+                        ForEach(eventsViewModel.events) { event in
                             EventRowView(event: event) {
                                 eventToRemove = event
                                 showingRemoveAlert = true
@@ -69,7 +69,7 @@ struct EventsListView: View {
             Button("Remove", role: .destructive) {
                 if let event = eventToRemove {
                     Task {
-                        await viewModel.removeEvent(event)
+                        await eventsViewModel.removeEvent(event)
                     }
                 }
             }
@@ -78,10 +78,10 @@ struct EventsListView: View {
                 Text("Are you sure you want to remove '\(event.title)'? This action cannot be undone.")
             }
         }
-        .alert("Error", isPresented: $viewModel.showError) {
+        .alert("Error", isPresented: $eventsViewModel.showError) {
             Button("OK") { }
         } message: {
-            if let errorMessage = viewModel.errorMessage {
+            if let errorMessage = eventsViewModel.errorMessage {
                 Text(errorMessage)
             }
         }
