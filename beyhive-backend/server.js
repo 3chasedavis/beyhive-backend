@@ -20,8 +20,14 @@ const PORT = process.env.PORT || 3000;
 
 // Serve static files from the backend directory
 app.use(express.static(__dirname));
-app.use('/api/admin/events', express.json(), eventsRoutes);
-app.use('/api/outfits', express.json(), outfitsRoutes);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Remove route-specific express.json() for /api/admin/events and /api/outfits
+app.use('/api/admin/events', eventsRoutes);
+app.use('/api/outfits', outfitsRoutes);
 
 // Public events endpoint for iOS app
 app.use('/api/events', eventsRoutes);
@@ -43,10 +49,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/beyhive-alert', {
@@ -76,14 +78,14 @@ app.get('/api/device-tokens', async (req, res) => {
 
 // Register device token from iOS app
 app.post('/register-device', async (req, res) => {
-  const { deviceToken } = req.body;
+  const { deviceToken, preferences } = req.body;
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
   await DeviceToken.updateOne(
     { token: deviceToken },
-    { $set: {} },
+    { $set: { preferences: preferences || {} } },
     { upsert: true }
   );
-  res.json({ message: 'Device token registered' });
+  res.json({ message: 'Device token and preferences registered' });
 });
 
 // Health check endpoint
