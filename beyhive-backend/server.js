@@ -79,24 +79,26 @@ app.get('/api/device-tokens', async (req, res) => {
 // Register device token from iOS app
 app.post('/register-device', async (req, res) => {
   const { deviceToken, preferences } = req.body;
+  console.log('[DEBUG] /register-device called with:', { deviceToken, preferences });
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
   const DeviceToken = require('./models/DeviceToken');
   // Provide defaults for all known preferences
   const defaultPrefs = {
-    beyonceOnStage: false,
-    concertStart: false,
-    americaHasAProblem: false,
-    tyrant: false,
-    lastAct: false,
-    sixteenCarriages: false,
-    amen: false
+    beyonceOnStage: true,
+    concertStart: true,
+    americaHasAProblem: true,
+    tyrant: true,
+    lastAct: true,
+    sixteenCarriages: true,
+    amen: true
   };
   const mergedPrefs = { ...defaultPrefs, ...(preferences || {}) };
-  await DeviceToken.updateOne(
+  const updateResult = await DeviceToken.updateOne(
     { token: deviceToken },
     { $set: { preferences: mergedPrefs } },
     { upsert: true }
   );
+  console.log('[DEBUG] updateOne result:', updateResult);
   res.json({ message: 'Device token and preferences registered', preferences: mergedPrefs });
 });
 
@@ -108,13 +110,13 @@ app.get('/device-preferences/:deviceToken', async (req, res) => {
     const doc = await DeviceToken.findOne({ token: deviceToken });
     // Provide defaults for all known preferences
     const defaultPrefs = {
-      beyonceOnStage: false,
-      concertStart: false,
-      americaHasAProblem: false,
-      tyrant: false,
-      lastAct: false,
-      sixteenCarriages: false,
-      amen: false
+      beyonceOnStage: true,
+      concertStart: true,
+      americaHasAProblem: true,
+      tyrant: true,
+      lastAct: true,
+      sixteenCarriages: true,
+      amen: true
     };
     const prefs = { ...defaultPrefs, ...(doc?.preferences || {}) };
     res.json({ preferences: prefs });
