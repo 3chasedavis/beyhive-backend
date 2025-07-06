@@ -4,6 +4,7 @@ const path = require('path');
 const router = express.Router();
 
 const EVENTS_FILE = path.join(__dirname, '../events.json');
+console.log('EVENTS_FILE path:', EVENTS_FILE); // Log the path on startup
 
 // Helper to read events
 function readEvents() {
@@ -12,7 +13,11 @@ function readEvents() {
 }
 // Helper to write events
 function writeEvents(events) {
-  fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2));
+  try {
+    fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2));
+  } catch (err) {
+    console.error('Error writing events.json:', err);
+  }
 }
 
 // GET all events

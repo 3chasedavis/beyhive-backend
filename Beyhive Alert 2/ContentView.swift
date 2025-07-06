@@ -1700,15 +1700,7 @@ struct GameTile: Identifiable {
 }
 
 struct GameView: View {
-    @State private var tiles: [GameTile] = [
-        GameTile(title: "Concert Start", imageName: "Bee_Icon", isCustomImage: true, isEmoji: false, isLarge: true, isOn: true),
-        GameTile(title: "Beyoncé on Stage", imageName: "person.fill", isCustomImage: false, isEmoji: false, isLarge: false, isOn: true),
-        GameTile(title: "AMERICA HAS A PROBLEM starts", imageName: "americanflag", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
-        GameTile(title: "TYRANT starts", imageName: "mechanicalbull", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
-        GameTile(title: "Last Act starts", imageName: "sparkles", isCustomImage: false, isEmoji: false, isLarge: false, isOn: true),
-        GameTile(title: "16 CARRIAGES starts", imageName: "Cattalaic", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
-        GameTile(title: "AMEN starts", imageName: "americanflag", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true)
-    ]
+    @EnvironmentObject var tilesViewModel: TilesViewModel
     @State private var showConfirmation = false
     @State private var confirmationText = ""
     @State private var isLoading = false
@@ -1744,60 +1736,56 @@ struct GameView: View {
             Spacer(minLength: 0)
             let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
             LazyVGrid(columns: columns, spacing: 24) {
-                ForEach(tiles.indices, id: \ .self) { idx in
-                    let tile = tiles[idx]
+                ForEach($tilesViewModel.tiles) { $tile in
                     Button(action: {
-                        tiles[idx].isOn.toggle()
-                        if tiles[idx].isOn {
-                            scheduleNotification(for: tiles[idx])
-                            confirmationText = "Notification enabled for \(tiles[idx].title)"
-                        } else {
-                            removeNotification(for: tiles[idx])
-                            confirmationText = "Notification disabled for \(tiles[idx].title)"
-                        }
+                        $tile.isOn.wrappedValue.toggle()
+                        confirmationText = $tile.isOn.wrappedValue ? "Enabled for \($tile.wrappedValue.title)" : "Disabled for \($tile.wrappedValue.title)"
                         showConfirmation = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             showConfirmation = false
                         }
+                        
+                        // Send all preferences to backend after any toggle
+                        updateNotificationPreferences(preferences: tilesViewModel.currentPreferences())
                     }) {
                         VStack(spacing: 8) {
-                            ZStack {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.red, Color.white, Color.blue]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                                .cornerRadius(24)
-                                .frame(height: 120)
-                                .opacity(tile.isOn ? 1 : 0.3)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                )
-                                VStack(spacing: 8) {
-                                    if tile.isEmoji {
-                                        Text(tile.imageName)
-                                            .font(.system(size: 48))
-                                            .foregroundColor(.black)
-                                    } else if tile.isCustomImage {
-                                        Image(tile.imageName)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: tile.isLarge ? 72 : 48, height: tile.isLarge ? 72 : 48)
-                                    } else {
-                                        Image(systemName: tile.imageName)
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 48, height: 48)
-                                            .foregroundColor(.black)
-                                    }
-                                    Text(tile.title)
-                                        .font(.caption2)
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
+                            if $tile.wrappedValue.isEmoji {
+                                Text($tile.wrappedValue.imageName)
+                                    .font(.system(size: 48))
+                                    .foregroundColor(.black)
+                            } else if $tile.wrappedValue.isCustomImage {
+                                Image($tile.wrappedValue.imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: $tile.wrappedValue.isLarge ? 72 : 48, height: $tile.wrappedValue.isLarge ? 72 : 48)
+                            } else {
+                                Image(systemName: $tile.wrappedValue.imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 48, height: 48)
+                                    .foregroundColor(.black)
+                            }
+                            Text($tile.wrappedValue.title)
+                                .font(.caption2)
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding()
+                        .background(
+                            Group {
+                                if $tile.isOn.wrappedValue {
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.red, Color.white, Color.blue]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                } else {
+                                    Color.gray
                                 }
                             }
-                        }
+                        )
+                        .cornerRadius(16)
+                        .opacity($tile.isOn.wrappedValue ? 1.0 : 0.3)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -2200,17 +2188,15 @@ class StoreKitManager: ObservableObject {
 }
 
 struct NotificationsPaywallView: View {
-    @StateObject private var storeKit = StoreKitManager()
+    @EnvironmentObject var storeKit: StoreKitManager
+    @EnvironmentObject var tilesViewModel: TilesViewModel
     @State private var didAutoTriggerPurchase = false
-
     var body: some View {
         ZStack {
             GameView()
-                .allowsHitTesting(!storeKit.hasPurchased && !isEUUser())
-            
+                .disabled(!storeKit.hasPurchased && !isEUUser())
+
             if !isEUUser() && !storeKit.hasPurchased {
-                Color.white.opacity(0.7)
-                    .ignoresSafeArea()
                 VStack(spacing: 32) {
                     Spacer()
                     VStack(spacing: 24) {
@@ -2256,6 +2242,8 @@ struct NotificationsPaywallView: View {
                     }
                     Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.white.opacity(0.7).ignoresSafeArea())
                 .padding()
                 .onAppear {
                     // Automatically trigger purchase when the view appears (only once)
@@ -2265,8 +2253,6 @@ struct NotificationsPaywallView: View {
                     }
                 }
             } else if isEUUser() {
-                Color.white.opacity(0.7)
-                    .ignoresSafeArea()
                 VStack {
                     Spacer()
                     Text("Notifications are free for users in the European Union.")
@@ -2277,6 +2263,14 @@ struct NotificationsPaywallView: View {
                         .padding()
                     Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.white.opacity(0.7).ignoresSafeArea())
+            }
+        }
+        .onChange(of: storeKit.hasPurchased) { newValue in
+            print("hasPurchased changed to: \(newValue)")
+            withAnimation {
+                // This will trigger the paywall to disappear with animation
             }
         }
     }
@@ -2400,3 +2394,41 @@ struct ScheduleView_Previews: PreviewProvider {
     }
 }
 #endif
+
+class TilesViewModel: ObservableObject {
+    @Published var tiles: [GameTile] = [
+        GameTile(title: "Concert Start", imageName: "Bee_Icon", isCustomImage: true, isEmoji: false, isLarge: true, isOn: true),
+        GameTile(title: "Beyoncé on Stage", imageName: "person.fill", isCustomImage: false, isEmoji: false, isLarge: false, isOn: true),
+        GameTile(title: "AMERICA HAS A PROBLEM starts", imageName: "americanflag", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
+        GameTile(title: "TYRANT starts", imageName: "mechanicalbull", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
+        GameTile(title: "Last Act starts", imageName: "sparkles", isCustomImage: false, isEmoji: false, isLarge: false, isOn: true),
+        GameTile(title: "16 CARRIAGES starts", imageName: "Cattalaic", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true),
+        GameTile(title: "AMEN starts", imageName: "americanflag", isCustomImage: true, isEmoji: false, isLarge: false, isOn: true)
+    ]
+
+    // Add this function to get the current preferences for all tiles
+    func currentPreferences() -> [String: Bool] {
+        var prefs: [String: Bool] = [:]
+        for tile in tiles {
+            switch tile.title {
+            case "Beyoncé on Stage":
+                prefs["beyonceOnStage"] = tile.isOn
+            case "Concert Start":
+                prefs["concertStart"] = tile.isOn
+            case "AMERICA HAS A PROBLEM starts":
+                prefs["americaHasAProblem"] = tile.isOn
+            case "TYRANT starts":
+                prefs["tyrant"] = tile.isOn
+            case "Last Act starts":
+                prefs["lastAct"] = tile.isOn
+            case "16 CARRIAGES starts":
+                prefs["sixteenCarriages"] = tile.isOn
+            case "AMEN starts":
+                prefs["amen"] = tile.isOn
+            default:
+                break
+            }
+        }
+        return prefs
+    }
+}
