@@ -14,6 +14,7 @@ const livestreamsRouter = require('./routes/livestreams');
 const DeviceToken = require('./models/DeviceToken'); // Add this after requiring User
 const eventsRoutes = require('./routes/events');
 const outfitsRoutes = require('./routes/outfits');
+const survivorRouter = require('./routes/survivor');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,6 +65,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
+app.use('/api/survivor', survivorRouter);
 
 // Public endpoint to get all device tokens
 const User = require('./models/User');
