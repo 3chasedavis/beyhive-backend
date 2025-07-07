@@ -143,11 +143,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function renderEvents(events) {
     eventsTableBody.innerHTML = '';
+    eventsTable.style.display = '';
     if (!events.length) {
-      eventsTable.style.display = 'none';
+      // No events, just show empty tbody
       return;
     }
-    eventsTable.style.display = '';
     events.forEach(event => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -257,11 +257,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function renderOutfits(outfits) {
     outfitsTableBody.innerHTML = '';
+    outfitsTable.style.display = '';
     if (!outfits.length) {
-      outfitsTable.style.display = 'none';
+      // No outfits, just show empty tbody
       return;
     }
-    outfitsTable.style.display = '';
     outfits.forEach(outfit => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -704,11 +704,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function renderOutfits(outfits) {
     outfitsTableBody.innerHTML = '';
+    outfitsTable.style.display = '';
     if (!outfits.length) {
-      outfitsTable.style.display = 'none';
+      // No outfits, just show empty tbody
       return;
     }
-    outfitsTable.style.display = '';
     outfits.forEach(outfit => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
