@@ -234,7 +234,6 @@ window.addEventListener('DOMContentLoaded', function() {
   fetchEvents();
 
   // === Outfits Management ===
-  // Only declare these variables once:
   const outfitForm = document.getElementById('outfitForm');
   const outfitName = document.getElementById('outfitName');
   const outfitLocation = document.getElementById('outfitLocation');
@@ -245,6 +244,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const outfitFormStatus = document.getElementById('outfitFormStatus');
   const outfitsTable = document.getElementById('outfitsTable');
   const outfitsTableBody = outfitsTable.querySelector('tbody');
+
   let editingOutfitId = null;
 
   function fetchOutfits() {
@@ -439,13 +439,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
   function renderGames(games) {
     gamesTableBody.innerHTML = '';
-    gamesTable.style.display = '';
     if (!games.length) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td colspan="4" style="text-align:center; color:#888;">No games yet.</td>`;
-      gamesTableBody.appendChild(tr);
+      gamesTable.style.display = 'none';
       return;
     }
+    gamesTable.style.display = '';
     games.forEach(game => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -683,7 +681,6 @@ window.addEventListener('DOMContentLoaded', function() {
   fetchGames();
 
   // === Outfits Management ===
-  // Only declare these variables once:
   const outfitForm = document.getElementById('outfitForm');
   const outfitName = document.getElementById('outfitName');
   const outfitLocation = document.getElementById('outfitLocation');
@@ -694,6 +691,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const outfitFormStatus = document.getElementById('outfitFormStatus');
   const outfitsTable = document.getElementById('outfitsTable');
   const outfitsTableBody = outfitsTable.querySelector('tbody');
+
   let editingOutfitId = null;
 
   function fetchOutfits() {
