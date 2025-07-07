@@ -601,6 +601,67 @@ window.addEventListener('DOMContentLoaded', function() {
   function hideEntryForm() {
     document.getElementById('entry-form').style.display = 'none';
   }
+
+  // Game management functions
+  function showAddGameForm() {
+    let form = document.getElementById('game-form');
+    if (!form) {
+      form = document.createElement('div');
+      form.id = 'game-form';
+      document.body.appendChild(form);
+    }
+    form.innerHTML = `<h3>Add New Game</h3>\
+      <input id="game-name" placeholder="Game Name"><br>\
+      <select id="game-status">\
+        <option value="active">Active</option>\
+        <option value="completed">Completed</option>\
+      </select><br>\
+      <button onclick="saveGame()">Save Game</button>\
+      <button onclick="hideGameForm()">Cancel</button>`;
+    form.style.display = '';
+  }
+
+  function editGame(gameId) {
+    const game = games.find(g => g.id === gameId);
+    let form = document.getElementById('game-form');
+    if (!form) {
+      form = document.createElement('div');
+      form.id = 'game-form';
+      document.body.appendChild(form);
+    }
+    form.innerHTML = `<h3>Edit Game</h3>\
+      <input id="game-name" value="${game.name}" placeholder="Game Name"><br>\
+      <select id="game-status">\
+        <option value="active"${game.status === 'active' ? ' selected' : ''}>Active</option>\
+        <option value="completed"${game.status === 'completed' ? ' selected' : ''}>Completed</option>\
+      </select><br>\
+      <button onclick="saveGame('${gameId}')">Save Game</button>\
+      <button onclick="hideGameForm()">Cancel</button>`;
+    form.style.display = '';
+  }
+
+  function saveGame(gameId = null) {
+    const name = document.getElementById('game-name').value;
+    const status = document.getElementById('game-status').value;
+    const method = gameId ? 'PUT' : 'POST';
+    const url = gameId ? `/api/survivor/games/${gameId}` : '/api/survivor/games';
+    const body = JSON.stringify({ name, status });
+    
+    fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body })
+      .then(() => { hideGameForm(); fetchGames(); });
+  }
+
+  function deleteGame(gameId) {
+    if (!confirm('Delete this game?')) return;
+    fetch(`/api/survivor/games/${gameId}`, { method: 'DELETE' })
+      .then(() => { fetchGames(); });
+  }
+
+  function hideGameForm() {
+    let form = document.getElementById('game-form');
+    if (form) form.style.display = 'none';
+  }
+
   window.fetchGames = fetchGames;
   window.showQuestions = showQuestions;
   window.showAddQuestionForm = showAddQuestionForm;
@@ -613,6 +674,11 @@ window.addEventListener('DOMContentLoaded', function() {
   window.saveQuestion = saveQuestion;
   window.hideEntryForm = hideEntryForm;
   window.hideQuestionForm = hideQuestionForm;
+  window.showAddGameForm = showAddGameForm;
+  window.editGame = editGame;
+  window.deleteGame = deleteGame;
+  window.saveGame = saveGame;
+  window.hideGameForm = hideGameForm;
 
   // Call these on page load
   fetchDeviceStats();
