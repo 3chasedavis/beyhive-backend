@@ -38,11 +38,71 @@ struct LivestreamsView: View {
 
             if viewModel.livestreams.isEmpty {
                 Spacer()
-                Text("There are no available livestreams at this time, check back later.")
+                Text("Check back during the next show for livestreams!")
                     .font(.headline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(Color(.systemGray))
                     .multilineTextAlignment(.center)
-                    .padding()
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 8)
+                VStack(spacing: 12) {
+                    HStack(spacing: 4) {
+                        Image("Bee_Icon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
+                        Text("Links")
+                            .font(.title2).bold()
+                            .foregroundColor(Color(red: 0.13, green: 0.15, blue: 0.28))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
+                .padding(.bottom, 8)
+                VStack(spacing: 16) {
+                    Link(destination: URL(string: "https://beyonce.com/")!) {
+                        HStack {
+                            Text("Beyoncé's Official Website")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(Color(red: 0.13, green: 0.15, blue: 0.28))
+                            Spacer()
+                            Text("Open")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 8)
+                                .background(Color.white.opacity(0.2))
+                                .cornerRadius(16)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .leading, endPoint: .trailing)
+                        )
+                        .cornerRadius(22)
+                    }
+                    Link(destination: URL(string: "https://x.com/beyhivealertapp?s=21")!) {
+                        HStack {
+                            Text("Follow us on Twitter/X")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(Color(red: 0.13, green: 0.15, blue: 0.28))
+                            Spacer()
+                            Text("Open")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 18)
+                                .padding(.vertical, 8)
+                                .background(Color.white.opacity(0.2))
+                                .cornerRadius(16)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .leading, endPoint: .trailing)
+                        )
+                        .cornerRadius(22)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
                 Spacer()
             } else {
                 ScrollView {

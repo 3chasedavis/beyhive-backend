@@ -35,15 +35,11 @@ struct Beyhive_Alert_2App: App {
 struct SplashScreenView: View {
     @State private var isActive = false
     @EnvironmentObject var eventsViewModel: EventsViewModel
-    @EnvironmentObject var storeKit: StoreKitManager
-    @EnvironmentObject var tilesViewModel: TilesViewModel
 
     var body: some View {
         if isActive {
             ContentView()
                 .environmentObject(eventsViewModel)
-                .environmentObject(storeKit)
-                .environmentObject(tilesViewModel)
         } else {
             ZStack {
                 LinearGradient(

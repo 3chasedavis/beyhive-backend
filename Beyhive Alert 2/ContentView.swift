@@ -83,15 +83,12 @@ struct ShareSheet: UIViewControllerRepresentable {
 }
 
 struct SettingsView: View {
-    @EnvironmentObject var storeKit: StoreKitManager
     @State private var showPrivacyTerms = false
     @State private var showShareSheet = false
     @State private var username: String = UserDefaults.standard.string(forKey: "username") ?? ""
     @State private var email: String = UserDefaults.standard.string(forKey: "email") ?? ""
     @State private var altEmail: String = UserDefaults.standard.string(forKey: "altEmail") ?? ""
     @State private var saveMessage: String? = nil
-    @State private var showDeleteAlert = false
-    @State private var deleteMessage: String? = nil
     
     var body: some View {
         VStack(spacing: 0) {
@@ -215,54 +212,6 @@ struct SettingsView: View {
             .padding(.top, 24)
             .padding(.horizontal)
             Spacer()
-            Button(action: {
-                storeKit.restorePurchases()
-            }) {
-                Text("Restore Purchases")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.blue)
-                    .padding(8)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-            }
-            .padding(.top, 12)
-            // Add Delete Account button
-            Button(action: {
-                showDeleteAlert = true
-            }) {
-                Text("Delete Account")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.red)
-                    .padding(8)
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(8)
-            }
-            .padding(.top, 12)
-            .alert(isPresented: $showDeleteAlert) {
-                Alert(
-                    title: Text("Delete Account"),
-                    message: Text("Are you sure you want to delete your account? This action cannot be undone."),
-                    primaryButton: .destructive(Text("Delete")) {
-                        UserDefaults.standard.removeObject(forKey: "username")
-                        UserDefaults.standard.removeObject(forKey: "email")
-                        UserDefaults.standard.removeObject(forKey: "altEmail")
-                        username = ""
-                        email = ""
-                        altEmail = ""
-                        deleteMessage = "Account deleted."
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { deleteMessage = nil }
-                    },
-                    secondaryButton: .cancel()
-                )
-            }
-            if let deleteMessage = deleteMessage {
-                Text(deleteMessage)
-                    .foregroundColor(.red)
-                    .font(.system(size: 12, weight: .bold))
-                    .padding(.top, 4)
-            }
         }
         .background(Color(.systemGray6).ignoresSafeArea())
 
@@ -1320,231 +1269,108 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Survivor Game Models
-struct SurvivorGame: Identifiable, Codable {
-    let id: String
+struct SurvivorRound: Identifiable {
+    let id = UUID()
     let name: String
-    let status: String
-    let totalPoints: Int
-    let totalEntries: Int
-    let leaderboard: [LeaderboardEntry]
-    let questions: [SurvivorQuestion]
+    var completed: Bool
 }
 
-struct LeaderboardEntry: Identifiable, Codable {
-    var id: String { "\(rank)-\(name)" }
-    let rank: Int
-    let name: String
-    let points: Int
-}
-
-struct SurvivorQuestion: Identifiable, Codable {
-    let id: String
-    let text: String
-    let points: Int
-    let choices: [String]
-    let correctAnswer: String?
-}
-
-// MARK: - Survivor Home View
 struct SurvivorView: View {
-    @StateObject private var viewModel = SurvivorGamesViewModel()
-    @State private var selectedGame: SurvivorGame? = nil
-
+    @State private var rounds: [SurvivorRound] = [
+        SurvivorRound(name: "Coming Soon", completed: false)
+    ]
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 24) {
-                Text("Survivor Game")
-                    .font(.largeTitle).bold()
-                    .padding(.top, 16)
-                if viewModel.isLoading {
-                    ProgressView("Loading games...")
-                } else if let error = viewModel.error {
-                    Text("Error: \(error)").foregroundColor(.red)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            ForEach(viewModel.games) { game in
-                                Button(action: { selectedGame = game }) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text(game.name)
-                                            .font(.title2).bold()
-                                            .foregroundColor(.white)
-                                        Text("Status: \(game.status)")
-                                            .font(.subheadline)
-                                            .foregroundColor(.white.opacity(0.8))
-                                    }
-                                    .padding()
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(
-                                        LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .leading, endPoint: .trailing)
-                                    )
-                                    .cornerRadius(18)
-                                    .shadow(radius: 4)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
+        VStack(spacing: 0) {
+            // Top bar
+            ZStack {
+                Color(red: 1.0, green: 0.98, blue: 0.8)
+                    .ignoresSafeArea(edges: .top)
+                HStack {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(Color(red: 0.7, green: 0.6, blue: 0.0))
+                        .padding(.leading, 16)
+                    Spacer()
+                    Text("Survivor Game")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(Color(red: 0.7, green: 0.6, blue: 0.0))
+                        .padding(.trailing, 32)
+                    Spacer()
                 }
-                Spacer()
+                .frame(height: 60)
             }
-            .onAppear { viewModel.fetchGames() }
-            .sheet(item: $selectedGame) { game in
-                SurvivorGameDetailView(game: game)
-            }
-        }
-    }
-}
-
-// MARK: - Survivor Game Detail (Leaderboard & Questions)
-struct SurvivorGameDetailView: View {
-    let game: SurvivorGame
-    @State private var userAnswers: [String: String] = [:]
-    var body: some View {
-        let currentUsername = UserDefaults.standard.string(forKey: "username") ?? ""
-        let myEntry = game.leaderboard.first { $0.name == currentUsername }
-        ScrollView {
-            VStack(spacing: 20) {
-                // Top Bar
-                VStack(spacing: 8) {
-                    Text(game.name)
-                        .font(.title).bold()
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .leading, endPoint: .trailing)
-                        )
-                        .cornerRadius(18)
-                        .padding(.horizontal)
-                    HStack(spacing: 24) {
-                        VStack {
-                            Text("GAME STATUS").font(.caption).foregroundColor(.gray)
-                            Text(game.status).font(.headline).foregroundColor(.red)
-                        }
-                        VStack {
-                            Text("MY SCORE").font(.caption).foregroundColor(.gray)
-                            if let myScore = myEntry?.points {
-                                Text("\(myScore)").font(.headline).foregroundColor(.black)
-                            } else {
-                                Text("—").font(.headline).foregroundColor(.black)
-                            }
-                        }
-                        VStack {
-                            Text("TOTAL POINTS POSSIBLE").font(.caption).foregroundColor(.gray)
-                            Text("\(game.totalPoints)").font(.headline).foregroundColor(.black)
-                        }
-                    }
-                    .padding(.top, 8)
-                }
-                .background(Color.white)
-                .cornerRadius(18)
-                .shadow(radius: 2)
-                .padding(.horizontal)
-                // Leaderboard (only if completed)
-                if game.status.lowercased() == "completed" {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Text("# Name").font(.headline).foregroundColor(.red)
-                            Spacer()
-                            Text("Points").font(.headline).foregroundColor(.red)
-                        }
-                        .padding(.horizontal)
-                        ForEach(game.leaderboard) { entry in
-                            HStack {
-                                Text("\(entry.rank)")
-                                    .font(.body).bold()
-                                    .foregroundColor(.black)
-                                    .frame(width: 28, alignment: .leading)
-                                Text(entry.name)
-                                    .font(.body)
-                                    .foregroundColor(.black)
-                                Spacer()
-                                Text("\(entry.points)")
-                                    .font(.body).bold()
-                                    .foregroundColor(.black)
-                            }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .shadow(color: Color(.black).opacity(0.04), radius: 2, x: 0, y: 1)
-                            .padding(.horizontal, 4)
-                        }
-                    }
-                    .padding(.top, 8)
-                    .background(Color(red: 0.95, green: 0.98, blue: 1.0))
-                    .cornerRadius(18)
-                    .padding(.horizontal)
-                }
-                // Total entries banner with gradient
-                Text("This game had \(game.totalEntries) total entries")
-                    .font(.subheadline)
-                    .foregroundColor(.black)
-                    .padding(8)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .leading, endPoint: .trailing)
-                    )
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-                // Questions
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Questions").font(.title2).bold().padding(.bottom, 4)
-                    ForEach(game.questions) { q in
-                        SurvivorQuestionCard(
-                            question: q,
-                            isCompleted: game.status.lowercased() == "completed",
-                            userAnswer: $userAnswers[q.id],
-                            correctAnswer: q.correctAnswer
-                        )
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-            }
-            .padding(.vertical)
-        }
-    }
-}
-
-struct SurvivorQuestionCard: View {
-    let question: SurvivorQuestion
-    let isCompleted: Bool
-    @Binding var userAnswer: String?
-    let correctAnswer: String?
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(question.text)
-                .font(.body)
+            .frame(height: 60)
+            .background(Color(red: 1.0, green: 0.98, blue: 0.8))
+            // Title
+            Text("SURVIVOR GAME")
+                .font(.system(size: 12, weight: .bold))
                 .foregroundColor(.black)
-            if isCompleted {
-                Text("RESULT")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text(correctAnswer ?? "—")
-                    .font(.headline)
-                    .foregroundColor(.black)
-            } else {
-                Text("Your Answer")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Picker("Select an answer", selection: $userAnswer) {
-                    ForEach(question.choices, id: \.self) { choice in
-                        Text(choice).tag(choice as String?)
+                .padding(.top, 16)
+            // Buttons (original style)
+            HStack(spacing: 12) {
+                ForEach(0..<3) { _ in
+                    Text("Coming Soon")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.black)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 16)
+                        .background(Color.white)
+                        .cornerRadius(14)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.red.opacity(0.2), lineWidth: 1))
+                }
+            }
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            // List of rounds
+            ScrollView {
+                VStack(spacing: 18) {
+                    ForEach(rounds) { round in
+                        HStack(spacing: 0) {
+                            // Gradient accent
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.red, Color.white, Color.blue]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(width: 44)
+                            .cornerRadius(16, corners: [.topLeft, .bottomLeft])
+                            .overlay(
+                                Group {
+                                    if round.completed {
+                                        Image(systemName: "checkmark.square.fill")
+                                            .foregroundColor(.blue)
+                                            .font(.system(size: 24, weight: .bold))
+                                            .padding(.top, 12)
+                                    } else {
+                                        Image(systemName: "square")
+                                            .foregroundColor(.gray)
+                                            .font(.system(size: 24, weight: .bold))
+                                            .padding(.top, 12)
+                                    }
+                                }
+                            )
+                            // Card content
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(round.name)
+                                    .font(.system(size: 22, weight: .bold))
+                                    .foregroundColor(.black)
+                            }
+                            .padding(.leading, 16)
+                            .padding(.vertical, 18)
+                            Spacer()
+                        }
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
+                        .padding(.horizontal)
                     }
                 }
-                .pickerStyle(MenuPickerStyle())
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
+                .padding(.top, 12)
+                .padding(.bottom, 32)
             }
+            Spacer(minLength: 0)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color(.black).opacity(0.04), radius: 2, x: 0, y: 1)
+        .background(Color(.systemGray6).ignoresSafeArea())
     }
 }
 
@@ -2282,94 +2108,56 @@ class StoreKitManager: ObservableObject {
     @Published var hasPurchased: Bool = false
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
-    @Published var product: Any? = nil // Always present for SwiftUI
+    @Published var product: Product?
 
     let productID = "com.chasedavis.beyhivealert.notifications"
 
-    static var isPreview: Bool {
-        #if DEBUG
-        return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-        #else
-        return false
-        #endif
-    }
-
     init() {
-        if StoreKitManager.isPreview {
-            self.hasPurchased = true // or false for locked preview
-            return
-        }
-        fetchProduct()
-        checkPurchased()
+        Task { await fetchProduct() }
+        Task { await checkPurchased() }
         listenForTransactions()
     }
 
-    func fetchProduct() {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
-        Task {
-            do {
-                let storeProducts = try await Product.products(for: [productID])
-                self.product = storeProducts.first
-            } catch {
-                self.errorMessage = "Failed to load product."
-            }
+    func fetchProduct() async {
+        do {
+            let storeProducts = try await Product.products(for: [productID])
+            self.product = storeProducts.first
+        } catch {
+            self.errorMessage = "Failed to load product."
         }
-        #endif
     }
 
-    func checkPurchased() {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
-        Task {
-            for await result in StoreKit.Transaction.currentEntitlements {
-                if case .verified(let transaction) = result, transaction.productID == productID {
-                    hasPurchased = true
-                    return
-                }
+    func checkPurchased() async {
+        for await result in StoreKit.Transaction.currentEntitlements {
+            if case .verified(let transaction) = result, transaction.productID == productID {
+                hasPurchased = true
+                return
             }
-            hasPurchased = false
         }
-        #endif
+        hasPurchased = false
     }
 
-    func purchase() {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
-        guard let product = product as? Product else { return }
+    func purchase() async {
+        guard let product = product else { return }
         isLoading = true
-        Task {
-            do {
-                let result = try await product.purchase()
-                switch result {
-                case .success(let verification):
-                    if case .verified(_) = verification {
-                        hasPurchased = true
-                        logPurchaseToServer()
-                    }
-                default:
-                    break
+        do {
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                if case .verified(_) = verification {
+                    hasPurchased = true
+                    logPurchaseToServer()
                 }
-            } catch {
-                errorMessage = "Purchase failed: \(error.localizedDescription)"
+            default:
+                break
             }
-            isLoading = false
+        } catch {
+            errorMessage = "Purchase failed: \(error.localizedDescription)"
         }
-        #endif
-    }
-
-    func restorePurchases() {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
-        Task {
-            try? await AppStore.sync()
-            checkPurchased()
-        }
-        #endif
+        isLoading = false
     }
 
     func logPurchaseToServer() {
-        if StoreKitManager.isPreview { return }
         guard let token = UIApplication.deviceTokenString else { return }
         guard let url = URL(string: "https://beyhive-backend.onrender.com/log-purchase") else { return }
         var request = URLRequest(url: url)
@@ -2384,21 +2172,15 @@ class StoreKitManager: ObservableObject {
     }
 
     func listenForTransactions() {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
         Task.detached {
             for await verificationResult in StoreKit.Transaction.updates {
                 await self.handle(transactionResult: verificationResult)
             }
         }
-        #endif
     }
 
     @MainActor
-    func handle(transactionResult: Any) async {
-        if StoreKitManager.isPreview { return }
-        #if canImport(StoreKit)
-        guard let transactionResult = transactionResult as? VerificationResult<StoreKit.Transaction> else { return }
+    func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async {
         switch transactionResult {
         case .verified(let transaction):
             if transaction.productID == productID {
@@ -2409,7 +2191,6 @@ class StoreKitManager: ObservableObject {
         default:
             break
         }
-        #endif
     }
 }
 
@@ -2439,9 +2220,45 @@ struct NotificationsPaywallView: View {
                             .foregroundColor(.black)
                             .padding(.horizontal)
                     }
+                    if let product = storeKit.product {
+                        if storeKit.isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(1.2)
+                        } else {
+                            Button("Unlock for \(product.displayPrice)") {
+                                Task { await storeKit.purchase() }
+                            }
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                    } else {
+                        ProgressView("Loading...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                    }
+                    if let error = storeKit.errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                     Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.white.opacity(0.7).ignoresSafeArea())
+                .padding()
+                .onAppear {
+                    // Automatically trigger purchase when the view appears (only once)
+                    if !storeKit.hasPurchased, storeKit.product != nil, !didAutoTriggerPurchase {
+                        didAutoTriggerPurchase = true
+                        Task { await storeKit.purchase() }
+                    }
+                }
             } else if isEUUser() {
                 VStack {
                     Spacer()
@@ -2461,55 +2278,6 @@ struct NotificationsPaywallView: View {
             print("hasPurchased changed to: \(newValue)")
             withAnimation {
                 // This will trigger the paywall to disappear with animation
-            }
-            if newValue {
-                // Fetch current preferences from backend
-                if let deviceToken = UIApplication.deviceTokenString {
-                    let url = URL(string: "https://beyhive-backend.onrender.com/device-preferences/\(deviceToken)")!
-                    URLSession.shared.dataTask(with: url) { data, response, error in
-                        guard let data = data,
-                              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                              let prefs = json["preferences"] as? [String: Bool] else {
-                            // If fetch fails, default to all ON
-                            let allOnPrefs: [String: Bool] = [
-                                "beyonceOnStage": true,
-                                "concertStart": true,
-                                "americaHasAProblem": true,
-                                "tyrant": true,
-                                "lastAct": true,
-                                "sixteenCarriages": true,
-                                "amen": true
-                            ]
-                            updateNotificationPreferences(preferences: allOnPrefs)
-                            DispatchQueue.main.async {
-                                tilesViewModel.applyPreferences(allOnPrefs)
-                            }
-                            return
-                        }
-                        // If all are false, set all to true
-                        let allFalse = prefs.values.allSatisfy { $0 == false }
-                        if allFalse {
-                            let allOnPrefs: [String: Bool] = [
-                                "beyonceOnStage": true,
-                                "concertStart": true,
-                                "americaHasAProblem": true,
-                                "tyrant": true,
-                                "lastAct": true,
-                                "sixteenCarriages": true,
-                                "amen": true
-                            ]
-                            updateNotificationPreferences(preferences: allOnPrefs)
-                            DispatchQueue.main.async {
-                                tilesViewModel.applyPreferences(allOnPrefs)
-                            }
-                        } else {
-                            // Otherwise, apply existing preferences
-                            DispatchQueue.main.async {
-                                tilesViewModel.applyPreferences(prefs)
-                            }
-                        }
-                    }.resume()
-                }
             }
         }
     }
@@ -2586,7 +2354,6 @@ extension Binding {
 }
 
 func updateNotificationPreferences(preferences: [String: Bool]) {
-    print("[DEBUG] updateNotificationPreferences called with:", preferences)
     guard let token = UIApplication.deviceTokenString else {
         print("No device token available yet.")
         return
@@ -2707,56 +2474,6 @@ class TilesViewModel: ObservableObject {
                 break
             }
         }
-        print("[DEBUG] currentPreferences:", prefs)
         return prefs
     }
 }
-
-class SurvivorGamesViewModel: ObservableObject {
-    @Published var games: [SurvivorGame] = []
-    @Published var isLoading = false
-    @Published var error: String?
-
-    func fetchGames() {
-        isLoading = true
-        error = nil
-        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/survivor/games") else { return }
-        URLSession.shared.dataTask(with: url) { data, response, err in
-            DispatchQueue.main.async {
-                self.isLoading = false
-                if let err = err {
-                    self.error = err.localizedDescription
-                    return
-                }
-                guard let data = data else { return }
-                print(String(data: data, encoding: .utf8) ?? "No data") // Print raw JSON
-                do {
-                    self.games = try JSONDecoder().decode([SurvivorGame].self, from: data)
-                } catch {
-                    self.error = error.localizedDescription
-                }
-            }
-        }.resume()
-    }
-}
-
-#if DEBUG
-struct NotificationsPaywallView_Previews: PreviewProvider {
-    static var previews: some View {
-        let locked = StoreKitManager()
-        locked.hasPurchased = false
-        let unlocked = StoreKitManager()
-        unlocked.hasPurchased = true
-        return Group {
-            NotificationsPaywallView()
-                .environmentObject(locked)
-                .environmentObject(TilesViewModel())
-                .previewDisplayName("Locked Paywall")
-            NotificationsPaywallView()
-                .environmentObject(unlocked)
-                .environmentObject(TilesViewModel())
-                .previewDisplayName("Unlocked Paywall")
-        }
-    }
-}
-#endif
