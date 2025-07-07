@@ -1276,9 +1276,6 @@ struct SurvivorRound: Identifiable {
 }
 
 struct SurvivorView: View {
-    @State private var rounds: [SurvivorRound] = [
-        SurvivorRound(name: "Coming Soon", completed: false)
-    ]
     var body: some View {
         VStack(spacing: 0) {
             // Top bar
@@ -1306,71 +1303,9 @@ struct SurvivorView: View {
                 .font(.system(size: 12, weight: .bold))
                 .foregroundColor(.black)
                 .padding(.top, 16)
-            // Buttons (original style)
-            HStack(spacing: 12) {
-                ForEach(0..<3) { _ in
-                    Text("Coming Soon")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 16)
-                        .background(Color.white)
-                        .cornerRadius(14)
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.red.opacity(0.2), lineWidth: 1))
-                }
-            }
-            .padding(.top, 12)
-            .padding(.bottom, 8)
-            // List of rounds
-            ScrollView {
-                VStack(spacing: 18) {
-                    ForEach(rounds) { round in
-                        HStack(spacing: 0) {
-                            // Gradient accent
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.red, Color.white, Color.blue]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                            .frame(width: 44)
-                            .cornerRadius(16, corners: [.topLeft, .bottomLeft])
-                            .overlay(
-                                Group {
-                                    if round.completed {
-                                        Image(systemName: "checkmark.square.fill")
-                                            .foregroundColor(.blue)
-                                            .font(.system(size: 24, weight: .bold))
-                                            .padding(.top, 12)
-                                    } else {
-                                        Image(systemName: "square")
-                                            .foregroundColor(.gray)
-                                            .font(.system(size: 24, weight: .bold))
-                                            .padding(.top, 12)
-                                    }
-                                }
-                            )
-                            // Card content
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(round.name)
-                                    .font(.system(size: 22, weight: .bold))
-                                    .foregroundColor(.black)
-                            }
-                            .padding(.leading, 16)
-                            .padding(.vertical, 18)
-                            Spacer()
-                        }
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(color: Color(.black).opacity(0.06), radius: 6, x: 0, y: 2)
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.top, 12)
-                .padding(.bottom, 32)
-            }
-            Spacer(minLength: 0)
+            // Remove Coming Soon buttons and text
+            Spacer()
         }
-        .background(Color(.systemGray6).ignoresSafeArea())
     }
 }
 
