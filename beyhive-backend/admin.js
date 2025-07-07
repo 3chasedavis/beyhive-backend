@@ -137,11 +137,13 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/events')
       .then(res => res.json())
       .then(data => {
+        console.log('[DEBUG] fetchEvents data:', data);
         renderEvents(data.events || []);
       });
   }
 
   function renderEvents(events) {
+    console.log('[DEBUG] renderEvents called with:', events);
     eventsTableBody.innerHTML = '';
     eventsTable.style.display = '';
     if (!events.length) {
@@ -251,11 +253,13 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/outfits')
       .then(res => res.json())
       .then(data => {
+        console.log('[DEBUG] fetchOutfits data:', data);
         renderOutfits(data.outfits || []);
       });
   }
 
   function renderOutfits(outfits) {
+    console.log('[DEBUG] renderOutfits called with:', outfits);
     outfitsTableBody.innerHTML = '';
     outfitsTable.style.display = '';
     if (!outfits.length) {
