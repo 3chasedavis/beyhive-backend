@@ -53,7 +53,6 @@ document.getElementById('pushForm').addEventListener('submit', function(e) {
     document.getElementById('pushStatus').className = 'error';
   });
 });
-// On page load, if password is in URL, use it
 window.addEventListener('DOMContentLoaded', function() {
   // Existing password logic
   const urlParams = new URLSearchParams(window.location.search);
