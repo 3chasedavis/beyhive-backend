@@ -138,6 +138,17 @@
       <tbody></tbody>
     </table>
   </div>
+  <div id="leaderboard-section" style="display:none;">
+    <h4>Leaderboard</h4>
+    <table id="leaderboard-table"></table>
+    <button onclick="showAddEntryForm()">Add Entry</button>
+    <div id="entry-form" style="display:none;">
+      <input id="entry-name" placeholder="Name">
+      <input id="entry-points" type="number" placeholder="Points">
+      <button onclick="saveEntry()">Save Entry</button>
+      <button onclick="hideEntryForm()">Cancel</button>
+    </div>
+  </div>
   <hr/>
   <script src="admin.js"></script>
 </body>
