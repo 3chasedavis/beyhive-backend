@@ -418,9 +418,206 @@ window.addEventListener('DOMContentLoaded', function() {
 
   fetchUpdateOverlay();
 
+  // === Survivor Games Management ===
+  let games = [];
+  let selectedGameId = null;
+  let selectedQuestionId = null;
+  let selectedEntryIndex = null;
+
+  function fetchGames() {
+    fetch('/api/survivor/games')
+      .then(res => res.json())
+      .then(data => {
+        games = data;
+        renderGames();
+      });
+  }
+
+  function renderGames() {
+    let list = document.getElementById('games-list');
+    if (!list) {
+      list = document.createElement('div');
+      list.id = 'games-list';
+      document.body.insertBefore(list, document.getElementById('questions-list'));
+    }
+    list.innerHTML = '';
+    games.forEach(game => {
+      const div = document.createElement('div');
+      div.innerHTML = `<b>${game.name}</b> (${game.status}) \
+        <button onclick="editGame('${game.id}')">Edit</button>\
+        <button onclick="deleteGame('${game.id}')">Delete</button>\
+        <button onclick="showQuestions('${game.id}')">Questions</button>`;
+      list.appendChild(div);
+    });
+  }
+
+  function showQuestions(gameId) {
+    selectedGameId = gameId;
+    const game = games.find(g => g.id === gameId);
+    let list = document.getElementById('questions-list');
+    if (!list) {
+      list = document.createElement('div');
+      list.id = 'questions-list';
+      document.body.appendChild(list);
+    }
+    list.innerHTML = `<h4>Questions for ${game.name}</h4>`;
+    game.questions.forEach(q => {
+      const div = document.createElement('div');
+      div.innerHTML = `${q.text} (${q.points} pts) [${q.choices.join(', ')}] \
+        <button onclick=\"editQuestion('${q.id}')\">Edit</button>\
+        <button onclick=\"deleteQuestion('${q.id}')\">Delete</button>`;
+      list.appendChild(div);
+    });
+    list.innerHTML += `<button onclick=\"showAddQuestionForm()\">Add Question</button>`;
+
+    // Show leaderboard only if game is completed
+    if (game.status === 'completed') {
+      document.getElementById('leaderboard-section').style.display = '';
+      showLeaderboard(gameId);
+    } else {
+      document.getElementById('leaderboard-section').style.display = 'none';
+    }
+  }
+
+  function showAddQuestionForm() {
+    selectedQuestionId = null;
+    let form = document.getElementById('question-form');
+    if (!form) {
+      form = document.createElement('div');
+      form.id = 'question-form';
+      document.body.appendChild(form);
+    }
+    form.innerHTML = `<h3>Add Question</h3>\
+      <input id="question-text" placeholder="Question Text"><br>\
+      <input id="question-points" type="number" placeholder="Points"><br>\
+      <input id="question-choices" placeholder="Choices (comma separated)"><br>\
+      <input id="question-correct" placeholder="Correct Answer"><br>\
+      <button onclick="saveQuestion()">Save Question</button>\
+      <button onclick="hideQuestionForm()">Cancel</button>`;
+    form.style.display = '';
+  }
+
+  function editQuestion(qid) {
+    const game = games.find(g => g.id === selectedGameId);
+    const q = game.questions.find(q => q.id === qid);
+    selectedQuestionId = qid;
+    let form = document.getElementById('question-form');
+    if (!form) {
+      form = document.createElement('div');
+      form.id = 'question-form';
+      document.body.appendChild(form);
+    }
+    form.innerHTML = `<h3>Edit Question</h3>\
+      <input id="question-text" value="${q.text}" placeholder="Question Text"><br>\
+      <input id="question-points" type="number" value="${q.points}" placeholder="Points"><br>\
+      <input id="question-choices" value="${q.choices.join(', ')}" placeholder="Choices (comma separated)"><br>\
+      <input id="question-correct" value="${q.correctAnswer || ''}" placeholder="Correct Answer"><br>\
+      <button onclick="saveQuestion()">Save Question</button>\
+      <button onclick="hideQuestionForm()">Cancel</button>`;
+    form.style.display = '';
+  }
+
+  function saveQuestion() {
+    const text = document.getElementById('question-text').value;
+    const points = parseInt(document.getElementById('question-points').value, 10) || 0;
+    const choices = document.getElementById('question-choices').value.split(',').map(s => s.trim());
+    const correctAnswer = document.getElementById('question-correct').value;
+    const body = JSON.stringify({ text, points, choices, correctAnswer });
+    const method = selectedQuestionId ? 'PUT' : 'POST';
+    const url = selectedQuestionId
+      ? `/api/survivor/games/${selectedGameId}/questions/${selectedQuestionId}`
+      : `/api/survivor/games/${selectedGameId}/questions`;
+    fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body })
+      .then(() => { hideQuestionForm(); fetchGames(); showQuestions(selectedGameId); });
+  }
+
+  function deleteQuestion(qid) {
+    if (!confirm('Delete this question?')) return;
+    fetch(`/api/survivor/games/${selectedGameId}/questions/${qid}`, { method: 'DELETE' })
+      .then(() => { fetchGames(); showQuestions(selectedGameId); });
+  }
+
+  function hideQuestionForm() {
+    let form = document.getElementById('question-form');
+    if (form) form.style.display = 'none';
+  }
+
+  function showLeaderboard(gameId) {
+    const game = games.find(g => g.id === gameId);
+    const table = document.getElementById('leaderboard-table');
+    const sorted = [...(game.leaderboard || [])].sort((a, b) => b.points - a.points);
+    table.innerHTML = '<tr><th>Rank</th><th>Name</th><th>Points</th><th>Actions</th></tr>';
+    sorted.forEach((entry, idx) => {
+      table.innerHTML += `<tr>\n      <td>${idx + 1}</td>\n      <td>${entry.name}</td>\n      <td>${entry.points}</td>\n      <td>\n        <button onclick=\"editEntry(${idx})\">Edit</button>\n        <button onclick=\"deleteEntry(${idx})\">Delete</button>\n      </td>\n    </tr>`;
+    });
+  }
+  function showAddEntryForm() {
+    selectedEntryIndex = null;
+    document.getElementById('entry-name').value = '';
+    document.getElementById('entry-points').value = '';
+    document.getElementById('entry-form').style.display = '';
+  }
+  function editEntry(idx) {
+    const game = games.find(g => g.id === selectedGameId);
+    const entry = game.leaderboard[idx];
+    selectedEntryIndex = idx;
+    document.getElementById('entry-name').value = entry.name;
+    document.getElementById('entry-points').value = entry.points;
+    document.getElementById('entry-form').style.display = '';
+  }
+  function saveEntry() {
+    const name = document.getElementById('entry-name').value;
+    const points = parseInt(document.getElementById('entry-points').value, 10) || 0;
+    const game = games.find(g => g.id === selectedGameId);
+    if (!game.leaderboard) game.leaderboard = [];
+    if (selectedEntryIndex === null) {
+      game.leaderboard.push({ name, points });
+    } else {
+      game.leaderboard[selectedEntryIndex] = { name, points };
+    }
+    fetch(`/api/survivor/games/${selectedGameId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leaderboard: game.leaderboard })
+    }).then(() => {
+      hideEntryForm();
+      fetchGames();
+      showLeaderboard(selectedGameId);
+    });
+  }
+  function deleteEntry(idx) {
+    if (!confirm('Delete this entry?')) return;
+    const game = games.find(g => g.id === selectedGameId);
+    game.leaderboard.splice(idx, 1);
+    fetch(`/api/survivor/games/${selectedGameId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leaderboard: game.leaderboard })
+    }).then(() => {
+      fetchGames();
+      showLeaderboard(selectedGameId);
+    });
+  }
+  function hideEntryForm() {
+    document.getElementById('entry-form').style.display = 'none';
+  }
+  window.fetchGames = fetchGames;
+  window.showQuestions = showQuestions;
+  window.showAddQuestionForm = showAddQuestionForm;
+  window.editQuestion = editQuestion;
+  window.deleteQuestion = deleteQuestion;
+  window.showAddEntryForm = showAddEntryForm;
+  window.editEntry = editEntry;
+  window.deleteEntry = deleteEntry;
+  window.saveEntry = saveEntry;
+  window.saveQuestion = saveQuestion;
+  window.hideEntryForm = hideEntryForm;
+  window.hideQuestionForm = hideQuestionForm;
+
   // Call these on page load
   fetchDeviceStats();
   fetchDeviceTokens();
+  fetchGames(); // Fetch games on page load
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))
