@@ -604,21 +604,25 @@ window.addEventListener('DOMContentLoaded', function() {
 
   // Game management functions
   function showAddGameForm() {
+    console.log('showAddGameForm called'); // Debug log
+    alert('showAddGameForm called'); // Temporary alert to test if function is called
     let form = document.getElementById('game-form');
     if (!form) {
       form = document.createElement('div');
       form.id = 'game-form';
+      form.style.cssText = 'background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #e6b800; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;';
       document.body.appendChild(form);
     }
     form.innerHTML = `<h3>Add New Game</h3>\
-      <input id="game-name" placeholder="Game Name"><br>\
-      <select id="game-status">\
+      <input id="game-name" placeholder="Game Name" style="width: 100%; margin-bottom: 10px; padding: 8px;"><br>\
+      <select id="game-status" style="width: 100%; margin-bottom: 10px; padding: 8px;">\
         <option value="active">Active</option>\
         <option value="completed">Completed</option>\
       </select><br>\
-      <button onclick="saveGame()">Save Game</button>\
-      <button onclick="hideGameForm()">Cancel</button>`;
-    form.style.display = '';
+      <button onclick="saveGame()" style="background: #e6b800; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; margin-right: 10px;">Save Game</button>\
+      <button onclick="hideGameForm()" style="background: #ccc; color: #fff; border: none; padding: 10px 20px; border-radius: 4px;">Cancel</button>`;
+    form.style.display = 'block';
+    console.log('Form should be visible now'); // Debug log
   }
 
   function editGame(gameId) {
