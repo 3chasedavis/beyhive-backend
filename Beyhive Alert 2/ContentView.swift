@@ -2140,6 +2140,13 @@ class StoreKitManager: ObservableObject {
             break
         }
     }
+
+    func restorePurchases() {
+        Task {
+            try? await AppStore.sync()
+            await checkPurchased()
+        }
+    }
 }
 
 struct NotificationsPaywallView: View {
