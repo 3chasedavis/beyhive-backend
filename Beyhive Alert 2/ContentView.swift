@@ -2255,7 +2255,7 @@ struct NotificationsPaywallView: View {
     func startApplePay() {
         let paymentItem = PKPaymentSummaryItem(label: "Unlock Notifications", amount: NSDecimalNumber(string: "1.99"))
         let request = PKPaymentRequest()
-        request.merchantIdentifier = "merchant.com.your.merchantid" // <-- Replace with your merchant ID
+        request.merchantIdentifier = "com.chasedavis.beyhivealert.notificationss" // Updated merchant ID
         request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
         if #available(iOS 17.0, *) {
             request.merchantCapabilities = .threeDSecure
