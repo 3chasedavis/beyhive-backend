@@ -2156,6 +2156,7 @@ struct NotificationsPaywallView: View {
     @State private var didAutoTriggerPurchase = false
     @State private var showingApplePaySheet = false
     @State private var applePayError: String?
+    @State private var applePayDelegate: ApplePayDelegate? = nil // Store delegate
     var body: some View {
         ZStack {
             GameView()
@@ -2242,7 +2243,8 @@ struct NotificationsPaywallView: View {
                 .background(Color.white.opacity(0.7).ignoresSafeArea())
             }
         }
-        .onChange(of: storeKit.hasPurchased) { newValue in
+        // Use new .onChange signature for iOS 17+
+        .onChange(of: storeKit.hasPurchased) { oldValue, newValue in
             print("hasPurchased changed to: \(newValue)")
             withAnimation {
                 // This will trigger the paywall to disappear with animation
@@ -2255,17 +2257,29 @@ struct NotificationsPaywallView: View {
         let request = PKPaymentRequest()
         request.merchantIdentifier = "merchant.com.your.merchantid" // <-- Replace with your merchant ID
         request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
-        request.merchantCapabilities = .capability3DS
+        if #available(iOS 17.0, *) {
+            request.merchantCapabilities = .threeDSecure
+        } else {
+            request.merchantCapabilities = .capability3DS
+        }
         request.countryCode = "US"
         request.currencyCode = "USD"
         request.paymentSummaryItems = [paymentItem]
         if let controller = PKPaymentAuthorizationViewController(paymentRequest: request) {
-            controller.delegate = ApplePayDelegate(onSuccess: {
+            let delegate = ApplePayDelegate(onSuccess: {
                 storeKit.hasPurchased = true // Unlock notifications
             }, onError: { error in
                 applePayError = error
             })
-            UIApplication.shared.windows.first?.rootViewController?.present(controller, animated: true)
+            controller.delegate = delegate
+            applePayDelegate = delegate // Store delegate to avoid deallocation
+            // Use UIWindowScene.windows for iOS 15+
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController?.present(controller, animated: true)
+            } else {
+                applePayError = "Unable to present Apple Pay sheet."
+            }
         } else {
             applePayError = "Unable to present Apple Pay sheet."
         }
