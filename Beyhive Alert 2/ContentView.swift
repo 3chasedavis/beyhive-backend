@@ -12,6 +12,7 @@ import EventKit
 import UserNotifications
 import StoreKit
 import UIKit
+import PassKit
 // Import EventsViewModel
 // If needed, add: import Events
 
@@ -2153,6 +2154,8 @@ struct NotificationsPaywallView: View {
     @EnvironmentObject var storeKit: StoreKitManager
     @EnvironmentObject var tilesViewModel: TilesViewModel
     @State private var didAutoTriggerPurchase = false
+    @State private var showingApplePaySheet = false
+    @State private var applePayError: String?
     var body: some View {
         ZStack {
             GameView()
@@ -2190,6 +2193,10 @@ struct NotificationsPaywallView: View {
                             .frame(maxWidth: .infinity)
                             .background(Color.blue)
                             .cornerRadius(12)
+                            // Apple Pay button
+                            ApplePayButton(action: startApplePay)
+                                .frame(height: 44)
+                                .padding(.top, 8)
                         }
                     } else {
                         ProgressView("Loading...")
@@ -2202,13 +2209,19 @@ struct NotificationsPaywallView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
+                    if let applePayError = applePayError {
+                        Text(applePayError)
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.white.opacity(0.7).ignoresSafeArea())
                 .padding()
                 .onAppear {
-                    // Automatically trigger purchase when the view appears (only once)
                     if !storeKit.hasPurchased, storeKit.product != nil, !didAutoTriggerPurchase {
                         didAutoTriggerPurchase = true
                         Task { await storeKit.purchase() }
@@ -2235,6 +2248,63 @@ struct NotificationsPaywallView: View {
                 // This will trigger the paywall to disappear with animation
             }
         }
+    }
+    // Apple Pay logic
+    func startApplePay() {
+        let paymentItem = PKPaymentSummaryItem(label: "Unlock Notifications", amount: NSDecimalNumber(string: "1.99"))
+        let request = PKPaymentRequest()
+        request.merchantIdentifier = "merchant.com.your.merchantid" // <-- Replace with your merchant ID
+        request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
+        request.merchantCapabilities = .capability3DS
+        request.countryCode = "US"
+        request.currencyCode = "USD"
+        request.paymentSummaryItems = [paymentItem]
+        if let controller = PKPaymentAuthorizationViewController(paymentRequest: request) {
+            controller.delegate = ApplePayDelegate(onSuccess: {
+                storeKit.hasPurchased = true // Unlock notifications
+            }, onError: { error in
+                applePayError = error
+            })
+            UIApplication.shared.windows.first?.rootViewController?.present(controller, animated: true)
+        } else {
+            applePayError = "Unable to present Apple Pay sheet."
+        }
+    }
+}
+
+// Apple Pay Button for SwiftUI
+struct ApplePayButton: UIViewRepresentable {
+    var action: () -> Void
+    func makeUIView(context: Context) -> PKPaymentButton {
+        let button = PKPaymentButton(paymentButtonType: .buy, paymentButtonStyle: .black)
+        button.addTarget(context.coordinator, action: #selector(Coordinator.didTap), for: .touchUpInside)
+        return button
+    }
+    func updateUIView(_ uiView: PKPaymentButton, context: Context) {}
+    func makeCoordinator() -> Coordinator { Coordinator(action: action) }
+    class Coordinator: NSObject {
+        let action: () -> Void
+        init(action: @escaping () -> Void) { self.action = action }
+        @objc func didTap() { action() }
+    }
+}
+
+// Apple Pay Delegate
+class ApplePayDelegate: NSObject, PKPaymentAuthorizationViewControllerDelegate {
+    let onSuccess: () -> Void
+    let onError: (String) -> Void
+    init(onSuccess: @escaping () -> Void, onError: @escaping (String) -> Void) {
+        self.onSuccess = onSuccess
+        self.onError = onError
+    }
+    func paymentAuthorizationViewController(_ controller: PKPaymentAuthorizationViewController, didAuthorizePayment payment: PKPayment, handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
+        // Here you would send payment.token to your backend for processing
+        completion(PKPaymentAuthorizationResult(status: .success, errors: nil))
+        onSuccess()
+        controller.dismiss(animated: true)
+    }
+    func paymentAuthorizationViewControllerDidFinish(_ controller: PKPaymentAuthorizationViewController) {
+        controller.dismiss(animated: true)
     }
 }
 
