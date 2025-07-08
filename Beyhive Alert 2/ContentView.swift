@@ -89,7 +89,8 @@ struct SettingsView: View {
     @State private var email: String = UserDefaults.standard.string(forKey: "email") ?? ""
     @State private var altEmail: String = UserDefaults.standard.string(forKey: "altEmail") ?? ""
     @State private var saveMessage: String? = nil
-    
+    @State private var showDeleteAlert = false
+    @EnvironmentObject var storeKit: StoreKitManager
     var body: some View {
         VStack(spacing: 0) {
             // Light yellow top bar
@@ -161,6 +162,8 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 SettingsRow(title: "Share our app", action: { showShareSheet = true })
                 SettingsRow(title: "Privacy Policy & Terms of Service", action: { showPrivacyTerms = true })
+                SettingsRow(title: "Restore Purchases", action: { storeKit.restorePurchases() })
+                SettingsRow(title: "Delete My Account", isDestructive: true, action: { showDeleteAlert = true })
             }
             .background(Color.white)
             .cornerRadius(16)
@@ -224,6 +227,16 @@ struct SettingsView: View {
                 "Stay connected to Beyoncé's tour, get notifications, and join the Beyhive community.",
                 "Download now: https://apps.apple.com/app/beyhive-alert/id1234567890" // Replace with your actual App Store link
             ])
+        }
+        .alert("Are you sure you want to delete your account? This cannot be undone.", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                // Delete user data
+                if let bundleID = Bundle.main.bundleIdentifier {
+                    UserDefaults.standard.removePersistentDomain(forName: bundleID)
+                }
+                // Optionally, navigate to a login or confirmation screen
+            }
+            Button("Cancel", role: .cancel) { }
         }
     }
 }
