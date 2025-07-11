@@ -70,11 +70,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/beyhive-a
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/livestreams', livestreamsRouter);
-app.use('/api/survivor', survivorRouter);
+// app.use('/api/user', userRoutes);
+// app.use('/api/notifications', notificationRoutes);
+// app.use('/api/admin', adminRoutes);
+// app.use('/api/livestreams', livestreamsRouter);
+// app.use('/api/survivor', survivorRouter);
 
 // Public endpoint to get all device tokens
 const User = require('./models/User');
