@@ -152,7 +152,7 @@
 <script>
 function adminLogin() {
   const pw = document.getElementById('admin-login-password').value;
-  fetch('/admin/login', {
+  fetch('/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: pw })
@@ -172,7 +172,7 @@ function adminLogin() {
 }
 // On page load, check if authenticated
 window.onload = function() {
-  fetch('/admin/check-auth')
+  fetch('/api/admin/check-auth')
     .then(res => res.json())
     .then(data => {
       if (data.authenticated) {

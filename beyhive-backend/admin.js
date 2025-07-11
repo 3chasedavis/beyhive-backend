@@ -397,23 +397,26 @@ window.addEventListener('DOMContentLoaded', function() {
       });
   }
 
-  updateOverlayForm.onsubmit = function(e) {
-    e.preventDefault();
-    updateOverlayStatus.textContent = '';
-    fetch('/api/admin/update-required', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        updateRequired: updateRequiredToggle.checked,
-        minVersion: minVersionInput.value.trim()
+  // Fix TypeError: check for null before setting onsubmit
+  if (updateOverlayForm) {
+    updateOverlayForm.onsubmit = function(e) {
+      e.preventDefault();
+      updateOverlayStatus.textContent = '';
+      fetch('/api/admin/update-required', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          updateRequired: updateRequiredToggle.checked,
+          minVersion: minVersionInput.value.trim()
+        })
       })
-    })
-      .then(res => res.json())
-      .then(result => {
-        updateOverlayStatus.textContent = 'Saved!';
-        fetchUpdateOverlay();
-      });
-  };
+        .then(res => res.json())
+        .then(result => {
+          updateOverlayStatus.textContent = 'Saved!';
+          fetchUpdateOverlay();
+        });
+    };
+  }
 
   fetchUpdateOverlay();
 
