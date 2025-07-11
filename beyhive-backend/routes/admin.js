@@ -11,6 +11,7 @@ const DeviceToken = require('../models/DeviceToken');
 const session = require('express-session');
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chase3870';
+console.log('ADMIN_PASSWORD at startup:', ADMIN_PASSWORD); // DEBUG: Remove after verifying
 
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
