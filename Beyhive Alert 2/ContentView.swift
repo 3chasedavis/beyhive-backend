@@ -12,7 +12,6 @@ import EventKit
 import UserNotifications
 import StoreKit
 import UIKit
-import PassKit
 // Import EventsViewModel
 // If needed, add: import Events
 
@@ -2059,7 +2058,7 @@ class StoreKitManager: ObservableObject {
     @Published var errorMessage: String?
     @Published var product: Product?
 
-    let productID = "com.chasedavis.beyhivealert.notifications"
+    let productID = "com.chasedavis.beyhivealert.notificationss"
 
     init() {
         Task { await fetchProduct() }
@@ -2068,10 +2067,16 @@ class StoreKitManager: ObservableObject {
     }
 
     func fetchProduct() async {
+        print("[StoreKit] Starting to load product with ID: \(productID)")
         do {
             let storeProducts = try await Product.products(for: [productID])
+            print("[StoreKit] Received products: \(storeProducts)")
             self.product = storeProducts.first
+            if storeProducts.isEmpty {
+                print("[StoreKit] No products found. Check your product ID and App Store Connect setup.")
+            }
         } catch {
+            print("[StoreKit] Failed to load product: \(error)")
             self.errorMessage = "Failed to load product."
         }
     }
@@ -2153,174 +2158,17 @@ class StoreKitManager: ObservableObject {
 struct NotificationsPaywallView: View {
     @EnvironmentObject var storeKit: StoreKitManager
     @EnvironmentObject var tilesViewModel: TilesViewModel
-    @State private var didAutoTriggerPurchase = false
-    @State private var showingApplePaySheet = false
-    @State private var applePayError: String?
-    @State private var applePayDelegate: ApplePayDelegate? = nil // Store delegate
     var body: some View {
-        ZStack {
-            GameView()
-                .disabled(!storeKit.hasPurchased && !isEUUser())
-
-            if !isEUUser() && !storeKit.hasPurchased {
-                VStack(spacing: 32) {
-                    Spacer()
-                    VStack(spacing: 24) {
-                        Image(systemName: "lock.fill")
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(.yellow)
-                        Text("Unlock Notifications")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.black)
-                        Text("Get access to exclusive notifications for just $1.99.")
-                            .font(.system(size: 18, weight: .medium))
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.black)
-                            .padding(.horizontal)
-                    }
-                    if let product = storeKit.product {
-                        if storeKit.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(1.2)
-                        } else {
-                            Button("Unlock for \(product.displayPrice)") {
-                                Task { await storeKit.purchase() }
-                            }
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue)
-                            .cornerRadius(12)
-                            // Apple Pay button
-                            ApplePayButton(action: startApplePay)
-                                .frame(height: 44)
-                                .padding(.top, 8)
-                        }
-                    } else {
-                        ProgressView("Loading...")
-                            .progressViewStyle(CircularProgressViewStyle())
-                    }
-                    if let error = storeKit.errorMessage {
-                        Text(error)
-                            .foregroundColor(.red)
-                            .font(.footnote)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    if let applePayError = applePayError {
-                        Text(applePayError)
-                            .foregroundColor(.red)
-                            .font(.footnote)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white.opacity(0.7).ignoresSafeArea())
-                .padding()
-                .onAppear {
-                    if !storeKit.hasPurchased, storeKit.product != nil, !didAutoTriggerPurchase {
-                        didAutoTriggerPurchase = true
-                        Task { await storeKit.purchase() }
-                    }
-                }
-            } else if isEUUser() {
-                VStack {
-                    Spacer()
-                    Text("Notifications are free for users in the European Union.")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white.opacity(0.7).ignoresSafeArea())
-            }
-        }
-        // Use new .onChange signature for iOS 17+
-        .onChange(of: storeKit.hasPurchased) { oldValue, newValue in
-            print("hasPurchased changed to: \(newValue)")
-            withAnimation {
-                // This will trigger the paywall to disappear with animation
-            }
-        }
-    }
-    // Apple Pay logic
-    func startApplePay() {
-        let paymentItem = PKPaymentSummaryItem(label: "Unlock Notifications", amount: NSDecimalNumber(string: "1.99"))
-        let request = PKPaymentRequest()
-        request.merchantIdentifier = "com.chasedavis.beyhivealert.notificationss" // Updated merchant ID
-        request.supportedNetworks = [.visa, .masterCard, .amex, .discover]
-        if #available(iOS 17.0, *) {
-            request.merchantCapabilities = .threeDSecure
-        } else {
-            request.merchantCapabilities = .capability3DS
-        }
-        request.countryCode = "US"
-        request.currencyCode = "USD"
-        request.paymentSummaryItems = [paymentItem]
-        if let controller = PKPaymentAuthorizationViewController(paymentRequest: request) {
-            let delegate = ApplePayDelegate(onSuccess: {
-                storeKit.hasPurchased = true // Unlock notifications
-            }, onError: { error in
-                applePayError = error
-            })
-            controller.delegate = delegate
-            applePayDelegate = delegate // Store delegate to avoid deallocation
-            // Use UIWindowScene.windows for iOS 15+
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first {
-                window.rootViewController?.present(controller, animated: true)
-            } else {
-                applePayError = "Unable to present Apple Pay sheet."
-            }
-        } else {
-            applePayError = "Unable to present Apple Pay sheet."
-        }
+        // Show GameView directly, no paywall or unlock UI
+        GameView()
     }
 }
 
 // Apple Pay Button for SwiftUI
-struct ApplePayButton: UIViewRepresentable {
-    var action: () -> Void
-    func makeUIView(context: Context) -> PKPaymentButton {
-        let button = PKPaymentButton(paymentButtonType: .buy, paymentButtonStyle: .black)
-        button.addTarget(context.coordinator, action: #selector(Coordinator.didTap), for: .touchUpInside)
-        return button
-    }
-    func updateUIView(_ uiView: PKPaymentButton, context: Context) {}
-    func makeCoordinator() -> Coordinator { Coordinator(action: action) }
-    class Coordinator: NSObject {
-        let action: () -> Void
-        init(action: @escaping () -> Void) { self.action = action }
-        @objc func didTap() { action() }
-    }
-}
+// Removed ApplePayButton struct
 
 // Apple Pay Delegate
-class ApplePayDelegate: NSObject, PKPaymentAuthorizationViewControllerDelegate {
-    let onSuccess: () -> Void
-    let onError: (String) -> Void
-    init(onSuccess: @escaping () -> Void, onError: @escaping (String) -> Void) {
-        self.onSuccess = onSuccess
-        self.onError = onError
-    }
-    func paymentAuthorizationViewController(_ controller: PKPaymentAuthorizationViewController, didAuthorizePayment payment: PKPayment, handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
-        // Here you would send payment.token to your backend for processing
-        completion(PKPaymentAuthorizationResult(status: .success, errors: nil))
-        onSuccess()
-        controller.dismiss(animated: true)
-    }
-    func paymentAuthorizationViewControllerDidFinish(_ controller: PKPaymentAuthorizationViewController) {
-        controller.dismiss(animated: true)
-    }
-}
+// Removed ApplePayDelegate class
 
 // Add this helper for device token storage
 extension UIApplication {

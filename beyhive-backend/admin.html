@@ -141,6 +141,53 @@
   <!-- Survivor Games Management Section -->
   <!-- REMOVED: Survivor Games Management form, table, questions, and leaderboard -->
   <hr/>
+  <!-- Admin Access Overlay -->
+  <!-- Admin Login Overlay (replaces previous overlay) -->
+<div id="admin-login-overlay" style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.98);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+  <h2>Admin Login</h2>
+  <input id="admin-login-password" type="password" placeholder="Enter admin password" style="font-size:1.2em;padding:8px;margin:12px 0;" />
+  <button onclick="adminLogin()" style="font-size:1.1em;padding:8px 18px;">Login</button>
+  <div id="admin-login-error" style="color:red;margin-top:10px;display:none;">Incorrect password. Try again.</div>
+</div>
+<script>
+function adminLogin() {
+  const pw = document.getElementById('admin-login-password').value;
+  fetch('/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById('admin-login-overlay').style.display = 'none';
+      location.reload(); // Reload to get authenticated content
+    } else {
+      document.getElementById('admin-login-error').style.display = 'block';
+    }
+  })
+  .catch(() => {
+    document.getElementById('admin-login-error').style.display = 'block';
+  });
+}
+// On page load, check if authenticated
+window.onload = function() {
+  fetch('/admin/check-auth')
+    .then(res => res.json())
+    .then(data => {
+      if (data.authenticated) {
+        document.getElementById('admin-login-overlay').style.display = 'none';
+      } else {
+        document.getElementById('admin-login-overlay').style.display = 'flex';
+        document.getElementById('admin-login-password').focus();
+      }
+    })
+    .catch(() => {
+      document.getElementById('admin-login-overlay').style.display = 'flex';
+      document.getElementById('admin-login-password').focus();
+    });
+};
+</script>
   <script src="admin.js"></script>
 </body>
 </html> 

@@ -8,21 +8,46 @@ const User = require('../models/User');
 const SentNotification = require('../models/SentNotification');
 const DeviceToken = require('../models/DeviceToken');
 // REMOVE: const admin = require('firebase-admin');
+const session = require('express-session');
 
-const ADMIN_PASSWORD = 'chase3870';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chase3870';
 
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
 
-// Middleware for password protection
-function requirePassword(req, res, next) {
-    const password = req.query.password || req.body.password;
-    if (password === ADMIN_PASSWORD) {
-        next();
-    } else {
-        res.status(401).send('Unauthorized');
+// Add session middleware (should be in server.js, but add here for clarity if not already present)
+router.use(session({
+    secret: process.env.SESSION_SECRET || 'supersecret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { httpOnly: true, secure: false } // Set secure: true if using HTTPS
+}));
+
+// Middleware to require admin session
+function requireAdminSession(req, res, next) {
+    if (req.session && req.session.isAdmin) {
+        return next();
     }
+    res.status(401).json({ error: 'Not authenticated' });
 }
+
+// Admin login route
+router.post('/login', (req, res) => {
+    const { password } = req.body;
+    if (password === ADMIN_PASSWORD) {
+        req.session.isAdmin = true;
+        return res.json({ success: true });
+    }
+    res.json({ success: false });
+});
+
+// Check authentication status
+router.get('/check-auth', (req, res) => {
+    res.json({ authenticated: !!(req.session && req.session.isAdmin) });
+});
+
+// Protect all admin routes below this line
+router.use(requireAdminSession);
 
 // GET: Show the notification form
 router.get('/notify', (req, res) => {
