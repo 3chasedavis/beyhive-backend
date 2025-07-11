@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
+const session = require('express-session');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -18,6 +19,14 @@ const survivorRouter = require('./routes/survivor');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Add session middleware for admin authentication
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'supersecret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, secure: false } // Set secure: true if using HTTPS
+}));
 
 // Serve static files from the backend directory
 app.use(express.static(__dirname));

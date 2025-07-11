@@ -15,14 +15,6 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chase3870';
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
 
-// Add session middleware (should be in server.js, but add here for clarity if not already present)
-router.use(session({
-    secret: process.env.SESSION_SECRET || 'supersecret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, secure: false } // Set secure: true if using HTTPS
-}));
-
 // Middleware to require admin session
 function requireAdminSession(req, res, next) {
     if (req.session && req.session.isAdmin) {
