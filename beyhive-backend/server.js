@@ -73,7 +73,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
-// app.use('/api/livestreams', livestreamsRouter);
+app.use('/api/livestreams', livestreamsRouter);
 // app.use('/api/survivor', survivorRouter);
 
 // Public endpoint to get all device tokens
