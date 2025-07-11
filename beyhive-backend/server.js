@@ -146,7 +146,10 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve admin.html at /admin.html with relaxed CSP
-app.get('/admin.html', require('helmet')({ contentSecurityPolicy: false }), (req, res) => {
+app.get('/admin.html', (req, res, next) => {
+  res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' data: blob:;");
+  next();
+}, (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
