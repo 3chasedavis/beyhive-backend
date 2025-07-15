@@ -49,6 +49,10 @@ router.get('/:quizId', (req, res) => {
 router.put('/:quizId', (req, res) => {
   const { quizId } = req.params;
   const { openAt, closeAt } = req.body;
+
+  console.log(`[DEBUG] Updating quiz. ID: ${quizId}`);
+  console.log(`[DEBUG] Received openAt: ${openAt}, closeAt: ${closeAt}`);
+
   let quizzes = [];
   if (fs.existsSync(SURVIVOR_FILE)) {
     try {
@@ -61,8 +65,23 @@ router.put('/:quizId', (req, res) => {
   if (idx === -1) {
     return res.status(404).json({ success: false, message: 'Quiz not found' });
   }
-  if (openAt) quizzes[idx].openAt = openAt;
-  if (closeAt) quizzes[idx].closeAt = closeAt;
+  
+  console.log('[DEBUG] Found quiz to update:', quizzes[idx]);
+
+  if (openAt) {
+    quizzes[idx].openAt = openAt;
+  } else {
+    quizzes[idx].openAt = null;
+  }
+  
+  if (closeAt) {
+    quizzes[idx].closeAt = closeAt;
+  } else {
+    quizzes[idx].closeAt = null;
+  }
+  
+  console.log('[DEBUG] Updated quiz data:', quizzes[idx]);
+
   fs.writeFileSync(SURVIVOR_FILE, JSON.stringify(quizzes, null, 2));
   res.json({ success: true, quiz: quizzes[idx] });
 });

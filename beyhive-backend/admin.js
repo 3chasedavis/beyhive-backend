@@ -266,7 +266,7 @@ window.addEventListener('DOMContentLoaded', function() {
       tr.innerHTML = `
         <td>${outfit.name}</td>
         <td>${outfit.location}</td>
-        <td>${outfit.imageName}</td>
+        <td>${outfit.imageUrl ? `<img src="${outfit.imageUrl}" style="max-width:100px;max-height:100px;" />` : 'No image'}</td>
         <td>${outfit.section}</td>
         <td>${outfit.isNew ? 'Yes' : 'No'}</td>
         <td>${outfit.description || ''}</td>
@@ -282,20 +282,25 @@ window.addEventListener('DOMContentLoaded', function() {
   outfitForm.onsubmit = function(e) {
     e.preventDefault();
     outfitFormStatus.textContent = '';
-    const data = {
-      name: outfitName.value,
-      location: outfitLocation.value,
-      imageName: outfitImageName.value,
-      isNew: outfitIsNew.checked,
-      section: outfitSection.value,
-      description: outfitDescription.value
-    };
+    
+    const formData = new FormData();
+    formData.append('name', outfitName.value);
+    formData.append('location', outfitLocation.value);
+    formData.append('isNew', outfitIsNew.checked);
+    formData.append('section', outfitSection.value);
+    formData.append('description', outfitDescription.value);
+    
+    // Add image file if selected
+    const imageFile = document.getElementById('outfitImage').files[0];
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    
     if (editingOutfitId) {
       // Update outfit
       fetch(`/api/outfits/${editingOutfitId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: formData
       })
         .then(res => res.json())
         .then(result => {
@@ -308,8 +313,7 @@ window.addEventListener('DOMContentLoaded', function() {
       // Add outfit
       fetch('/api/outfits', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: formData
       })
         .then(res => res.json())
         .then(result => {
@@ -328,7 +332,6 @@ window.addEventListener('DOMContentLoaded', function() {
         if (!outfit) return;
         outfitName.value = outfit.name;
         outfitLocation.value = outfit.location;
-        outfitImageName.value = outfit.imageName;
         outfitIsNew.checked = !!outfit.isNew;
         outfitSection.value = outfit.section;
         outfitDescription.value = outfit.description || '';
