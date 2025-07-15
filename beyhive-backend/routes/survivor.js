@@ -27,6 +27,46 @@ router.get('/', (req, res) => {
   res.json({ success: true, quizzes });
 });
 
+// GET /:quizId - returns a single quiz by id
+router.get('/:quizId', (req, res) => {
+  const { quizId } = req.params;
+  let quizzes = [];
+  if (fs.existsSync(SURVIVOR_FILE)) {
+    try {
+      quizzes = JSON.parse(fs.readFileSync(SURVIVOR_FILE, 'utf8'));
+    } catch (e) {
+      return res.status(500).json({ success: false, message: 'Error reading quiz data', error: e.message });
+    }
+  }
+  const quiz = quizzes.find(q => q.id === quizId);
+  if (!quiz) {
+    return res.status(404).json({ success: false, message: 'Quiz not found' });
+  }
+  res.json({ success: true, quiz });
+});
+
+// PUT /:quizId - update openAt/closeAt for a quiz
+router.put('/:quizId', (req, res) => {
+  const { quizId } = req.params;
+  const { openAt, closeAt } = req.body;
+  let quizzes = [];
+  if (fs.existsSync(SURVIVOR_FILE)) {
+    try {
+      quizzes = JSON.parse(fs.readFileSync(SURVIVOR_FILE, 'utf8'));
+    } catch (e) {
+      return res.status(500).json({ success: false, message: 'Error reading quiz data', error: e.message });
+    }
+  }
+  const idx = quizzes.findIndex(q => q.id === quizId);
+  if (idx === -1) {
+    return res.status(404).json({ success: false, message: 'Quiz not found' });
+  }
+  if (openAt) quizzes[idx].openAt = openAt;
+  if (closeAt) quizzes[idx].closeAt = closeAt;
+  fs.writeFileSync(SURVIVOR_FILE, JSON.stringify(quizzes, null, 2));
+  res.json({ success: true, quiz: quizzes[idx] });
+});
+
 // POST: Save a user's quiz response
 router.post('/response', (req, res) => {
   const { quizId, userId, answers } = req.body;

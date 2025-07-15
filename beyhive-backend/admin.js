@@ -475,6 +475,61 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   fetchAlbumRankings();
+
+  // === Quiz Manager ===
+  const quizManager = document.getElementById('quizManager');
+  if (quizManager) {
+    function fetchAndRenderQuizzes() {
+      fetch('/api/survivor-quiz')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success) return;
+          const container = document.getElementById('quizManager');
+          container.innerHTML = '';
+          data.quizzes.forEach(quiz => {
+            const quizDiv = document.createElement('div');
+            quizDiv.style.border = '1px solid #ccc';
+            quizDiv.style.borderRadius = '10px';
+            quizDiv.style.padding = '18px';
+            quizDiv.style.marginBottom = '18px';
+            quizDiv.style.background = '#fff';
+            quizDiv.innerHTML = `
+              <div style="font-weight:bold;font-size:1.2em;margin-bottom:8px;">${quiz.title}</div>
+              <label>Open At: <input type="datetime-local" id="openAt_${quiz.id}" value="${quiz.openAt ? new Date(quiz.openAt).toISOString().slice(0,16) : ''}"></label>
+              <label style="margin-left:16px;">Close At: <input type="datetime-local" id="closeAt_${quiz.id}" value="${quiz.closeAt ? new Date(quiz.closeAt).toISOString().slice(0,16) : ''}"></label>
+              <button id="saveQuiz_${quiz.id}" style="margin-left:18px;">Save</button>
+              <span id="quizStatus_${quiz.id}" style="margin-left:12px;color:green;"></span>
+            `;
+            container.appendChild(quizDiv);
+            setTimeout(() => {
+              document.getElementById(`saveQuiz_${quiz.id}`).onclick = function() {
+                const openAt = document.getElementById(`openAt_${quiz.id}`).value;
+                const closeAt = document.getElementById(`closeAt_${quiz.id}`).value;
+                fetch(`/api/survivor-quiz/${quiz.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ openAt: openAt ? new Date(openAt).toISOString() : null, closeAt: closeAt ? new Date(closeAt).toISOString() : null })
+                })
+                .then(res => res.json())
+                .then(resp => {
+                  const status = document.getElementById(`quizStatus_${quiz.id}`);
+                  if (resp.success) {
+                    status.textContent = 'Saved!';
+                    status.style.color = 'green';
+                  } else {
+                    status.textContent = 'Error saving.';
+                    status.style.color = 'red';
+                  }
+                  setTimeout(() => { status.textContent = ''; }, 2000);
+                });
+              };
+            }, 0);
+          });
+        });
+    }
+    // Call on page load
+    fetchAndRenderQuizzes();
+  }
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))

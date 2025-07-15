@@ -1,1 +1,158 @@
-[] 
+[
+  {
+    "id": "vegas_n1",
+    "title": "Las Vegas Night 1",
+    "openAt": "2024-07-01T00:00:00Z",
+    "closeAt": "2024-07-31T23:59:59Z",
+    "questions": [
+      {
+        "text": "What will the opening outfit be?",
+        "points": 3,
+        "options": ["BURBERRY", "LOEWE", "SPORTMAX", "MAISON MARGIELA", "RALPH LAUREN", "SCHIAPARELLI", "OTTOLINGER X THOM SOLO", "FERRAGAMO", "DOLCE & GABBANA", "VIVIENNE WESTWOOD", "LOEWE", "BALMAIN", "DAVID KOMA", "New"]
+      },
+      {
+        "text": "Will she wear a bodysuit?",
+        "points": 2,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "What will the primary color for the opening bodysuit be?",
+        "points": 11,
+        "options": ["Black", "White", "New"]
+      },
+      {
+        "text": "What will she wear for Act 2?",
+        "points": 11,
+        "options": ["Newspaper jumpsuit", "New"]
+      },
+      {
+        "text": "What outfit will she wear for Act 3?",
+        "points": 9,
+        "options": ["LOS ANGELES, NIGHT 1", "LOS ANGELES, NIGHT 2–5", "CHICAGO, NIGHT 1", "CHICAGO, NIGHT 2", "CHICAGO, NIGHT 3", "NEW JERSEY, NIGHT 1", "NEW JERSEY, NIGHT 2", "NEW JERSEY, NIGHT 3", "NEW JERSEY, NIGHT 4", "NEW JERSEY, NIGHT 5", "LONDON, NIGHT 1", "LONDON, NIGHT 2", "LONDON, NIGHT 3", "LONDON, NIGHT 4", "LONDON, NIGHT 5", "LONDON, NIGHT 6", "PARIS, NIGHT 1", "New"]
+      },
+      {
+        "text": "Will Rumi do something funny on stage?",
+        "points": 9,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "What will she wear for Act 4?",
+        "points": 10,
+        "options": ["Los Angeles, Night 1", "Los Angeles, Night 2", "Los Angeles, Night 3", "Los Angeles, Night 4", "Los Angeles, Night 5", "Chicago, Night 1", "Chicago, Night 2", "Chicago, Night 3", "New Jersey, Night 1", "New Jersey, Night 2", "New Jersey, Night 3", "New Jersey, Night 4", "New Jersey, Night 5", "London, Night 1", "London, Night 2", "London, Night 3", "London, Night 4", "London, Night 5", "London, Night 6", "Paris, Night 1", "New"]
+      },
+      {
+        "text": "What will she wear for Act 5?",
+        "points": 10,
+        "options": ["Los Angeles, Night 1", "Los Angeles, Night 2", "Los Angeles, Night 3", "Los Angeles, Night 4", "Los Angeles, Night 5", "Chicago, Night 1", "Chicago, Night 2", "Chicago, Night 3", "New Jersey, Night 1", "New Jersey, Night 2", "New Jersey, Night 3", "New Jersey, Night 4", "New Jersey, Night 5", "London, Night 1", "London, Night 2", "London, Night 3", "London, Night 4", "London, Night 5", "London, Night 6", "Paris, Night 1", "New"]
+      },
+      {
+        "text": "Will a special guest come out during Act 5?",
+        "points": 10,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform the Renaissance act in something New?",
+        "points": 5,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform 16 Carriages?",
+        "points": 10,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform 16 Carriages on a horse or car?",
+        "points": 12,
+        "options": ["Gold Horse", "Red Cadillac Car"]
+      },
+      {
+        "text": "Will she start the show on time?",
+        "points": 4,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she tease Act III during this show?",
+        "points": 5,
+        "options": ["Yes", "No"]
+      }
+    ]
+  },
+  {
+    "id": "vegas_n2",
+    "title": "Las Vegas Night 2",
+    "openAt": "2024-07-01T00:00:00Z",
+    "closeAt": "2024-07-31T23:59:59Z",
+    "questions": [
+      {
+        "text": "What will the opening outfit be?",
+        "points": 3,
+        "options": ["BURBERRY", "LOEWE", "SPORTMAX", "MAISON MARGIELA", "RALPH LAUREN", "SCHIAPARELLI", "OTTOLINGER X THOM SOLO", "FERRAGAMO", "DOLCE & GABBANA", "VIVIENNE WESTWOOD", "LOEWE", "BALMAIN", "DAVID KOMA", "New"]
+      },
+      {
+        "text": "Will she wear a bodysuit?",
+        "points": 2,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "What will the primary color for the opening bodysuit be?",
+        "points": 11,
+        "options": ["Black", "White", "New"]
+      },
+      {
+        "text": "What will she wear for Act 2?",
+        "points": 11,
+        "options": ["Newspaper jumpsuit", "New"]
+      },
+      {
+        "text": "What outfit will she wear for Act 3?",
+        "points": 9,
+        "options": ["LOS ANGELES, NIGHT 1", "LOS ANGELES, NIGHT 2–5", "CHICAGO, NIGHT 1", "CHICAGO, NIGHT 2", "CHICAGO, NIGHT 3", "NEW JERSEY, NIGHT 1", "NEW JERSEY, NIGHT 2", "NEW JERSEY, NIGHT 3", "NEW JERSEY, NIGHT 4", "NEW JERSEY, NIGHT 5", "LONDON, NIGHT 1", "LONDON, NIGHT 2", "LONDON, NIGHT 3", "LONDON, NIGHT 4", "LONDON, NIGHT 5", "LONDON, NIGHT 6", "PARIS, NIGHT 1", "New"]
+      },
+      {
+        "text": "Will Rumi do something funny on stage?",
+        "points": 9,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "What will she wear for Act 4?",
+        "points": 10,
+        "options": ["Los Angeles, Night 1", "Los Angeles, Night 2", "Los Angeles, Night 3", "Los Angeles, Night 4", "Los Angeles, Night 5", "Chicago, Night 1", "Chicago, Night 2", "Chicago, Night 3", "New Jersey, Night 1", "New Jersey, Night 2", "New Jersey, Night 3", "New Jersey, Night 4", "New Jersey, Night 5", "London, Night 1", "London, Night 2", "London, Night 3", "London, Night 4", "London, Night 5", "London, Night 6", "Paris, Night 1", "New"]
+      },
+      {
+        "text": "What will she wear for Act 5?",
+        "points": 10,
+        "options": ["Los Angeles, Night 1", "Los Angeles, Night 2", "Los Angeles, Night 3", "Los Angeles, Night 4", "Los Angeles, Night 5", "Chicago, Night 1", "Chicago, Night 2", "Chicago, Night 3", "New Jersey, Night 1", "New Jersey, Night 2", "New Jersey, Night 3", "New Jersey, Night 4", "New Jersey, Night 5", "London, Night 1", "London, Night 2", "London, Night 3", "London, Night 4", "London, Night 5", "London, Night 6", "Paris, Night 1", "New"]
+      },
+      {
+        "text": "Will a special guest come out during Act 5?",
+        "points": 10,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform the Renaissance act in something New?",
+        "points": 5,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform 16 Carriages?",
+        "points": 10,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she perform 16 Carriages on a horse or car?",
+        "points": 12,
+        "options": ["Gold Horse", "Red Cadillac Car"]
+      },
+      {
+        "text": "Will she start the show on time?",
+        "points": 4,
+        "options": ["Yes", "No"]
+      },
+      {
+        "text": "Will she tease Act III during this show?",
+        "points": 5,
+        "options": ["Yes", "No"]
+      }
+    ]
+  }
+] 
