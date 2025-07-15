@@ -15,7 +15,7 @@ if (hasAPNCredentials) {
         keyId: process.env.APN_KEY_ID, // e.g., 8M48VV84A3
         teamId: process.env.APN_TEAM_ID, // e.g., A46AH86Z73
       },
-      production: false, // false = sandbox, true = production
+      production: true, // false = sandbox, true = production
     });
     console.log('APN provider initialized successfully');
   } catch (error) {
