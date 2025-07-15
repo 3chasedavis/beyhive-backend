@@ -78,6 +78,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/instagram-feed', instagramFeedRouter);
+app.use('/api', survivorRouter);
 // Do not restore survivorRouter
 
 // Public endpoint to get all device tokens
