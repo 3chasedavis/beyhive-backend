@@ -16,6 +16,8 @@ const DeviceToken = require('./models/DeviceToken'); // Add this after requiring
 const eventsRoutes = require('./routes/events');
 const outfitsRoutes = require('./routes/outfits');
 const survivorRouter = require('./routes/survivor');
+const newsRouter = require('./routes/news');
+const instagramFeedRouter = require('./routes/instagramFeed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -74,6 +76,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
+app.use('/api/news', newsRouter);
+app.use('/api/instagram-feed', instagramFeedRouter);
 // Do not restore survivorRouter
 
 // Public endpoint to get all device tokens
