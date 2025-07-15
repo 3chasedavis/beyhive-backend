@@ -424,6 +424,56 @@ window.addEventListener('DOMContentLoaded', function() {
   fetchDeviceStats();
   fetchDeviceTokens();
   fetchGames(); // Fetch games on page load
+
+  // === Album Rankings Management ===
+  const albumRankingsSection = document.createElement('div');
+  albumRankingsSection.innerHTML = '<h2>Manage Album Rankings</h2><table id="albumRankingsTable" style="width:100%; margin-bottom:30px; display:none;"><thead><tr><th>Nickname</th><th>Albums</th><th>Likes</th><th>Created</th><th>Actions</th></tr></thead><tbody></tbody></table>';
+  document.body.insertBefore(albumRankingsSection, document.getElementById('deviceTokensSection'));
+  const albumRankingsTable = document.getElementById('albumRankingsTable');
+  const albumRankingsTbody = albumRankingsTable.querySelector('tbody');
+
+  function fetchAlbumRankings() {
+    fetch('/api/album-rankings')
+      .then(res => res.json())
+      .then(data => {
+        renderAlbumRankings(data.rankings || []);
+      });
+  }
+
+  function renderAlbumRankings(rankings) {
+    albumRankingsTbody.innerHTML = '';
+    if (!rankings.length) {
+      albumRankingsTable.style.display = 'none';
+      return;
+    }
+    albumRankingsTable.style.display = '';
+    rankings.forEach(ranking => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${ranking.nickname}</td>
+        <td><pre>${ranking.ranking.map(a => a.title).join('\n')}</pre></td>
+        <td>${ranking.likes.length}</td>
+        <td>${new Date(ranking.createdAt).toLocaleString()}</td>
+        <td><button class="remove-event-btn" onclick="deleteAlbumRanking('${ranking.id}', this)">Delete</button></td>
+      `;
+      albumRankingsTbody.appendChild(tr);
+    });
+  }
+
+  window.deleteAlbumRanking = function(id, btn) {
+    if (!confirm('Are you sure you want to delete this album ranking?')) return;
+    fetch(`/api/album-rankings/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          btn.closest('tr').remove();
+        } else {
+          alert('Failed to delete: ' + (result.message || 'Unknown error'));
+        }
+      });
+  };
+
+  fetchAlbumRankings();
 });
 function loadNotifications() {
   fetch('/api/admin/notifications/api?password=' + encodeURIComponent(password))

@@ -96,4 +96,18 @@ router.post('/album-rankings/:id/like', (req, res) => {
     res.json({ success: true, message: 'Like status updated.', ranking });
 });
 
+// DELETE /api/album-rankings/:id - Delete an album ranking (admin only)
+const adminRouter = require('./admin');
+router.delete('/album-rankings/:id', adminRouter.stack.find(layer => layer.route && layer.route.path === '/check-auth').handle, (req, res) => {
+    const { id } = req.params;
+    let allRankings = readRankings();
+    const idx = allRankings.findIndex(r => r.id === id);
+    if (idx === -1) {
+        return res.status(404).json({ success: false, message: 'Ranking not found.' });
+    }
+    allRankings.splice(idx, 1);
+    writeRankings(allRankings);
+    res.json({ success: true, message: 'Ranking deleted.' });
+});
+
 module.exports = router; 
