@@ -79,7 +79,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/instagram-feed', instagramFeedRouter);
-app.use('/api', survivorRouter);
+app.use('/api/survivor-quiz', survivorRouter);
 app.use('/api', albumRankingsRouter); // Add this line
 
 // Do not restore survivorRouter

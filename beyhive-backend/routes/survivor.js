@@ -14,8 +14,8 @@ function writeResponses(responses) {
   fs.writeFileSync(RESPONSES_FILE, JSON.stringify(responses, null, 2));
 }
 
-// GET /api/survivor-quiz - returns quiz data
-router.get('/api/survivor-quiz', (req, res) => {
+// GET / - returns quiz data
+router.get('/', (req, res) => {
   let quizzes = [];
   if (fs.existsSync(SURVIVOR_FILE)) {
     try {
@@ -28,7 +28,7 @@ router.get('/api/survivor-quiz', (req, res) => {
 });
 
 // POST: Save a user's quiz response
-router.post('/api/survivor-quiz/response', (req, res) => {
+router.post('/response', (req, res) => {
   const { quizId, userId, answers } = req.body;
   if (!quizId || !userId || !answers) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
@@ -50,7 +50,7 @@ router.post('/api/survivor-quiz/response', (req, res) => {
 });
 
 // GET: Retrieve a user's quiz response
-router.get('/api/survivor-quiz/response/:quizId', (req, res) => {
+router.get('/response/:quizId', (req, res) => {
   const { quizId } = req.params;
   const { userId } = req.query;
   if (!quizId || !userId) {
