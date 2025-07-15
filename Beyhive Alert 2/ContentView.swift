@@ -1186,6 +1186,10 @@ struct SurvivorQuizView: View {
     @State private var submittedAnswers: [Int: String] = [:]
     @State private var showConfirmation = false
     @State private var errorMessage: String? = nil
+    @State private var quizOpen: Bool = true
+    @State private var quizOpenMessage: String? = nil
+    @State private var quizOpenAt: Date? = nil
+    @State private var quizCloseAt: Date? = nil
     // Helper to get email from UserDefaults
     var userEmail: String {
         UserDefaults.standard.string(forKey: "email") ?? ""
@@ -1229,6 +1233,21 @@ struct SurvivorQuizView: View {
                     .ignoresSafeArea()
                 if isLoading {
                     ProgressView("Loading...")
+                } else if let msg = quizOpenMessage {
+                    VStack(spacing: 24) {
+                        Text(msg)
+                            .font(.title2)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                        if let openAt = quizOpenAt {
+                            Text("Opens: \(openAt.formatted(date: .abbreviated, time: .shortened))")
+                                .foregroundColor(.gray)
+                        }
+                        if let closeAt = quizCloseAt {
+                            Text("Closes: \(closeAt.formatted(date: .abbreviated, time: .shortened))")
+                                .foregroundColor(.gray)
+                        }
+                    }
                 } else if hasSubmitted {
                     // Read-only summary
                     ScrollView {
@@ -1242,7 +1261,7 @@ struct SurvivorQuizView: View {
                                 .font(.title2)
                                 .foregroundColor(.gray)
                                 .padding(.horizontal)
-                            ForEach(questions.indices, id: \ .self) { idx in
+                            ForEach(questions.indices, id: \.self) { idx in
                                 let q = questions[idx]
                                 VStack(alignment: .leading, spacing: 10) {
                                     Text(q.text)
@@ -1254,11 +1273,11 @@ struct SurvivorQuizView: View {
                                 }
                                 .padding()
                                 .background(
-                                    RoundedRectangle(cornerRadius: 22)
+                                    RoundedRectangle(cornerRadius: 18)
                                         .fill(Color.white)
-                                        .shadow(color: Color.blue.opacity(0.08), radius: 8, x: 0, y: 4)
+                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
                                 )
-                                .padding(.horizontal)
+                                .padding(.vertical, 6)
                             }
                             Text("Thank you for playing! Your answers have been submitted. Good luck!")
                                 .foregroundColor(.green)
@@ -1278,7 +1297,7 @@ struct SurvivorQuizView: View {
                                 .font(.title2)
                                 .foregroundColor(.gray)
                                 .padding(.horizontal)
-                            ForEach(questions.indices, id: \ .self) { idx in
+                            ForEach(questions.indices, id: \.self) { idx in
                                 let q = questions[idx]
                                 VStack(alignment: .leading, spacing: 10) {
                                     Image(systemName: q.icon)
@@ -1310,6 +1329,12 @@ struct SurvivorQuizView: View {
                                     )
                                 }
                                 .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(Color.white)
+                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                                )
+                                .padding(.vertical, 6)
                             }
                             Button(action: {
                                 let allAnswered = questions.indices.allSatisfy { answers[$0]?.isEmpty == false }
@@ -1342,8 +1367,55 @@ struct SurvivorQuizView: View {
                 }
             }
         }
-        .onAppear {
+        .task(id: quizTitle) {
+            await fetchQuizMetadataAndResponse()
+        }
+    }
+    // Fetch quiz metadata and check open/close
+    func fetchQuizMetadataAndResponse() async {
+        isLoading = true
+        quizOpen = true
+        quizOpenMessage = nil
+        quizOpenAt = nil
+        quizCloseAt = nil
+        // Fetch quiz metadata
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/survivor-quiz/\(quizId)") else {
+            isLoading = false
+            errorMessage = "Invalid quiz URL."
+            return
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let quiz = obj["quiz"] as? [String: Any] {
+                let openAtStr = quiz["openAt"] as? String
+                let closeAtStr = quiz["closeAt"] as? String
+                let dateFormatter = ISO8601DateFormatter()
+                let now = Date()
+                if let openAtStr = openAtStr, let openAt = dateFormatter.date(from: openAtStr) {
+                    quizOpenAt = openAt
+                    if now < openAt {
+                        quizOpen = false
+                        quizOpenMessage = "This quiz is not open yet."
+                    }
+                }
+                if let closeAtStr = closeAtStr, let closeAt = dateFormatter.date(from: closeAtStr) {
+                    quizCloseAt = closeAt
+                    if now > closeAt {
+                        quizOpen = false
+                        quizOpenMessage = "This quiz has closed."
+                    }
+                }
+            }
+        } catch {
+            isLoading = false
+            errorMessage = "Failed to load quiz metadata."
+            return
+        }
+        if quizOpen {
             fetchQuizResponse()
+        } else {
+            isLoading = false
         }
     }
     // MARK: - Networking
@@ -2592,10 +2664,109 @@ extension UIApplication {
 
 // Free NotificationsView (no paywall)
 struct NotificationsView: View {
+    @StateObject private var storeKitManager = StoreKitManager()
     @StateObject private var tilesViewModel = TilesViewModel()
+    @State private var isPurchasing = false
+    @State private var errorMessage: String?
     var body: some View {
-        GameView()
-            .environmentObject(tilesViewModel)
+        ZStack {
+            GameView()
+                .environmentObject(tilesViewModel)
+                .blur(radius: storeKitManager.hasPurchased ? 0 : 3)
+                .disabled(!storeKitManager.hasPurchased)
+            if !storeKitManager.hasPurchased {
+                VStack(spacing: 18) {
+                    Image(systemName: "lock.fill")
+                        .resizable()
+                        .frame(width: 48, height: 38)
+                        .foregroundColor(.yellow)
+                        .padding(.bottom, 8)
+                    Text("Unlock Notifications")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.black)
+                    Text("Get access to exclusive notifications for just $1.99.")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    HStack(spacing: 16) {
+                        Button(action: { purchase() }) {
+                            Text("Unlock for $1.99")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 24)
+                                .background(Color.yellow)
+                                .cornerRadius(12)
+                        }
+                        Button(action: { restore() }) {
+                            Text("Restore Purchases")
+                                .font(.subheadline)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    if isPurchasing {
+                        ProgressView("Processing...")
+                    }
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                }
+                .padding()
+                .background(Color.white.opacity(0.7))
+                .cornerRadius(22)
+                .shadow(radius: 16)
+                .padding(.horizontal, 24)
+            }
+        }
+        .onAppear {
+            Task { await storeKitManager.checkPurchased() }
+        }
+    }
+    func purchase() {
+        Task {
+            isPurchasing = true
+            do {
+                if let product = try await Product.products(for: [storeKitManager.productID]).first {
+                    let result = try await product.purchase()
+                    switch result {
+                    case .success:
+                        errorMessage = nil
+                        Task { await storeKitManager.checkPurchased() }
+                    case .userCancelled:
+                        errorMessage = "Purchase cancelled."
+                    default:
+                        errorMessage = "Purchase not completed."
+                    }
+                } else {
+                    errorMessage = "Product not found."
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isPurchasing = false
+        }
+    }
+    func restore() {
+        Task {
+            isPurchasing = true
+            do {
+                for await result in Transaction.currentEntitlements {
+                    if case .verified(let transaction) = result, transaction.productID == storeKitManager.productID {
+                        errorMessage = nil
+                        Task { await storeKitManager.checkPurchased() }
+                        isPurchasing = false
+                        return
+                    }
+                }
+                errorMessage = "No purchases to restore."
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isPurchasing = false
+        }
     }
 }
 
@@ -2676,6 +2847,7 @@ struct PaywallView: View {
     }
     func restore() {
         Task {
+            isPurchasing = true
             do {
                 for await result in Transaction.currentEntitlements {
                     if case .verified(let transaction) = result, transaction.productID == productID {
@@ -2688,6 +2860,7 @@ struct PaywallView: View {
             } catch {
                 errorMessage = error.localizedDescription
             }
+            isPurchasing = false
         }
     }
 }
