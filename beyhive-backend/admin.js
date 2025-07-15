@@ -423,7 +423,8 @@ window.addEventListener('DOMContentLoaded', function() {
   // Call these on page load
   fetchDeviceStats();
   fetchDeviceTokens();
-  fetchGames(); // Fetch games on page load
+  // Comment out fetchGames() call
+  // fetchGames();
 
   // === Album Rankings Management ===
   const albumRankingsSection = document.createElement('div');
