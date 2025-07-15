@@ -356,12 +356,17 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/registereddevices')
       .then(res => res.json())
       .then(data => {
-        document.getElementById('registeredDevices').textContent = 'Registered Devices: ' + (data.count || 0);
+        document.getElementById('registeredDevices').textContent = 'App Downloads (Unique Devices): ' + (data.count || 0);
       });
     fetch('/api/admin/devicetokencount')
       .then(res => res.json())
       .then(data => {
         document.getElementById('deviceTokenCount').textContent = 'Total Device Tokens: ' + (data.count || 0);
+      });
+    fetch('/api/admin/onlinenow')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('activeUserCount').textContent = 'Active Users: ' + (data.count || 0);
       });
   }
 
