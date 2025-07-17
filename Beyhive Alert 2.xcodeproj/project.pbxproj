@@ -30,7 +30,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4F2DAC832E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */ = {
+		4F19910F2E2721AC000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AlbumRankingGameView.swift,
@@ -38,49 +38,44 @@
 				Assets.xcassets,
 				Beyhive_Alert_2App.swift,
 				ContentView.swift,
+				DailyTriviaView.swift,
 				Events/Event.swift,
+				Events/EventsListView.swift,
 				Events/EventsViewModel.swift,
-				"GoogleService-Info.plist",
-				"IBMPlexMono-Bold.ttf",
-				"IBMPlexMono-Light.ttf",
-				"IBMPlexMono-Medium.ttf",
-				"IBMPlexMono-Regular.ttf",
+				InstagramFeedView.swift,
 				LivestreamsView.swift,
 				OutfitsView.swift,
 				OutfitsViewModel.swift,
-				ScheduleViewPatch.swift,
 			);
 			target = 4F9D93052E14661600829250 /* Beyhive Alert 2 */;
 		};
-		4F2DAC842E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */ = {
+		4F1991102E2721AC000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				AppDelegate.swift,
-				Assets.xcassets,
-				Beyhive_Alert_2App.swift,
-				"GoogleService-Info.plist",
-				"IBMPlexMono-Bold.ttf",
-				"IBMPlexMono-Light.ttf",
-				"IBMPlexMono-Medium.ttf",
-				"IBMPlexMono-Regular.ttf",
+				ContentView.swift,
+				DailyTriviaView.swift,
 				LivestreamsView.swift,
-				OutfitsView.swift,
-				OutfitsViewModel.swift,
-				ScheduleViewPatch.swift,
 			);
-			target = 4F9D931C2E14661700829250 /* Beyhive Alert 2UITests */;
+			target = 4F9D93122E14661700829250 /* Beyhive Alert 2Tests */;
 		};
-		4FD689692E15FEEA00A7018A /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */ = {
+		4F1991132E272661000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AlbumRankingGameView.swift,
+				AppDelegate.swift,
+				Assets.xcassets,
+				Beyhive_Alert_2App.swift,
 				ContentView.swift,
+				DailyTriviaView.swift,
 				Events/Event.swift,
+				Events/EventsListView.swift,
 				Events/EventsViewModel.swift,
+				InstagramFeedView.swift,
 				LivestreamsView.swift,
-				ScheduleViewPatch.swift,
+				OutfitsView.swift,
+				OutfitsViewModel.swift,
 			);
-			target = 4F9D93122E14661700829250 /* Beyhive Alert 2Tests */;
+			target = 4F9D931C2E14661700829250 /* Beyhive Alert 2UITests */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -88,9 +83,9 @@
 		4F2DAC7F2E14781E00CAA57C /* Beyhive Alert 2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4F2DAC832E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */,
-				4FD689692E15FEEA00A7018A /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */,
-				4F2DAC842E14781E00CAA57C /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */,
+				4F19910F2E2721AC000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2" target */,
+				4F1991102E2721AC000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2Tests" target */,
+				4F1991132E272661000DE7A3 /* Exceptions for "Beyhive Alert 2" folder in "Beyhive Alert 2UITests" target */,
 			);
 			path = "Beyhive Alert 2";
 			sourceTree = "<group>";
@@ -449,11 +444,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Beyhive Alert 2/Beyhive Alert 2.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = A46AH86Z73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Beyhive-Alert-2-Info.plist";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add Beyoncé tour events.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app needs local network access to connect to the push notification server.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app may use your location to show nearby tour events and provide location-based notifications.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app may use your location to show nearby tour events and provide location-based notifications.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -463,7 +462,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chasedavis.Beyhive-Alert-2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -482,11 +481,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Beyhive Alert 2/Beyhive Alert 2.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = A46AH86Z73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Beyhive-Alert-2-Info.plist";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app needs access to your calendar to add Beyoncé tour events.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app needs local network access to connect to the push notification server.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app may use your location to show nearby tour events and provide location-based notifications.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app may use your location to show nearby tour events and provide location-based notifications.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -496,7 +499,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.chasedavis.Beyhive-Alert-2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

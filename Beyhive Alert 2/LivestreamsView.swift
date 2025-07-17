@@ -28,6 +28,7 @@ class LivestreamsViewModel: ObservableObject {
 
 struct LivestreamsView: View {
     @StateObject var viewModel = LivestreamsViewModel()
+    var selectedTab: Binding<BeyhiveTab>? = nil // Add this binding for tab navigation
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
@@ -58,13 +59,16 @@ struct LivestreamsView: View {
                 }
                 .padding(.bottom, 8)
                 VStack(spacing: 16) {
-                    Link(destination: URL(string: "https://beyonce.com/")!) {
+                    // Replace Link with Button for games navigation
+                    Button(action: {
+                        selectedTab?.wrappedValue = .home
+                    }) {
                         HStack {
-                            Text("Beyoncé's Official Website")
+                            Text("Play our games now!")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(Color(red: 0.13, green: 0.15, blue: 0.28))
                             Spacer()
-                            Text("Open")
+                            Text("Go")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 18)

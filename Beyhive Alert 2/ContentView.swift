@@ -14,6 +14,8 @@ import UIKit
 import StoreKit
 // Import EventsViewModel
 // If needed, add: import Events
+// Import OutfitsViewModel for outfit dropdowns
+import Combine
 
 enum BeyhiveTab: Int, CaseIterable {
     case home, videos, game, trackers, schedule
@@ -90,6 +92,9 @@ struct SettingsView: View {
     @State private var altEmail: String = UserDefaults.standard.string(forKey: "altEmail") ?? ""
     @State private var saveMessage: String? = nil
     @State private var showDeleteAlert = false
+    @StateObject private var storeKitManager = StoreKitManager()
+    @State private var isRestoring = false
+    @State private var restoreMessage: String? = nil
     var body: some View {
         VStack(spacing: 0) {
             // Light yellow top bar
@@ -161,6 +166,7 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 SettingsRow(title: "Share our app", action: { showShareSheet = true })
                 SettingsRow(title: "Privacy Policy & Terms of Service", action: { showPrivacyTerms = true })
+                SettingsRow(title: "Restore Purchases", action: { restorePurchases() })
                 SettingsRow(title: "Delete My Account", isDestructive: true, action: { showDeleteAlert = true })
             }
             .background(Color.white)
@@ -221,9 +227,7 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [
-                "Check out Beyhive Alert - the ultimate Beyoncé fan app! 🐝✨",
-                "Stay connected to Beyoncé's tour, get notifications, and join the Beyhive community.",
-                "Download now: https://apps.apple.com/app/beyhive-alert/id1234567890" // Replace with your actual App Store link
+                URL(string: "https://apps.apple.com/us/app/beyhive-alert/id6748089455")!
             ])
         }
         .alert("Are you sure you want to delete your account? This cannot be undone.", isPresented: $showDeleteAlert) {
@@ -235,6 +239,41 @@ struct SettingsView: View {
                 // Optionally, navigate to a login or confirmation screen
             }
             Button("Cancel", role: .cancel) { }
+        }
+        // Show restore message if present
+        if let msg = restoreMessage {
+            Text(msg)
+                .font(.caption2)
+                .foregroundColor(msg.contains("restored") ? .green : .red)
+                .padding(.top, 8)
+        }
+        if isRestoring {
+            ProgressView("Restoring...")
+                .padding(.top, 8)
+        }
+    }
+    // Add this function inside SettingsView
+    func restorePurchases() {
+        isRestoring = true
+        restoreMessage = nil
+        Task {
+            do {
+                var found = false
+                for await result in Transaction.currentEntitlements {
+                    if case .verified(let transaction) = result, transaction.productID == storeKitManager.productID {
+                        found = true
+                        restoreMessage = "Purchases restored!"
+                        await storeKitManager.checkPurchased()
+                        break
+                    }
+                }
+                if !found {
+                    restoreMessage = "No purchases to restore."
+                }
+            } catch {
+                restoreMessage = error.localizedDescription
+            }
+            isRestoring = false
         }
     }
 }
@@ -646,7 +685,7 @@ struct ContentView: View {
                 Group {
                     switch selectedTab {
                     case .home: HomeView(selectedTab: $selectedTab)
-                    case .videos: LivestreamsView()
+                    case .videos: LivestreamsView(selectedTab: $selectedTab)
                     case .game: NotificationsView() // Free notifications view
                     case .trackers: TrackersView()
                     case .schedule: ScheduleView()
@@ -737,14 +776,6 @@ struct CustomTabBar: View {
 
 // MARK: - Placeholder Views
 
-struct InstagramPost: Identifiable {
-    let id = UUID()
-    let title: String
-    let link: String
-    let imageURL: String
-    let pubDate: String
-}
-
 struct Article: Identifiable {
     let id = UUID()
     let title: String
@@ -760,114 +791,6 @@ extension String {
         if days == 0 { return "Today" }
         if days == 1 { return "1 day ago" }
         return "\(days) days ago"
-    }
-}
-
-struct InstagramPostCard: View {
-    let profileImageURL: String
-    let profileName: String
-    let username: String
-    let daysAgo: String
-    let profileLink: String
-    let postImageURL: String
-    let postLink: String
-    let caption: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Profile Header
-            HStack(alignment: .center) {
-                AsyncImage(url: URL(string: profileImageURL)) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color(.systemGray5)
-                }
-                .frame(width: 44, height: 44)
-                .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(profileName)
-                        .font(.system(size: 12, weight: .semibold))
-                    Text("\(username) • \(daysAgo)")
-                        .font(.caption2)
-                        .foregroundColor(.gray)
-                }
-                Spacer()
-                Link("See Profile", destination: URL(string: profileLink)!)
-                    .font(.caption2)
-                    .foregroundColor(.white)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                    .background(Color.blue)
-                    .cornerRadius(8)
-            }
-            .padding()
-
-            // Post Image
-            if let url = URL(string: postImageURL), !postImageURL.isEmpty {
-                AsyncImage(url: url) { image in
-                    image.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color(.systemGray5)
-                }
-                .frame(height: 220)
-                .clipped()
-            }
-
-            // View More Button
-            Link("View more on Instagram", destination: URL(string: postLink)!)
-                .font(.caption2)
-                .foregroundColor(.blue)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Divider().padding(.horizontal)
-
-            // Caption
-            Text(caption)
-                .font(.caption2)
-                .foregroundColor(.black)
-                .padding([.horizontal, .bottom])
-        }
-        .background(Color.white)
-        .cornerRadius(20)
-        .shadow(color: Color(.black).opacity(0.08), radius: 8, x: 0, y: 4)
-        .padding(.horizontal)
-        .padding(.vertical, 8)
-    }
-}
-
-// Card-style button for homepage
-struct HomeCardButton: View {
-    let icon: AnyView
-    let title: String
-    let subtitle: String
-    let gradient: LinearGradient
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(alignment: .center, spacing: 16) {
-                icon
-                    .frame(width: 44, height: 44)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.black)
-                    Text(subtitle)
-                        .font(.system(size: 11))
-                        .foregroundColor(.black.opacity(0.85))
-                }
-                Spacer()
-            }
-            .padding()
-            .background(gradient)
-            .cornerRadius(28)
-            .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .padding(.horizontal)
     }
 }
 
@@ -946,7 +869,6 @@ struct BeyonceNonAffiliationSheet: View {
 
 struct HomeView: View {
     @Binding var selectedTab: BeyhiveTab
-    // Remove all @StateObject RSS feed view models and all Instagram section code
     let pubDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -954,59 +876,64 @@ struct HomeView: View {
         return f
     }()
     @State private var showSurvivor = false
-    @State private var showAlbumRanker = false // Add this state
+    @State private var showAlbumRanker = false
     @State private var showNonAffiliationSheet = false
+    @State private var showDailyTrivia = false
+    @State private var partners: [Partner] = []
+    @State private var isLoadingPartners = true
+    @State private var partnersError: String? = nil
+
+    func fetchPartners() async {
+        isLoadingPartners = true
+        partnersError = nil
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/partners") else {
+            partnersError = "Invalid partners URL."
+            isLoadingPartners = false
+            return
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decoded = try JSONDecoder().decode([String: [Partner]].self, from: data)
+            if let loaded = decoded["partners"] {
+                partners = loaded
+            } else {
+                partnersError = "No partners found."
+            }
+        } catch {
+            partnersError = "Failed to load partners."
+        }
+        isLoadingPartners = false
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 32) {
                 BeyonceNonAffiliationBanner(showSheet: $showNonAffiliationSheet)
                 // Welcome Section
-                VStack(spacing: 20) {
+                VStack(spacing: 0) {
                     Image("Bee_Icon")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 120, height: 120)
                     Text("Welcome to Beyhive Alert!")
                         .font(.system(size: 18, weight: .medium))
+                    Spacer().frame(height: 8)
                     Text("Stay connected to Beyoncé's tour and the Beyhive community.")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.black.opacity(0.9))
                 }
-                .padding(.top, 32)
                 // Card Buttons Section
-                VStack(spacing: 20) {
-                    HomeCardButton(
-                        icon: AnyView(
-                            Image("Bee_Icon")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 70, height: 70)
-                        ),
-                        title: "BeyHive Alert",
-                        subtitle: "Official Beyhive App",
-                        gradient: LinearGradient(
-                            gradient: Gradient(colors: [Color(red: 0.8, green: 0.8, blue: 0.8), Color.white]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        action: {
-                            // Action for BeyHive Alert
-                        }
-                    )
-                }
-                // Move Games section up directly after BeyHive Alert card
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         Image("Bee_Icon")
                             .resizable()
                             .frame(width: 70, height: 70)
                         Text("Games")
-                            .font(.system(size: 32, weight: .bold, design: .rounded)) // Restore original font
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundColor(.black)
                         Spacer()
                     }
                     .padding(.horizontal)
-                    // Horizontal scrollable games row
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 20) {
                             Button(action: { showSurvivor = true }) {
@@ -1020,6 +947,28 @@ struct HomeView: View {
                                         .font(.system(size: 20, weight: .bold, design: .rounded))
                                         .foregroundColor(.black)
                                     Text("Guess outfits, songs, and more during every show!")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(.black)
+                                        .multilineTextAlignment(.center)
+                                        .frame(maxWidth: 240)
+                                }
+                                .frame(width: 340, height: 140)
+                                .background(
+                                    LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                                .cornerRadius(28)
+                            }
+                            Button(action: { showDailyTrivia = true }) {
+                                VStack(alignment: .center, spacing: 12) {
+                                    Image(systemName: "questionmark.circle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 44, height: 44)
+                                        .foregroundColor(.black)
+                                    Text("Daily Trivia")
+                                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                                        .foregroundColor(.black)
+                                    Text("Test your Beyoncé knowledge with a new question every day!")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(.black)
                                         .multilineTextAlignment(.center)
@@ -1057,7 +1006,66 @@ struct HomeView: View {
                         .padding(.horizontal)
                     }
                 }
-                // Remove Instagram/RSS feed section
+                // Partners Section (dynamic)
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 8) {
+                        Image("Bee_Icon")
+                            .resizable()
+                            .frame(width: 70, height: 70)
+                        Text("Partners")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.black)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    if isLoadingPartners {
+                        ProgressView("Loading partners...")
+                            .padding()
+                    } else if let error = partnersError {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .padding()
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 20) {
+                                ForEach(partners) { partner in
+                                    Button(action: {
+                                        if let url = URL(string: partner.link) {
+                                            UIApplication.shared.open(url)
+                                        }
+                                    }) {
+                                        VStack(alignment: .center, spacing: 12) {
+                                            Image(systemName: partner.icon)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 44, height: 44)
+                                                .foregroundColor(.black)
+                                            Text(partner.name)
+                                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                                .foregroundColor(.black)
+                                            Text(partner.description)
+                                                .font(.system(size: 13, weight: .medium))
+                                                .foregroundColor(.black)
+                                                .multilineTextAlignment(.center)
+                                                .frame(maxWidth: 240)
+                                        }
+                                        .frame(width: 340, height: 140)
+                                        .background(
+                                            LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        )
+                                        .cornerRadius(28)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+                .task {
+                    await fetchPartners()
+                }
+                // Instagram feed section
+                InstagramFeedView()
                 // Divider
                 HStack {
                     Spacer()
@@ -1067,56 +1075,18 @@ struct HomeView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 40)
-                // Recent Articles Section (keep if desired)
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Recent Articles")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal)
-                    let recentArticles = [
-                        Article(title: "Audience Report: Beyoncé's Hometown Throwdown", source: "The New York Times", date: "1 day ago", url: "https://www.nytimes.com/2025/07/03/arts/music/beyonce-hometown-throwdown.html"),
-                        Article(title: "Beyoncé, Fireworks, Baseball: Your Guide to July 4th Weekend in DC", source: "Globely News", date: "4 minutes ago", url: "https://globelynews.com/2025/07/04/beyonce-fireworks-baseball-dc-guide/"),
-                        Article(title: "Beyoncé's Cowboy Carter tour hits Atlanta in one week —and yes, she's performing on 7/11", source: "11Alive.com", date: "1 hour ago", url: "https://www.11alive.com/article/entertainment/music/beyonce-cowboy-carter-tour-atlanta-7-11/85-1234567890"),
-                        Article(title: "Rita Ora Reveals Beyoncé's Reaction to Rumors She Was 'Becky With the Good Hair'", source: "E! Online", date: "3 hours ago", url: "https://www.eonline.com/news/ritao-beyonce-becky-good-hair"),
-                        Article(title: "Rita Ora Reveals Beyoncé Was 'My Protector' amid 'Becky with the Good Hair'", source: "People.com", date: "21 hours ago", url: "https://people.com/music/rita-ora-beyonce-my-protector-becky-with-the-good-hair/")
-                    ]
-                    ForEach(recentArticles) { article in
-                        Link(destination: URL(string: article.url)!) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text(article.title)
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(.black)
-                                        .lineLimit(2)
-                                    Spacer()
-                                }
-                                HStack {
-                                    Text(article.source)
-                                        .font(.caption2)
-                                        .foregroundColor(.purple)
-                                        .fontWeight(.medium)
-                                    Spacer()
-                                    Text(article.date)
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
-                            }
-                            .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
+                // Recent Articles Section removed
             }
         }
         .background(Color.white.ignoresSafeArea())
         .sheet(isPresented: $showSurvivor) {
             SurvivorView()
         }
-        .sheet(isPresented: $showAlbumRanker) { // Add this sheet
+        .sheet(isPresented: $showAlbumRanker) {
             AlbumRankingGameView()
+        }
+        .sheet(isPresented: $showDailyTrivia) {
+            DailyTriviaView()
         }
     }
 }
@@ -1125,6 +1095,403 @@ struct SurvivorRound: Identifiable {
     let id = UUID()
     let name: String
     var completed: Bool
+}
+
+// SurvivorQuizListView definition (place above SurvivorView and SurvivorQuizView)
+struct SurvivorQuizListView: View {
+    let quizzes: [(title: String, id: String)]
+    let onQuizTap: (( (title: String, id: String) ) -> Void)
+    var body: some View {
+        VStack(spacing: 24) {
+            ForEach(quizzes, id: \ .id) { quiz in
+                Button(action: { onQuizTap(quiz) }) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(quiz.title)
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundColor(.black)
+                            Text("Quiz")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.black.opacity(0.8))
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.black.opacity(0.8))
+                            .font(.title2)
+                    }
+                    .padding()
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(22)
+                    .shadow(color: Color.blue.opacity(0.12), radius: 10, x: 0, y: 6)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.horizontal, 24)
+            }
+        }
+        .padding(.top, 32)
+    }
+}
+
+// Restore SurvivorQuizView (latest working version, with all quiz logic, async loading, and navigation)
+struct SurvivorQuizView: View {
+    let quizTitle: String
+    @Environment(\.dismiss) private var dismiss
+    @State private var answers: [Int: String] = [:]
+    @State private var showDropdown: [Int: Bool] = [:]
+    @State private var showIncompleteAlert = false
+    @State private var isLoading = true
+    @State private var hasSubmitted = false
+    @State private var submittedAnswers: [Int: String] = [:]
+    @State private var showConfirmation = false
+    @State private var errorMessage: String? = nil
+    @State private var quizOpen: Bool = true
+    @State private var quizOpenMessage: String? = nil
+    @State private var quizOpenAt: Date? = nil
+    @State private var quizCloseAt: Date? = nil
+    @StateObject private var outfitsViewModel = OutfitsViewModel()
+    @State private var questions: [QuizQuestion] = []
+
+    var userEmail: String {
+        UserDefaults.standard.string(forKey: "email") ?? ""
+    }
+    var userIdForQuiz: String {
+        let email = UserDefaults.standard.string(forKey: "email") ?? ""
+        if !email.isEmpty {
+            return email
+        } else {
+            return UIDevice.current.identifierForVendor?.uuidString ?? "anonymous"
+        }
+    }
+    var quizId: String {
+        switch quizTitle {
+        case "Las Vegas Night 1": return "vegas_n1"
+        case "Las Vegas Night 2": return "vegas_n2"
+        default: return quizTitle.replacingOccurrences(of: " ", with: "_").lowercased()
+        }
+    }
+
+    struct QuizQuestion: Identifiable, Codable {
+        var id: Int { index }
+        let index: Int
+        let text: String
+        let points: Int
+        let options: [String]
+        let icon: String?
+    }
+
+    func isOutfitQuestion(_ q: QuizQuestion) -> Bool {
+        let outfitKeywords = ["outfit", "wear", "bodysuit", "jumpsuit"]
+        let text = q.text.lowercased()
+        return outfitKeywords.contains { text.contains($0) }
+    }
+
+    func loadQuizAndOutfits() async {
+        isLoading = true
+        await outfitsViewModel.fetchOutfits()
+        await fetchQuizMetadataAndQuestions()
+        isLoading = false
+    }
+
+    func fetchQuizMetadataAndQuestions() async {
+        isLoading = true
+        quizOpen = true
+        quizOpenMessage = nil
+        quizOpenAt = nil
+        quizCloseAt = nil
+        questions = []
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/survivor-quiz/\(quizId)") else {
+            isLoading = false
+            errorMessage = "Invalid quiz URL."
+            return
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let quiz = obj["quiz"] as? [String: Any] {
+                let openAtStr = quiz["openAt"] as? String
+                let closeAtStr = quiz["closeAt"] as? String
+                let dateFormatter = ISO8601DateFormatter()
+                let now = Date()
+                if let openAtStr = openAtStr, let openAt = dateFormatter.date(from: openAtStr) {
+                    quizOpenAt = openAt
+                    if now < openAt {
+                        quizOpen = false
+                        quizOpenMessage = "This quiz is not open yet."
+                    }
+                }
+                if let closeAtStr = closeAtStr, let closeAt = dateFormatter.date(from: closeAtStr) {
+                    quizCloseAt = closeAt
+                    if now > closeAt {
+                        quizOpen = false
+                        quizOpenMessage = "This quiz has closed."
+                    }
+                }
+                if let qArr = quiz["questions"] as? [[String: Any]] {
+                    var parsed: [QuizQuestion] = []
+                    for (idx, q) in qArr.enumerated() {
+                        let text = q["text"] as? String ?? ""
+                        let points = q["points"] as? Int ?? 0
+                        let options = q["options"] as? [String] ?? []
+                        parsed.append(QuizQuestion(index: idx, text: text, points: points, options: options, icon: nil))
+                    }
+                    questions = parsed
+                }
+            }
+        } catch {
+            errorMessage = "Failed to load quiz metadata/questions."
+            isLoading = false
+            return
+        }
+        isLoading = false
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .ignoresSafeArea()
+                if isLoading {
+                    ProgressView("Loading...")
+                } else if let msg = quizOpenMessage {
+                    VStack(spacing: 24) {
+                        Text(msg)
+                            .font(.title2)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                        if let openAt = quizOpenAt {
+                            Text("Opens: \(openAt.formatted(date: .abbreviated, time: .shortened))")
+                                .foregroundColor(.gray)
+                        }
+                        if let closeAt = quizCloseAt {
+                            Text("Closes: \(closeAt.formatted(date: .abbreviated, time: .shortened))")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                } else if hasSubmitted {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 28) {
+                            Text(quizTitle)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(.black)
+                                .padding(.top, 24)
+                                .padding(.horizontal)
+                            Text("Your Answers")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                            ForEach(questions) { q in
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(q.text)
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.black)
+                                    Text(submittedAnswers[q.index] ?? "No answer")
+                                        .foregroundColor(.gray)
+                                        .padding(.bottom, 8)
+                                }
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(Color.white)
+                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                                )
+                                .padding(.vertical, 6)
+                            }
+                            Text("Thank you for playing! Your answers have been submitted. Good luck!")
+                                .foregroundColor(.green)
+                                .font(.caption)
+                                .padding(.horizontal)
+                        }
+                    }
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 28) {
+                            Text(quizTitle)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundColor(.black)
+                                .padding(.top, 24)
+                                .padding(.horizontal)
+                            Text("Questions")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                                .padding(.horizontal)
+                            ForEach(questions) { q in
+                                VStack(alignment: .leading, spacing: 10) {
+                                    if let icon = q.icon {
+                                        Image(systemName: icon)
+                                            .foregroundColor(.gray)
+                                            .font(.title2)
+                                    }
+                                    Text("Question \(q.index+1)")
+                                        .font(.headline)
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                    Text("\(q.points) pts")
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 4)
+                                        .background(Color.red.opacity(0.08))
+                                        .cornerRadius(10)
+                                    Text("Required")
+                                        .font(.caption2)
+                                        .foregroundColor(.red)
+                                    Text(q.text)
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.black)
+                                    if isOutfitQuestion(q) {
+                                        if outfitsViewModel.isLoading {
+                                            ProgressView("Loading outfits...")
+                                        } else if !outfitsViewModel.outfits.isEmpty {
+                                            CustomDropdown(
+                                                options: outfitsViewModel.outfits.map { (title: $0.name, description: nil, imageName: $0.imageName, imageUrl: $0.imageUrl) } + [(title: "New", description: nil, imageName: nil, imageUrl: nil)],
+                                                selection: answers[q.index] ?? "",
+                                                onSelect: { answers[q.index] = $0 },
+                                                showDropdown: showDropdown[q.index] ?? false,
+                                                setShowDropdown: { showDropdown[q.index] = $0 }
+                                            )
+                                        } else {
+                                            Text("No outfits available.")
+                                                .foregroundColor(.gray)
+                                        }
+                                    } else {
+                                        CustomDropdown(
+                                            options: q.options.map { (title: $0, description: nil, imageName: nil, imageUrl: nil) },
+                                            selection: answers[q.index] ?? "",
+                                            onSelect: { answers[q.index] = $0 },
+                                            showDropdown: showDropdown[q.index] ?? false,
+                                            setShowDropdown: { showDropdown[q.index] = $0 }
+                                        )
+                                    }
+                                }
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(Color.white)
+                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                                )
+                                .padding(.vertical, 6)
+                            }
+                            Button(action: {
+                                let allAnswered = questions.indices.allSatisfy { answers[$0]?.isEmpty == false }
+                                if allAnswered {
+                                    submitQuizAnswers()
+                                } else {
+                                    showIncompleteAlert = true
+                                }
+                            }) {
+                                Text("Submit")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(16)
+                                    .padding(.horizontal)
+                            }
+                            .alert(isPresented: $showIncompleteAlert) {
+                                Alert(title: Text("Incomplete"), message: Text(errorMessage ?? "Please answer all questions before submitting."), dismissButton: .default(Text("OK")))
+                            }
+                        }
+                    }
+                }
+            }
+            .task {
+                await loadQuizAndOutfits()
+            }
+            .onChange(of: userEmail) { newEmail in
+                if !isLoading {
+                    Task {
+                        await loadQuizAndOutfits()
+                    }
+                }
+            }
+        }
+    }
+
+    func submitQuizAnswers() {
+        let urlString = "https://beyhive-backend.onrender.com/api/survivor-quiz/response"
+        guard let url = URL(string: urlString) else {
+            errorMessage = "Invalid URL."
+            showIncompleteAlert = true
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let answersString = answers.mapKeys { String($0) }
+        let body: [String: Any] = [
+            "quizId": quizId,
+            "userId": userIdForQuiz,
+            "answers": answersString
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    errorMessage = "Quiz submission failed: \(error.localizedDescription)"
+                    showIncompleteAlert = true
+                    return
+                }
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                    let body = String(data: data ?? Data(), encoding: .utf8) ?? "<no body>"
+                    errorMessage = "Submission failed (\(httpResponse.statusCode)): \(body)"
+                    showIncompleteAlert = true
+                    return
+                }
+                if let data = data,
+                   let result = try? JSONDecoder().decode(ServerResponse.self, from: data),
+                   result.success {
+                    submittedAnswers = answers
+                    hasSubmitted = true
+                    showConfirmation = true
+                } else {
+                    let msg = (try? JSONDecoder().decode(ServerResponse.self, from: data ?? Data()))?.message ?? "Submission failed"
+                    errorMessage = msg
+                    showIncompleteAlert = true
+                }
+            }
+        }.resume()
+    }
+
+    // Add fetchQuizResponse if missing
+    func fetchQuizResponse() {
+        isLoading = true
+        let urlString = "https://beyhive-backend.onrender.com/api/survivor-quiz/response/\(quizId)?userId=\(userIdForQuiz)"
+        guard let url = URL(string: urlString) else {
+            isLoading = false
+            errorMessage = "Invalid URL."
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                isLoading = false
+                if let error = error {
+                    errorMessage = "Failed to load previous answers: \(error.localizedDescription)"
+                    hasSubmitted = false
+                    return
+                }
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                    let body = String(data: data ?? Data(), encoding: .utf8) ?? "<no body>"
+                    errorMessage = "Failed to load previous answers (\(httpResponse.statusCode)): \(body)"
+                    hasSubmitted = false
+                    return
+                }
+                if let data = data,
+                   let result = try? JSONDecoder().decode(FetchResponse.self, from: data),
+                   let resp = result.response {
+                    // Convert [String: String] to [Int: String]
+                    var intAnswers: [Int: String] = [:]
+                    for (k, v) in resp.answers {
+                        if let idx = Int(k) { intAnswers[idx] = v }
+                    }
+                    submittedAnswers = intAnswers
+                    hasSubmitted = true
+                } else {
+                    hasSubmitted = false
+                }
+            }
+        }.resume()
+    }
 }
 
 struct SurvivorView: View {
@@ -1166,474 +1533,21 @@ struct SurvivorView: View {
                 showQuiz = true
             })
             Spacer()
+            // Add user note here
+            VStack {
+                Text("If one of the quizzes doesn't load for you on the first try, go out of it, click on a different quiz, and then go back into the quiz you originally wanted. It should work!")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 18)
+            }
         }
         .sheet(isPresented: $showQuiz) {
             if let quizTitle = selectedQuiz {
                 SurvivorQuizView(quizTitle: quizTitle)
             }
         }
-    }
-}
-
-struct SurvivorQuizView: View {
-    let quizTitle: String
-    @Environment(\.dismiss) private var dismiss
-    @State private var answers: [Int: String] = [:]
-    @State private var showDropdown: [Int: Bool] = [:]
-    @State private var showIncompleteAlert = false
-    @State private var isLoading = true
-    @State private var hasSubmitted = false
-    @State private var submittedAnswers: [Int: String] = [:]
-    @State private var showConfirmation = false
-    @State private var errorMessage: String? = nil
-    @State private var quizOpen: Bool = true
-    @State private var quizOpenMessage: String? = nil
-    @State private var quizOpenAt: Date? = nil
-    @State private var quizCloseAt: Date? = nil
-    // Helper to get email from UserDefaults
-    var userEmail: String {
-        UserDefaults.standard.string(forKey: "email") ?? ""
-    }
-    var quizId: String {
-        switch quizTitle {
-        case "Las Vegas Night 1": return "vegas_n1"
-        case "Las Vegas Night 2": return "vegas_n2"
-        default: return quizTitle.replacingOccurrences(of: " ", with: "_").lowercased()
-        }
-    }
-    // Add the questions array here
-    let questions: [(text: String, points: Int, options: [(title: String, description: String?)], icon: String)] = [
-        ("What will the opening outfit be?", 3, [
-            ("BURBERRY", nil), ("LOEWE", nil), ("SPORTMAX", nil), ("MAISON MARGIELA", nil), ("RALPH LAUREN", nil), ("SCHIAPARELLI", nil), ("OTTOLINGER X THOM SOLO", nil), ("FERRAGAMO", nil), ("DOLCE & GABBANA", nil), ("VIVIENNE WESTWOOD", nil), ("LOEWE", nil), ("BALMAIN", nil), ("DAVID KOMA", nil), ("New", nil)
-        ], "tshirt"),
-        ("Will she wear a bodysuit?", 2, [("Yes", nil), ("No", nil)], "figure.stand"),
-        ("What will the primary color for the opening bodysuit be?", 11, [("Black", nil), ("White", nil), ("New", nil)], "paintpalette"),
-        ("What will she wear for Act 2?", 11, [("Newspaper jumpsuit", nil), ("New", nil)], "tshirt.fill"),
-        ("What outfit will she wear for Act 3?", 9, [
-            ("LOS ANGELES, NIGHT 1", nil), ("LOS ANGELES, NIGHT 2–5", nil), ("CHICAGO, NIGHT 1", nil), ("CHICAGO, NIGHT 2", nil), ("CHICAGO, NIGHT 3", nil), ("NEW JERSEY, NIGHT 1", nil), ("NEW JERSEY, NIGHT 2", nil), ("NEW JERSEY, NIGHT 3", nil), ("NEW JERSEY, NIGHT 4", nil), ("NEW JERSEY, NIGHT 5", nil), ("LONDON, NIGHT 1", nil), ("LONDON, NIGHT 2", nil), ("LONDON, NIGHT 3", nil), ("LONDON, NIGHT 4", nil), ("LONDON, NIGHT 5", nil), ("LONDON, NIGHT 6", nil), ("PARIS, NIGHT 1", nil), ("New", nil)
-        ], "tshirt"),
-        ("Will Rumi do something funny on stage?", 9, [("Yes", nil), ("No", nil)], "face.smiling"),
-        ("What will she wear for Act 4?", 10, [
-            ("Los Angeles, Night 1", nil), ("Los Angeles, Night 2", nil), ("Los Angeles, Night 3", nil), ("Los Angeles, Night 4", nil), ("Los Angeles, Night 5", nil), ("Chicago, Night 1", nil), ("Chicago, Night 2", nil), ("Chicago, Night 3", nil), ("New Jersey, Night 1", nil), ("New Jersey, Night 2", nil), ("New Jersey, Night 3", nil), ("New Jersey, Night 4", nil), ("New Jersey, Night 5", nil), ("London, Night 1", nil), ("London, Night 2", nil), ("London, Night 3", nil), ("London, Night 4", nil), ("London, Night 5", nil), ("London, Night 6", nil), ("Paris, Night 1", nil), ("New", nil)
-        ], "tshirt"),
-        ("What will she wear for Act 5?", 10, [
-            ("Los Angeles, Night 1", nil), ("Los Angeles, Night 2", nil), ("Los Angeles, Night 3", nil), ("Los Angeles, Night 4", nil), ("Los Angeles, Night 5", nil), ("Chicago, Night 1", nil), ("Chicago, Night 2", nil), ("Chicago, Night 3", nil), ("New Jersey, Night 1", nil), ("New Jersey, Night 2", nil), ("New Jersey, Night 3", nil), ("New Jersey, Night 4", nil), ("New Jersey, Night 5", nil), ("London, Night 1", nil), ("London, Night 2", nil), ("London, Night 3", nil), ("London, Night 4", nil), ("London, Night 5", nil), ("London, Night 6", nil), ("Paris, Night 1", nil), ("New", nil)
-        ], "tshirt"),
-        ("Will a special guest come out during Act 5?", 10, [("Yes", nil), ("No", nil)], "person.2"),
-        ("Will she perform the Renaissance act in something New?", 5, [("Yes", nil), ("No", nil)], "star"),
-        ("Will she perform 16 Carriages?", 10, [("Yes", nil), ("No", nil)], "car"),
-        ("Will she perform 16 Carriages on a horse or car?", 12, [("Gold Horse", nil), ("Red Cadillac Car", nil)], "car.fill"),
-        ("Will she start the show on time?", 4, [("Yes", nil), ("No", nil)], "clock"),
-        ("Will she tease Act III during this show?", 5, [("Yes", nil), ("No", nil)], "music.note")
-    ]
-    var body: some View {
-        NavigationView {
-            ZStack {
-                LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .ignoresSafeArea()
-                if isLoading {
-                    ProgressView("Loading...")
-                } else if let msg = quizOpenMessage {
-                    VStack(spacing: 24) {
-                        Text(msg)
-                            .font(.title2)
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                        if let openAt = quizOpenAt {
-                            Text("Opens: \(openAt.formatted(date: .abbreviated, time: .shortened))")
-                                .foregroundColor(.gray)
-                        }
-                        if let closeAt = quizCloseAt {
-                            Text("Closes: \(closeAt.formatted(date: .abbreviated, time: .shortened))")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                } else if hasSubmitted {
-                    // Read-only summary
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 28) {
-                            Text(quizTitle)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
-                                .padding(.top, 24)
-                                .padding(.horizontal)
-                            Text("Your Answers")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                                .padding(.horizontal)
-                            ForEach(questions.indices, id: \.self) { idx in
-                                let q = questions[idx]
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text(q.text)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(.black)
-                                    Text(submittedAnswers[idx] ?? "No answer")
-                                        .foregroundColor(.gray)
-                                        .padding(.bottom, 8)
-                                }
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 18)
-                                        .fill(Color.white)
-                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-                                )
-                                .padding(.vertical, 6)
-                            }
-                            Text("Thank you for playing! Your answers have been submitted. Good luck!")
-                                .foregroundColor(.green)
-                                .font(.caption)
-                                .padding(.horizontal)
-                        }
-                    }
-                } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 28) {
-                            Text(quizTitle)
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
-                                .padding(.top, 24)
-                                .padding(.horizontal)
-                            Text("Questions")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                                .padding(.horizontal)
-                            ForEach(questions.indices, id: \.self) { idx in
-                                let q = questions[idx]
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Image(systemName: q.icon)
-                                        .foregroundColor(.gray)
-                                        .font(.title2)
-                                    Text("Question \(idx+1)")
-                                        .font(.headline)
-                                        .foregroundColor(.gray)
-                                    Spacer()
-                                    Text("\(q.points) pts")
-                                        .font(.caption)
-                                        .foregroundColor(.red)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 4)
-                                        .background(Color.red.opacity(0.08))
-                                        .cornerRadius(10)
-                                    Text("Required")
-                                        .font(.caption2)
-                                        .foregroundColor(.red)
-                                    Text(q.text)
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(.black)
-                                    CustomDropdown(
-                                        options: q.options,
-                                        selection: answers[idx] ?? "",
-                                        onSelect: { answers[idx] = $0 },
-                                        showDropdown: showDropdown[idx] ?? false,
-                                        setShowDropdown: { showDropdown[idx] = $0 }
-                                    )
-                                }
-                                .padding()
-                                .background(
-                                    RoundedRectangle(cornerRadius: 18)
-                                        .fill(Color.white)
-                                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-                                )
-                                .padding(.vertical, 6)
-                            }
-                            Button(action: {
-                                let allAnswered = questions.indices.allSatisfy { answers[$0]?.isEmpty == false }
-                                if allAnswered {
-                                    if userEmail.isEmpty {
-                                        errorMessage = "Please enter your email in Settings to submit the quiz."
-                                        showIncompleteAlert = true
-                                        print("[DEBUG] Quiz submission failed: missing email")
-                                    } else {
-                                        submitQuizAnswers()
-                                    }
-                                } else {
-                                    showIncompleteAlert = true
-                                }
-                            }) {
-                                Text("Submit")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(Color.blue)
-                                    .cornerRadius(16)
-                                    .padding(.horizontal)
-                            }
-                            .alert(isPresented: $showIncompleteAlert) {
-                                Alert(title: Text("Incomplete"), message: Text(errorMessage ?? "Please answer all questions before submitting."), dismissButton: .default(Text("OK")))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .task(id: quizTitle) {
-            await fetchQuizMetadataAndResponse()
-        }
-    }
-    // Fetch quiz metadata and check open/close
-    func fetchQuizMetadataAndResponse() async {
-        isLoading = true
-        quizOpen = true
-        quizOpenMessage = nil
-        quizOpenAt = nil
-        quizCloseAt = nil
-        // Fetch quiz metadata
-        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/survivor-quiz/\(quizId)") else {
-            isLoading = false
-            errorMessage = "Invalid quiz URL."
-            return
-        }
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let quiz = obj["quiz"] as? [String: Any] {
-                let openAtStr = quiz["openAt"] as? String
-                let closeAtStr = quiz["closeAt"] as? String
-                let dateFormatter = ISO8601DateFormatter()
-                let now = Date()
-                if let openAtStr = openAtStr, let openAt = dateFormatter.date(from: openAtStr) {
-                    quizOpenAt = openAt
-                    if now < openAt {
-                        quizOpen = false
-                        quizOpenMessage = "This quiz is not open yet."
-                    }
-                }
-                if let closeAtStr = closeAtStr, let closeAt = dateFormatter.date(from: closeAtStr) {
-                    quizCloseAt = closeAt
-                    if now > closeAt {
-                        quizOpen = false
-                        quizOpenMessage = "This quiz has closed."
-                    }
-                }
-            }
-        } catch {
-            isLoading = false
-            errorMessage = "Failed to load quiz metadata."
-            return
-        }
-        if quizOpen {
-            fetchQuizResponse()
-        } else {
-            isLoading = false
-        }
-    }
-    // MARK: - Networking
-    func fetchQuizResponse() {
-        guard !userEmail.isEmpty else {
-            isLoading = false
-            errorMessage = "Please enter your email in Settings to take the quiz."
-            return
-        }
-        isLoading = true
-        let urlString = "https://beyhive-backend.onrender.com/api/survivor-quiz/response/\(quizId)?userId=\(userEmail)"
-        guard let url = URL(string: urlString) else {
-            isLoading = false
-            errorMessage = "Invalid URL."
-            return
-        }
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                isLoading = false
-                if let error = error {
-                    print("[DEBUG] Quiz fetch error: \(error.localizedDescription)")
-                    errorMessage = "Failed to load previous answers: \(error.localizedDescription)"
-                    hasSubmitted = false
-                    return
-                }
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                    let body = String(data: data ?? Data(), encoding: .utf8) ?? "<no body>"
-                    print("[DEBUG] Quiz fetch failed: status \(httpResponse.statusCode), body: \(body)")
-                    errorMessage = "Failed to load previous answers (\(httpResponse.statusCode)): \(body)"
-                    hasSubmitted = false
-                    return
-                }
-                if let data = data,
-                   let result = try? JSONDecoder().decode(FetchResponse.self, from: data),
-                   let resp = result.response {
-                    // Convert [String: String] to [Int: String]
-                    var intAnswers: [Int: String] = [:]
-                    for (k, v) in resp.answers {
-                        if let idx = Int(k) { intAnswers[idx] = v }
-                    }
-                    submittedAnswers = intAnswers
-                    hasSubmitted = true
-                } else {
-                    hasSubmitted = false
-                }
-            }
-        }.resume()
-    }
-    func submitQuizAnswers() {
-        if userEmail.isEmpty {
-            errorMessage = "Please enter your email in Settings to submit the quiz."
-            showIncompleteAlert = true
-            print("[DEBUG] Quiz submission failed: missing email")
-            return
-        }
-        let urlString = "https://beyhive-backend.onrender.com/api/survivor-quiz/response"
-        guard let url = URL(string: urlString) else {
-            errorMessage = "Invalid URL."
-            showIncompleteAlert = true
-            print("[DEBUG] Quiz submission failed: invalid URL")
-            return
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        // Convert answers to [String: String]
-        let answersString = answers.mapKeys { String($0) }
-        let body: [String: Any] = [
-            "quizId": quizId,
-            "userId": userEmail,
-            "answers": answersString
-        ]
-        print("[DEBUG] Submitting quiz answers: \(body)")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("[DEBUG] Quiz submission error: \(error)")
-                    errorMessage = "Quiz submission failed: \(error.localizedDescription)"
-                    showIncompleteAlert = true
-                    return
-                }
-                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                    let body = String(data: data ?? Data(), encoding: .utf8) ?? "<no body>"
-                    print("[DEBUG] Quiz submission failed: status \(httpResponse.statusCode), body: \(body)")
-                    errorMessage = "Submission failed (\(httpResponse.statusCode)): \(body)"
-                    showIncompleteAlert = true
-                    return
-                }
-                if let data = data,
-                   let result = try? JSONDecoder().decode(ServerResponse.self, from: data),
-                   result.success {
-                    submittedAnswers = answers
-                    hasSubmitted = true
-                    showConfirmation = true // Show confirmation
-                    print("[DEBUG] Quiz submission successful.")
-                } else {
-                    let msg = (try? JSONDecoder().decode(ServerResponse.self, from: data ?? Data()))?.message ?? "Submission failed"
-                    print("[DEBUG] Quiz submission failed: \(msg)")
-                    errorMessage = msg
-                    showIncompleteAlert = true
-                }
-            }
-        }.resume()
-    }
-}
-// Helper for mapping Int keys to String keys
-extension Dictionary where Key == Int, Value == String {
-    func mapKeys<T>(_ transform: (Int) -> T) -> [T: String] {
-        var result: [T: String] = [:]
-        for (k, v) in self { result[transform(k)] = v }
-        return result
-    }
-}
-// Codable structs for backend responses
-struct FetchResponse: Codable {
-    let response: QuizResponse?
-}
-struct QuizResponse: Codable {
-    let answers: [String: String]
-}
-struct ServerResponse: Codable {
-    let success: Bool
-    let message: String?
-}
-
-// Custom dropdown component
-struct CustomDropdown: View {
-    let options: [(title: String, description: String?)]
-    let selection: String
-    let onSelect: (String) -> Void
-    var showDropdown: Bool
-    let setShowDropdown: (Bool) -> Void
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button(action: { setShowDropdown(!showDropdown) }) {
-                HStack {
-                    Text(selection.isEmpty ? "Select an answer" : selection)
-                        .foregroundColor(selection.isEmpty ? .gray : .black)
-                        .font(.body)
-                    Spacer()
-                    Image(systemName: showDropdown ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal)
-                .frame(height: 44)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(LinearGradient(gradient: Gradient(colors: [Color.red, Color.blue]), startPoint: .leading, endPoint: .trailing), lineWidth: 1.5)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white))
-                )
-            }
-            .buttonStyle(PlainButtonStyle())
-            if showDropdown {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(options.indices, id: \ .self) { idx in
-                        let option = options[idx]
-                        Button(action: {
-                            onSelect(option.title)
-                            setShowDropdown(false)
-                        }) {
-                            HStack {
-                                Text(option.title)
-                                    .foregroundColor(.black)
-                                    .padding(.vertical, 10)
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                        }
-                        .background(selection == option.title ? Color.red.opacity(0.08) : Color.clear)
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white)
-                        .shadow(color: Color.gray.opacity(0.15), radius: 8, x: 0, y: 4)
-                )
-                .padding(.top, 2)
-            }
-        }
-        .animation(.easeInOut(duration: 0.18), value: showDropdown)
-    }
-}
-
-struct SurvivorQuizListView: View {
-    let quizzes: [(title: String, id: String)]
-    let onQuizTap: (( (title: String, id: String) ) -> Void)
-    var body: some View {
-        VStack(spacing: 24) {
-            ForEach(quizzes, id: \ .id) { quiz in
-                Button(action: { onQuizTap(quiz) }) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(quiz.title)
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
-                            Text("Quiz")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.black.opacity(0.8))
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.black.opacity(0.8))
-                            .font(.title2)
-                    }
-                    .padding()
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-                    .cornerRadius(22)
-                    .shadow(color: Color.blue.opacity(0.12), radius: 10, x: 0, y: 6)
-                }
-                .buttonStyle(PlainButtonStyle())
-                .padding(.horizontal, 24)
-            }
-        }
-        .padding(.top, 32)
     }
 }
 
@@ -2775,7 +2689,7 @@ struct PaywallView: View {
     @State private var errorMessage: String?
     @State private var purchased = false
     @Environment(\.dismiss) private var dismiss
-    let productID = "com.chasedavis.beyhivealert.notificationsss"
+    let productID = "com.chasedavis.beyhivealert.notificationssss"
     var body: some View {
         VStack(spacing: 24) {
             Text("Unlock Notifications")
@@ -2896,7 +2810,7 @@ class StoreKitManager: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var product: Product?
-    let productID = "com.chasedavis.beyhivealert.notificationsss"
+    let productID = "com.chasedavis.beyhivealert.notificationssss"
     init() {
         Task { await fetchProduct() }
         Task { await checkPurchased() }
@@ -2971,5 +2885,126 @@ class StoreKitManager: ObservableObject {
 struct NotificationsPaywallView: View {
     var body: some View {
         GameView()
+    }
+}
+
+// Add missing helpers above SurvivorQuizView
+struct CustomDropdown: View {
+    let options: [(title: String, description: String?, imageName: String?, imageUrl: String?)]
+    let selection: String
+    let onSelect: (String) -> Void
+    var showDropdown: Bool
+    let setShowDropdown: (Bool) -> Void
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { setShowDropdown(!showDropdown) }) {
+                HStack {
+                    if let selected = options.first(where: { $0.title == selection }), (selected.imageName != nil || selected.imageUrl != nil), !selection.isEmpty {
+                        OutfitIconView(imageName: selected.imageName, imageUrl: selected.imageUrl)
+                    }
+                    Text(selection.isEmpty ? "Select an answer" : selection)
+                        .foregroundColor(selection.isEmpty ? .gray : .black)
+                        .font(.body)
+                    Spacer()
+                    Image(systemName: showDropdown ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.gray)
+                }
+                .padding(.horizontal)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(LinearGradient(gradient: Gradient(colors: [Color.red, Color.blue]), startPoint: .leading, endPoint: .trailing), lineWidth: 1.5)
+                        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white))
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+            if showDropdown {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(options.indices, id: \.self) { idx in
+                        let option = options[idx]
+                        Button(action: {
+                            onSelect(option.title)
+                            setShowDropdown(false)
+                        }) {
+                            HStack {
+                                if option.imageName != nil || option.imageUrl != nil {
+                                    OutfitIconView(imageName: option.imageName, imageUrl: option.imageUrl)
+                                }
+                                Text(option.title)
+                                    .foregroundColor(.black)
+                                    .padding(.vertical, 10)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                        .background(selection == option.title ? Color.red.opacity(0.08) : Color.clear)
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color.white)
+                        .shadow(color: Color.gray.opacity(0.15), radius: 8, x: 0, y: 4)
+                )
+                .padding(.top, 2)
+            }
+        }
+        .animation(.easeInOut(duration: 0.18), value: showDropdown)
+    }
+}
+
+struct OutfitIconView: View {
+    let imageName: String?
+    let imageUrl: String?
+    var body: some View {
+        Group {
+            if let imageUrl = imageUrl, !imageUrl.isEmpty, let url = URL(string: imageUrl) {
+                AsyncImage(url: url) { image in
+                    image.resizable().aspectRatio(contentMode: .fit)
+                } placeholder: {
+                    Rectangle().fill(Color.gray.opacity(0.3)).overlay(ProgressView().scaleEffect(0.8))
+                }
+                .frame(width: 28, height: 28)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            } else if let imageName = imageName, !imageName.isEmpty {
+                Image(imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+        }
+    }
+}
+
+struct ServerResponse: Codable {
+    let success: Bool
+    let message: String?
+}
+
+struct FetchResponse: Codable {
+    let response: QuizResponse?
+}
+struct QuizResponse: Codable {
+    let answers: [String: String]
+}
+
+// Add fetchQuizResponse to SurvivorQuizView
+// (Place this inside SurvivorQuizView if not already present)
+// ... existing code ...
+
+struct Partner: Identifiable, Codable {
+    let id = UUID()
+    let name: String
+    let description: String
+    let icon: String
+    let link: String
+    enum CodingKeys: String, CodingKey {
+        case name, description, icon, link
     }
 }

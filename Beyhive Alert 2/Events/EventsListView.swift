@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import EventKit
+import EventKitUI
 
 struct EventsListView: View {
     @EnvironmentObject var eventsViewModel: EventsViewModel
@@ -91,6 +93,9 @@ struct EventsListView: View {
 struct EventRowView: View {
     let event: Event
     let onRemove: () -> Void
+    @State private var showEventEditView = false
+    @State private var eventStore = EKEventStore()
+    @State private var calendarEvent: EKEvent?
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -106,20 +111,16 @@ struct EventRowView: View {
                     Text(event.title)
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.black)
-                    
                     if let location = event.location {
                         Text(location)
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                     }
-                    
                     Text(dateFormatter.string(from: event.date))
                         .font(.system(size: 12))
                         .foregroundColor(.blue)
                 }
-                
                 Spacer()
-                
                 Button(action: onRemove) {
                     Image(systemName: "trash.circle.fill")
                         .foregroundColor(.red)
@@ -127,12 +128,27 @@ struct EventRowView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
             }
-            
             if !event.description.isEmpty {
                 Text(event.description)
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
                     .lineLimit(3)
+            }
+            Button(action: addToCalendar) {
+                HStack {
+                    Image(systemName: "calendar.badge.plus")
+                    Text("Add to Calendar")
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(8)
+                .background(Color.blue)
+                .cornerRadius(8)
+            }
+            .sheet(isPresented: $showEventEditView) {
+                if let calendarEvent = calendarEvent {
+                    EventEditView(event: calendarEvent, eventStore: eventStore)
+                }
             }
         }
         .padding()
@@ -140,6 +156,37 @@ struct EventRowView: View {
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
+    
+    func addToCalendar() {
+        eventStore.requestAccess(to: .event) { granted, error in
+            if granted {
+                let ekEvent = EKEvent(eventStore: eventStore)
+                ekEvent.title = event.title
+                ekEvent.location = event.location
+                ekEvent.notes = event.description
+                let startDate = event.localStartDate ?? event.date
+                ekEvent.startDate = startDate
+                ekEvent.endDate = startDate.addingTimeInterval(3 * 60 * 60) // 3 hours
+                ekEvent.calendar = eventStore.defaultCalendarForNewEvents
+                DispatchQueue.main.async {
+                    calendarEvent = ekEvent
+                    showEventEditView = true
+                }
+            }
+        }
+    }
+}
+
+struct EventEditView: UIViewControllerRepresentable {
+    let event: EKEvent
+    let eventStore: EKEventStore
+    func makeUIViewController(context: Context) -> EKEventEditViewController {
+        let controller = EKEventEditViewController()
+        controller.event = event
+        controller.eventStore = eventStore
+        return controller
+    }
+    func updateUIViewController(_ uiViewController: EKEventEditViewController, context: Context) {}
 }
 
 #if DEBUG
