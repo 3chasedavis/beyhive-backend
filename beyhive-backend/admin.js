@@ -423,8 +423,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     if (editingPartnerIndex !== null) {
-      // Update partner
-      fetch('/api/partners', {
+      // Update partner (use correct endpoint and index)
+      fetch(`/api/partners/${editingPartnerIndex}`, {
         method: 'PUT',
         body: formData
       })
