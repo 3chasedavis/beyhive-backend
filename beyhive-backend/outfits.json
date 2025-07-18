@@ -52,5 +52,86 @@
     "isNew": false,
     "section": "Los Angeles",
     "description": null
+  },
+  {
+    "id": "atlanta1",
+    "name": "Gold Top and a Gold Belt",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta2",
+    "name": "White Top and Bottom With White Fur Coat",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "washington2",
+    "name": "White Dress With Red, Blue and White Fringe",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington3",
+    "name": "Light Up Dress",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington4",
+    "name": "Calvin Klein",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington5",
+    "name": "Rodeo Chitlin Circuit Jumpsuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington6",
+    "name": "Black Cowboy Carter Belt Jumpsuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington7",
+    "name": "America Has A Problem",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington8",
+    "name": "Fringe Red, White and Blue bodysuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
   }
 ] 
