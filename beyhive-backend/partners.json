@@ -2,13 +2,13 @@
   {
     "name": "Swift Alert",
     "description": "OUR SWIFTIE APP",
-    "icon": "bell",
+    "iconUrl": null,
     "link": "https://swiftalert.app"
   },
   {
     "name": "Rose Blush Studio",
     "description": "Design Partner",
-    "icon": "paintpalette",
+    "iconUrl": null,
     "link": "https://roseblush.studio"
   }
-] 
+]
