@@ -1,7 +1,17 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const { uploadImage, deleteImage } = require('../utils/cloudinary');
 const router = express.Router();
+
+// Configure multer for handling file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 const PARTNERS_FILE = path.join(__dirname, '../partners.json');
 
@@ -28,35 +38,63 @@ router.get('/', (req, res) => {
 });
 
 // POST / - add a new partner
-router.post('/', (req, res) => {
-  const { name, description, icon, link } = req.body;
-  if (!name || !description || !icon || !link) {
-    return res.status(400).json({ success: false, message: 'Missing required fields' });
+router.post('/', upload.single('icon'), async (req, res) => {
+  try {
+    const { name, description, link } = req.body;
+    if (!name || !description || !link) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    
+    let iconUrl = null;
+    
+    // If icon file is uploaded, upload to Cloudinary
+    if (req.file) {
+      const base64Image = req.file.buffer.toString('base64');
+      const dataURI = `data:${req.file.mimetype};base64,${base64Image}`;
+      iconUrl = await uploadImage(dataURI);
+    }
+    
+    let partners = readPartners();
+    partners.push({ name, description, iconUrl, link });
+    writePartners(partners);
+    
+    res.json({ success: true, message: 'Partner added successfully' });
+  } catch (error) {
+    console.error('Error creating partner:', error);
+    res.status(500).json({ success: false, message: 'Failed to create partner' });
   }
-  
-  let partners = readPartners();
-  partners.push({ name, description, icon, link });
-  writePartners(partners);
-  
-  res.json({ success: true, message: 'Partner added successfully' });
 });
 
 // PUT / - update an existing partner
-router.put('/', (req, res) => {
-  const { index, name, description, icon, link } = req.body;
-  if (index === undefined || !name || !description || !icon || !link) {
-    return res.status(400).json({ success: false, message: 'Missing required fields' });
+router.put('/', upload.single('icon'), async (req, res) => {
+  try {
+    const { index, name, description, link } = req.body;
+    if (index === undefined || !name || !description || !link) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    
+    let partners = readPartners();
+    if (index < 0 || index >= partners.length) {
+      return res.status(404).json({ success: false, message: 'Partner not found' });
+    }
+    
+    let iconUrl = partners[index].iconUrl; // Keep existing icon URL
+    
+    // If new icon is uploaded, upload to Cloudinary
+    if (req.file) {
+      const base64Image = req.file.buffer.toString('base64');
+      const dataURI = `data:${req.file.mimetype};base64,${base64Image}`;
+      iconUrl = await uploadImage(dataURI);
+    }
+    
+    partners[index] = { name, description, iconUrl, link };
+    writePartners(partners);
+    
+    res.json({ success: true, message: 'Partner updated successfully' });
+  } catch (error) {
+    console.error('Error updating partner:', error);
+    res.status(500).json({ success: false, message: 'Failed to update partner' });
   }
-  
-  let partners = readPartners();
-  if (index < 0 || index >= partners.length) {
-    return res.status(404).json({ success: false, message: 'Partner not found' });
-  }
-  
-  partners[index] = { name, description, icon, link };
-  writePartners(partners);
-  
-  res.json({ success: true, message: 'Partner updated successfully' });
 });
 
 // DELETE / - delete a partner

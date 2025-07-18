@@ -396,7 +396,7 @@ window.addEventListener('DOMContentLoaded', function() {
       tr.innerHTML = `
         <td>${partner.name}</td>
         <td>${partner.description}</td>
-        <td>${partner.icon}</td>
+        <td>${partner.iconUrl ? `<img src="${partner.iconUrl}" style="max-width:50px;max-height:50px;" />` : 'No image'}</td>
         <td><a href="${partner.link}" target="_blank">${partner.link}</a></td>
         <td>
           <button onclick="editPartner(${index})">Edit</button>
@@ -410,18 +410,23 @@ window.addEventListener('DOMContentLoaded', function() {
   partnerForm.onsubmit = function(e) {
     e.preventDefault();
     partnerFormStatus.textContent = '';
-    const data = {
-      name: partnerName.value,
-      description: partnerDescription.value,
-      icon: partnerIcon.value,
-      link: partnerLink.value
-    };
+    
+    const formData = new FormData();
+    formData.append('name', partnerName.value);
+    formData.append('description', partnerDescription.value);
+    formData.append('link', partnerLink.value);
+    
+    // Add icon file if selected
+    const iconFile = document.getElementById('partnerIcon').files[0];
+    if (iconFile) {
+      formData.append('icon', iconFile);
+    }
+    
     if (editingPartnerIndex !== null) {
       // Update partner
       fetch('/api/partners', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index: editingPartnerIndex, ...data })
+        body: formData
       })
         .then(res => res.json())
         .then(result => {
@@ -434,8 +439,7 @@ window.addEventListener('DOMContentLoaded', function() {
       // Add partner
       fetch('/api/partners', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: formData
       })
         .then(res => res.json())
         .then(result => {
@@ -453,10 +457,10 @@ window.addEventListener('DOMContentLoaded', function() {
         const partner = data.partners[index];
         partnerName.value = partner.name;
         partnerDescription.value = partner.description;
-        partnerIcon.value = partner.icon;
         partnerLink.value = partner.link;
+        // Note: Can't set file input value for security reasons
         editingPartnerIndex = index;
-        partnerFormStatus.textContent = 'Editing partner...';
+        partnerFormStatus.textContent = 'Editing partner... (Upload new image to change icon)';
       });
   };
 
