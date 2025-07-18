@@ -1,9 +1,12 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const { uploadImage } = require('../utils/cloudinary');
 const router = express.Router();
 
 const PARTNERS_FILE = path.join(__dirname, '../partners.json');
+const upload = multer({ storage: multer.memoryStorage() });
 
 function readPartners() {
   if (!fs.existsSync(PARTNERS_FILE)) return [];
@@ -20,21 +23,38 @@ router.get('/', (req, res) => {
   res.json({ success: true, partners });
 });
 
-// POST create a new partner
-router.post('/', (req, res) => {
+// POST create a new partner with image upload
+router.post('/', upload.single('icon'), async (req, res) => {
   const partners = readPartners();
-  const partner = req.body;
+  let iconUrl = null;
+  if (req.file) {
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    iconUrl = await uploadImage(base64Image);
+  }
+  const partner = {
+    ...req.body,
+    iconUrl: iconUrl || null,
+  };
   partners.push(partner);
   writePartners(partners);
   res.json({ success: true, partner });
 });
 
-// PUT update a partner by index
-router.put('/:index', (req, res) => {
+// PUT update a partner by index with image upload
+router.put('/:index', upload.single('icon'), async (req, res) => {
   const partners = readPartners();
   const idx = parseInt(req.params.index, 10);
   if (isNaN(idx) || idx < 0 || idx >= partners.length) return res.status(404).json({ error: 'Partner not found' });
-  partners[idx] = { ...partners[idx], ...req.body };
+  let iconUrl = partners[idx].iconUrl;
+  if (req.file) {
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    iconUrl = await uploadImage(base64Image);
+  }
+  partners[idx] = {
+    ...partners[idx],
+    ...req.body,
+    iconUrl: iconUrl || null,
+  };
   writePartners(partners);
   res.json({ success: true, partner: partners[idx] });
 });
