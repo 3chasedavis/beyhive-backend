@@ -1,5 +1,23 @@
 [
   {
+    "id": "houston1",
+    "name": "Fringe-heavy David Koma",
+    "location": "Houston N2",
+    "imageName": "Bee_Icon",
+    "isNew": true,
+    "section": "Houston",
+    "description": null
+  },
+  {
+    "id": "houston2",
+    "name": "Custom Courrèges Bodysuit",
+    "location": "Houston N1",
+    "imageName": "Bee_Icon",
+    "isNew": false,
+    "section": "Houston",
+    "description": null
+  },
+  {
     "id": "washington1",
     "name": "Shiny Stars Bodysuit",
     "location": "Washington N1",
@@ -16,5 +34,23 @@
     "isNew": true,
     "section": "Los Angeles",
     "description": "Jacket, corset bodysuit, buckled chaps, cowboy hat & boots (1,740 fringes)"
+  },
+  {
+    "id": "la2",
+    "name": "Red-and-White Moschino Catsuit",
+    "location": "Los Angeles N1",
+    "imageName": "Bee_Icon",
+    "isNew": false,
+    "section": "Los Angeles",
+    "description": null
+  },
+  {
+    "id": "la3",
+    "name": "Denim-on-Denim Cavalli",
+    "location": "Los Angeles N1",
+    "imageName": "Bee_Icon",
+    "isNew": false,
+    "section": "Los Angeles",
+    "description": null
   }
 ] 
