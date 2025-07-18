@@ -24,7 +24,7 @@ struct OutfitsView: View {
                     .padding(.leading, 16)
                     .padding(.top, 12)
                 List {
-                    ForEach(viewModel.outfits) { outfit in
+                    ForEach(viewModel.outfits.reversed()) { outfit in
                         HStack(alignment: .center, spacing: 14) {
                             // Display image - handle both local assets and remote URLs
                             if let imageUrl = outfit.imageUrl, !imageUrl.isEmpty {
