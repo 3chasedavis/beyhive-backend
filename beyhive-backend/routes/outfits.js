@@ -1,46 +1,52 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
-const Outfit = require('../models/Outfit');
+
+const OUTFITS_FILE = path.join(__dirname, '../outfits.json');
+
+function readOutfits() {
+  if (!fs.existsSync(OUTFITS_FILE)) return [];
+  return JSON.parse(fs.readFileSync(OUTFITS_FILE, 'utf8'));
+}
+
+function writeOutfits(outfits) {
+  fs.writeFileSync(OUTFITS_FILE, JSON.stringify(outfits, null, 2));
+}
 
 // GET all outfits
-router.get('/', async (req, res) => {
-  try {
-    const outfits = await Outfit.find();
-    res.json({ outfits });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch outfits' });
-  }
+router.get('/', (req, res) => {
+  const outfits = readOutfits();
+  res.json({ outfits });
 });
 
 // POST create a new outfit
-router.post('/', async (req, res) => {
-  try {
-    const outfit = new Outfit(req.body);
-    await outfit.save();
-    res.json({ success: true, outfit });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create outfit' });
-  }
+router.post('/', (req, res) => {
+  const outfits = readOutfits();
+  const outfit = req.body;
+  outfits.push(outfit);
+  writeOutfits(outfits);
+  res.json({ success: true, outfit });
 });
 
 // PUT update an outfit by id
-router.put('/:id', async (req, res) => {
-  try {
-    const updated = await Outfit.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
-    res.json({ success: true, outfit: updated });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update outfit' });
-  }
+router.put('/:id', (req, res) => {
+  const outfits = readOutfits();
+  const idx = outfits.findIndex(o => o.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Outfit not found' });
+  outfits[idx] = { ...outfits[idx], ...req.body };
+  writeOutfits(outfits);
+  res.json({ success: true, outfit: outfits[idx] });
 });
 
 // DELETE an outfit by id
-router.delete('/:id', async (req, res) => {
-  try {
-    await Outfit.findOneAndDelete({ id: req.params.id });
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete outfit' });
-  }
+router.delete('/:id', (req, res) => {
+  let outfits = readOutfits();
+  const idx = outfits.findIndex(o => o.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Outfit not found' });
+  outfits.splice(idx, 1);
+  writeOutfits(outfits);
+  res.json({ success: true });
 });
 
 module.exports = router; 

@@ -1,46 +1,52 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
-const Partner = require('../models/Partner');
+
+const PARTNERS_FILE = path.join(__dirname, '../partners.json');
+
+function readPartners() {
+  if (!fs.existsSync(PARTNERS_FILE)) return [];
+  return JSON.parse(fs.readFileSync(PARTNERS_FILE, 'utf8'));
+}
+
+function writePartners(partners) {
+  fs.writeFileSync(PARTNERS_FILE, JSON.stringify(partners, null, 2));
+}
 
 // GET all partners
-router.get('/', async (req, res) => {
-  try {
-    const partners = await Partner.find();
-    res.json({ success: true, partners });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch partners' });
-  }
+router.get('/', (req, res) => {
+  const partners = readPartners();
+  res.json({ success: true, partners });
 });
 
 // POST create a new partner
-router.post('/', async (req, res) => {
-  try {
-    const partner = new Partner(req.body);
-    await partner.save();
-    res.json({ success: true, partner });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create partner' });
-  }
+router.post('/', (req, res) => {
+  const partners = readPartners();
+  const partner = req.body;
+  partners.push(partner);
+  writePartners(partners);
+  res.json({ success: true, partner });
 });
 
-// PUT update a partner by id
-router.put('/:id', async (req, res) => {
-  try {
-    const updated = await Partner.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, partner: updated });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update partner' });
-  }
+// PUT update a partner by index
+router.put('/:index', (req, res) => {
+  const partners = readPartners();
+  const idx = parseInt(req.params.index, 10);
+  if (isNaN(idx) || idx < 0 || idx >= partners.length) return res.status(404).json({ error: 'Partner not found' });
+  partners[idx] = { ...partners[idx], ...req.body };
+  writePartners(partners);
+  res.json({ success: true, partner: partners[idx] });
 });
 
-// DELETE a partner by id
-router.delete('/:id', async (req, res) => {
-  try {
-    await Partner.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete partner' });
-  }
+// DELETE a partner by index
+router.delete('/:index', (req, res) => {
+  let partners = readPartners();
+  const idx = parseInt(req.params.index, 10);
+  if (isNaN(idx) || idx < 0 || idx >= partners.length) return res.status(404).json({ error: 'Partner not found' });
+  partners.splice(idx, 1);
+  writePartners(partners);
+  res.json({ success: true });
 });
 
 module.exports = router; 
