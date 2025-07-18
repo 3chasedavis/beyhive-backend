@@ -893,9 +893,9 @@ struct HomeView: View {
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let decoded = try JSONDecoder().decode([String: [Partner]].self, from: data)
-            if let loaded = decoded["partners"] {
-                partners = loaded
+            let decoded = try JSONDecoder().decode(PartnersResponse.self, from: data)
+            if decoded.success {
+                partners = decoded.partners
             } else {
                 partnersError = "No partners found."
             }
@@ -2997,6 +2997,11 @@ struct QuizResponse: Codable {
 // Add fetchQuizResponse to SurvivorQuizView
 // (Place this inside SurvivorQuizView if not already present)
 // ... existing code ...
+
+struct PartnersResponse: Codable {
+    let success: Bool
+    let partners: [Partner]
+}
 
 struct Partner: Identifiable, Codable {
     let id = UUID()
