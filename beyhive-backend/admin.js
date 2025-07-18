@@ -319,6 +319,9 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     } else {
       // Add outfit
+      // Generate a unique ID for the new outfit
+      const newId = 'outfit_' + Date.now();
+      formData.append('id', newId);
       fetch('/api/outfits', {
         method: 'POST',
         body: formData
