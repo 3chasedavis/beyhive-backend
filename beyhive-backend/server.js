@@ -19,6 +19,7 @@ const survivorRouter = require('./routes/survivor');
 const newsRouter = require('./routes/news');
 const instagramFeedRouter = require('./routes/instagramFeed');
 const albumRankingsRouter = require('./routes/albumRankings'); // Add this line
+const partnersRouter = require('./routes/partners'); // Add this line
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -81,6 +82,7 @@ app.use('/api/news', newsRouter);
 app.use('/api/instagram-feed', instagramFeedRouter);
 app.use('/api/survivor-quiz', survivorRouter);
 app.use('/api', albumRankingsRouter); // Add this line
+app.use('/api/partners', partnersRouter); // Add this line
 
 // Do not restore survivorRouter
 
