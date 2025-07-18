@@ -250,18 +250,26 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/outfits')
       .then(res => res.json())
       .then(data => {
+        console.log('Outfits data received:', data);
         renderOutfits(data.outfits || []);
+      })
+      .catch(err => {
+        console.error('Error fetching outfits:', err);
+        renderOutfits([]);
       });
   }
 
   function renderOutfits(outfits) {
+    console.log('Rendering outfits:', outfits);
     outfitsTableBody.innerHTML = '';
     if (!outfits.length) {
+      console.log('No outfits to display');
       outfitsTable.style.display = 'none';
       return;
     }
     outfitsTable.style.display = '';
     outfits.forEach(outfit => {
+      console.log('Rendering outfit:', outfit);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${outfit.name}</td>
