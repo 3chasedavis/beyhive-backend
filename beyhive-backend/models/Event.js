@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
-const eventSchema = new mongoose.Schema({
+const EventSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  date: { type: String, required: true }, // Store as string for compatibility
-  time: { type: String },
-  location: { type: String },
-  timezone: { type: String },
-  description: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  date: { type: String, required: true },
+  time: { type: String, required: true },
+  location: { type: String, required: true },
+  timezone: { type: String, required: true },
+  description: { type: String, default: null }
 });
 
-module.exports = mongoose.model('Event', eventSchema); 
+module.exports = mongoose.model('Event', EventSchema); 
