@@ -17,7 +17,7 @@ function writeOutfits(outfits) {
 // GET all outfits
 router.get('/', (req, res) => {
   const outfits = readOutfits();
-  res.json({ outfits });
+  res.json({ outfits, success: true, message: null });
 });
 
 // POST create a new outfit

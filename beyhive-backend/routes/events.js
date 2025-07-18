@@ -17,7 +17,7 @@ function writeEvents(events) {
 // GET all events
 router.get('/', (req, res) => {
   const events = readEvents();
-  res.json({ events });
+  res.json({ events, success: true, message: null });
 });
 
 // POST create a new event
