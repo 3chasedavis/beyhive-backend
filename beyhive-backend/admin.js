@@ -190,6 +190,8 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     } else {
       // Add event
+      // Generate a unique ID for the new event
+      data.id = 'event_' + Date.now();
       fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -221,6 +223,11 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   window.deleteEvent = function(id) {
+    if (!id) {
+      console.error('deleteEvent called with invalid id:', id);
+      alert('Error: Tried to delete an event with an invalid or missing ID.');
+      return;
+    }
     if (!confirm('Delete this event?')) return;
     fetch(`/api/events/${id}`, { method: 'DELETE' })
       .then(res => res.json())
