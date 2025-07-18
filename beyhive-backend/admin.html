@@ -129,6 +129,25 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <!-- Partners Management Section -->
+  <hr/>
+  <h2>Manage Partners</h2>
+  <form id="partnerForm" style="margin-bottom: 20px;">
+    <input type="text" id="partnerName" placeholder="Partner Name" required />
+    <input type="text" id="partnerDescription" placeholder="Description" required />
+    <input type="text" id="partnerIcon" placeholder="SF Symbol (e.g. bell, paintpalette)" required />
+    <input type="url" id="partnerLink" placeholder="Partner URL (https://...)" required />
+    <button type="submit">Add Partner</button>
+    <span id="partnerFormStatus" style="margin-left:10px;"></span>
+  </form>
+  <table id="partnersTable" style="width:100%; margin-bottom:30px; display:none;">
+    <thead>
+      <tr><th>Name</th><th>Description</th><th>Icon</th><th>Link</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <h2>Manage Quizzes</h2>
   <div id="quizManager" style="margin-bottom: 40px;"></div>
   <div id="deviceTokensSection">

@@ -352,6 +352,123 @@ window.addEventListener('DOMContentLoaded', function() {
   // Initial load
   fetchOutfits();
 
+  // === Partners Management ===
+  const partnerForm = document.getElementById('partnerForm');
+  const partnerName = document.getElementById('partnerName');
+  const partnerDescription = document.getElementById('partnerDescription');
+  const partnerIcon = document.getElementById('partnerIcon');
+  const partnerLink = document.getElementById('partnerLink');
+  const partnerFormStatus = document.getElementById('partnerFormStatus');
+  const partnersTable = document.getElementById('partnersTable');
+  const partnersTableBody = partnersTable.querySelector('tbody');
+
+  let editingPartnerIndex = null;
+
+  function fetchPartners() {
+    fetch('/api/partners')
+      .then(res => res.json())
+      .then(data => {
+        renderPartners(data.partners || []);
+      })
+      .catch(err => {
+        console.error('Error fetching partners:', err);
+        renderPartners([]);
+      });
+  }
+
+  function renderPartners(partners) {
+    partnersTableBody.innerHTML = '';
+    if (!partners.length) {
+      partnersTable.style.display = 'none';
+      return;
+    }
+    partnersTable.style.display = '';
+    partners.forEach((partner, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${partner.name}</td>
+        <td>${partner.description}</td>
+        <td>${partner.icon}</td>
+        <td><a href="${partner.link}" target="_blank">${partner.link}</a></td>
+        <td>
+          <button onclick="editPartner(${index})">Edit</button>
+          <button class="remove-event-btn" onclick="deletePartner(${index})">Remove</button>
+        </td>
+      `;
+      partnersTableBody.appendChild(tr);
+    });
+  }
+
+  partnerForm.onsubmit = function(e) {
+    e.preventDefault();
+    partnerFormStatus.textContent = '';
+    const data = {
+      name: partnerName.value,
+      description: partnerDescription.value,
+      icon: partnerIcon.value,
+      link: partnerLink.value
+    };
+    if (editingPartnerIndex !== null) {
+      // Update partner
+      fetch('/api/partners', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index: editingPartnerIndex, ...data })
+      })
+        .then(res => res.json())
+        .then(result => {
+          partnerFormStatus.textContent = 'Partner updated!';
+          partnerForm.reset();
+          editingPartnerIndex = null;
+          fetchPartners();
+        });
+    } else {
+      // Add partner
+      fetch('/api/partners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(result => {
+          partnerFormStatus.textContent = 'Partner added!';
+          partnerForm.reset();
+          fetchPartners();
+        });
+    }
+  };
+
+  window.editPartner = function(index) {
+    fetch('/api/partners')
+      .then(res => res.json())
+      .then(data => {
+        const partner = data.partners[index];
+        partnerName.value = partner.name;
+        partnerDescription.value = partner.description;
+        partnerIcon.value = partner.icon;
+        partnerLink.value = partner.link;
+        editingPartnerIndex = index;
+        partnerFormStatus.textContent = 'Editing partner...';
+      });
+  };
+
+  window.deletePartner = function(index) {
+    if (confirm('Are you sure you want to delete this partner?')) {
+      fetch('/api/partners', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index })
+      })
+        .then(res => res.json())
+        .then(result => {
+          fetchPartners();
+        });
+    }
+  };
+
+  // Load partners on page load
+  fetchPartners();
+
   // === Device Token Stats and Table ===
   const ADMIN_PASSWORD = 'chase3870';
 
