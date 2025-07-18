@@ -39,7 +39,7 @@
     "id": "washington4",
     "name": "Calvin Klein",
     "location": "Washington N2",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814703/beyhive-outfits/byptpwyecomiiqdy63ga.png",
     "isNew": false,
     "section": "Washington",
     "description": null
@@ -48,7 +48,7 @@
     "id": "washington5",
     "name": "Rodeo Chitlin Circuit Jumpsuit",
     "location": "Washington N2",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814714/beyhive-outfits/dwoigbmcdtb0k3nasl0x.png",
     "isNew": false,
     "section": "Washington",
     "description": null
@@ -57,7 +57,7 @@
     "id": "washington6",
     "name": "Black Cowboy Carter Belt Jumpsuit",
     "location": "Washington N2",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814727/beyhive-outfits/q5vn34ybbesvcx32g6xj.png",
     "isNew": false,
     "section": "Washington",
     "description": null
@@ -66,7 +66,7 @@
     "id": "washington7",
     "name": "America Has A Problem",
     "location": "Washington N2",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814737/beyhive-outfits/jgfjm7rmjvej3oubxiez.png",
     "isNew": false,
     "section": "Washington",
     "description": null
@@ -75,7 +75,7 @@
     "id": "washington8",
     "name": "Fringe Red, White and Blue bodysuit",
     "location": "Washington N2",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814752/beyhive-outfits/bkbbjzhdqzu1wvxlyrvn.png",
     "isNew": false,
     "section": "Washington",
     "description": null
@@ -84,7 +84,7 @@
     "id": "washington1",
     "name": "Shiny Stars Bodysuit",
     "location": "Washington N1",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814767/beyhive-outfits/kml4aataun9sqjyqehet.png",
     "isNew": true,
     "section": "Washington",
     "description": "Shiny bodysuit with stars and American flag coat"
@@ -111,7 +111,7 @@
     "id": "la1",
     "name": "Custom Mugler White Western",
     "location": "Los Angeles N1",
-    "imageUrl": null,
+    "imageUrl": "https://res.cloudinary.com/dpkd7mkln/image/upload/…52814795/beyhive-outfits/jdrweq4bfvxg36d7s3zq.png",
     "isNew": true,
     "section": "Los Angeles",
     "description": null

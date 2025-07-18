@@ -333,6 +333,11 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   window.editOutfit = function(id) {
+    if (!id) {
+      console.error('editOutfit called with invalid id:', id);
+      alert('Error: Tried to edit an outfit with an invalid or missing ID.');
+      return;
+    }
     fetch('/api/outfits')
       .then(res => res.json())
       .then(data => {
@@ -349,6 +354,11 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   window.deleteOutfit = function(id) {
+    if (!id) {
+      console.error('deleteOutfit called with invalid id:', id);
+      alert('Error: Tried to delete an outfit with an invalid or missing ID.');
+      return;
+    }
     if (!confirm('Delete this outfit?')) return;
     fetch(`/api/outfits/${id}`, { method: 'DELETE' })
       .then(res => res.json())
