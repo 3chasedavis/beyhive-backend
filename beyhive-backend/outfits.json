@@ -1,70 +1,16 @@
 [
   {
-    "id": "houston1",
-    "name": "Fringe-heavy David Koma",
-    "location": "Houston N2",
-    "imageUrl": null,
-    "isNew": true,
-    "section": "Houston",
-    "description": null
-  },
-  {
-    "id": "houston2",
-    "name": "Custom Courrèges Bodysuit",
-    "location": "Houston N1",
-    "imageUrl": null,
-    "isNew": false,
-    "section": "Houston",
-    "description": null
-  },
-  {
-    "id": "washington1",
-    "name": "Shiny Stars Bodysuit",
-    "location": "Washington N1",
-    "imageUrl": null,
-    "isNew": true,
-    "section": "Washington",
-    "description": "Shiny bodysuit with stars and American flag coat"
-  },
-  {
-    "id": "la1",
-    "name": "Custom Mugler White Western",
-    "location": "Los Angeles N1",
-    "imageUrl": null,
-    "isNew": true,
-    "section": "Los Angeles",
-    "description": "Jacket, corset bodysuit, buckled chaps, cowboy hat & boots (1,740 fringes)"
-  },
-  {
-    "id": "la2",
-    "name": "Red-and-White Moschino Catsuit",
-    "location": "Los Angeles N1",
-    "imageUrl": null,
-    "isNew": false,
-    "section": "Los Angeles",
-    "description": null
-  },
-  {
-    "id": "la3",
-    "name": "Denim-on-Denim Cavalli",
-    "location": "Los Angeles N1",
-    "imageUrl": null,
-    "isNew": false,
-    "section": "Los Angeles",
-    "description": null
-  },
-  {
-    "id": "atlanta1",
-    "name": "Gold Top and a Gold Belt",
-    "location": "Atlanta N1",
+    "id": "atlanta2",
+    "name": "White Top and Bottom With White Fur Coat",
+    "location": "Atlanta N2",
     "imageUrl": null,
     "isNew": false,
     "section": "Atlanta",
     "description": null
   },
   {
-    "id": "atlanta2",
-    "name": "White Top and Bottom With White Fur Coat",
+    "id": "atlanta1",
+    "name": "Gold Top and a Gold Belt",
     "location": "Atlanta N1",
     "imageUrl": null,
     "isNew": false,
@@ -132,6 +78,60 @@
     "imageUrl": null,
     "isNew": false,
     "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington1",
+    "name": "Shiny Stars Bodysuit",
+    "location": "Washington N1",
+    "imageUrl": null,
+    "isNew": true,
+    "section": "Washington",
+    "description": "Shiny bodysuit with stars and American flag coat"
+  },
+  {
+    "id": "houston1",
+    "name": "Fringe-heavy David Koma",
+    "location": "Houston N2",
+    "imageUrl": null,
+    "isNew": true,
+    "section": "Houston",
+    "description": null
+  },
+  {
+    "id": "houston2",
+    "name": "Custom Courrèges Bodysuit",
+    "location": "Houston N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Houston",
+    "description": null
+  },
+  {
+    "id": "la1",
+    "name": "Custom Mugler White Western",
+    "location": "Los Angeles N1",
+    "imageUrl": null,
+    "isNew": true,
+    "section": "Los Angeles",
+    "description": null
+  },
+  {
+    "id": "la2",
+    "name": "Red-and-White Moschino Catsuit",
+    "location": "Los Angeles N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Los Angeles",
+    "description": null
+  },
+  {
+    "id": "la3",
+    "name": "Denim-on-Denim Cavalli",
+    "location": "Los Angeles N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Los Angeles",
     "description": null
   }
 ] 
