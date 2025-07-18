@@ -479,10 +479,8 @@ window.addEventListener('DOMContentLoaded', function() {
 
   window.deletePartner = function(index) {
     if (confirm('Are you sure you want to delete this partner?')) {
-      fetch('/api/partners', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index })
+      fetch(`/api/partners/${index}`, {
+        method: 'DELETE'
       })
         .then(res => res.json())
         .then(result => {
