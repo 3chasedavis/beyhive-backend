@@ -681,6 +681,9 @@ struct ContentView: View {
     @State private var isMaintenanceMode = false
     @State private var isLoadingMaintenance = true
     
+    // Timer for checking maintenance mode periodically
+    let maintenanceTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+    
     var body: some View {
         Group {
             if isLoadingMaintenance {
@@ -717,6 +720,11 @@ struct ContentView: View {
         }
         .task {
             await checkMaintenanceMode()
+        }
+        .onReceive(maintenanceTimer) { _ in
+            Task {
+                await checkMaintenanceMode()
+            }
         }
     }
     

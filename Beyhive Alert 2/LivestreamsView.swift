@@ -20,6 +20,9 @@ class LivestreamsViewModel: ObservableObject {
     
     // Timer for countdown updates
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    // Timer for checking countdown mode periodically
+    let countdownModeTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     func fetchLivestreams() {
         print("fetchLivestreams called")
@@ -133,10 +136,10 @@ struct LivestreamsView: View {
                 VStack(spacing: 8) {
                     Text("Next Show")
                         .font(.custom("IBMPlexMono-Medium", size: 16))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                     Text(viewModel.countdownString)
                         .font(.custom("IBMPlexMono-Bold", size: 24))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                         .background(
@@ -292,6 +295,9 @@ struct LivestreamsView: View {
             viewModel.fetchLivestreams()
             viewModel.fetchCountdownMode()
             viewModel.fetchNextShowDate()
+        }
+        .onReceive(viewModel.countdownModeTimer) { _ in
+            viewModel.fetchCountdownMode()
         }
     }
 } 
