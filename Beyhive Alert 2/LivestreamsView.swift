@@ -136,14 +136,20 @@ struct LivestreamsView: View {
             if viewModel.isCountdownEnabled && viewModel.livestreams.isEmpty && !viewModel.countdownString.isEmpty {
                 VStack(spacing: 8) {
                     Text("Next Show")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.gray)
+                        .font(.custom("IBMPlexMono-Medium", size: 16))
+                        .foregroundColor(.white)
                     Text(viewModel.countdownString)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.red)
+                        .font(.custom("IBMPlexMono-Bold", size: 24))
+                        .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(Color.red.opacity(0.1))
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.red, Color.white, Color.blue]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .cornerRadius(12)
                 }
                 .padding(.horizontal)
