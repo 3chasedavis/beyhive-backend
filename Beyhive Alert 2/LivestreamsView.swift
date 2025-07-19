@@ -117,10 +117,6 @@ class LivestreamsViewModel: ObservableObject {
     }
 }
 
-struct EventsResponse: Codable {
-    let events: [Event]
-}
-
 struct LivestreamsView: View {
     @StateObject var viewModel = LivestreamsViewModel()
     var selectedTab: Binding<BeyhiveTab>? = nil // Add this binding for tab navigation
