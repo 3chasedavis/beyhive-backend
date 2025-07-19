@@ -54,15 +54,40 @@ struct EventsListView: View {
                 .padding()
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(eventsViewModel.events) { event in
-                            EventRowView(event: event) {
-                                eventToRemove = event
-                                showingRemoveAlert = true
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Upcoming Events
+                        let upcomingEvents = eventsViewModel.events.filter { ($0.status ?? "upcoming") == "upcoming" || (($0.status == nil) && (($0.localStartDate ?? $0.date) > Date())) }
+                        if !upcomingEvents.isEmpty {
+                            Text("Upcoming Events")
+                                .font(.headline)
+                                .padding(.leading)
+                            LazyVStack(spacing: 12) {
+                                ForEach(upcomingEvents) { event in
+                                    EventRowView(event: event) {
+                                        eventToRemove = event
+                                        showingRemoveAlert = true
+                                    }
+                                }
                             }
+                            .padding(.horizontal)
+                        }
+                        // Past Events
+                        let pastEvents = eventsViewModel.events.filter { ($0.status ?? "upcoming") == "past" || (($0.status == nil) && (($0.localStartDate ?? $0.date) <= Date())) }
+                        if !pastEvents.isEmpty {
+                            Text("Past Events")
+                                .font(.headline)
+                                .padding(.leading)
+                            LazyVStack(spacing: 12) {
+                                ForEach(pastEvents) { event in
+                                    EventRowView(event: event) {
+                                        eventToRemove = event
+                                        showingRemoveAlert = true
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
                         }
                     }
-                    .padding(.horizontal)
                 }
             }
         }

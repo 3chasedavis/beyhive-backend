@@ -16,6 +16,7 @@ struct Event: Identifiable, Codable {
     let createdAt: Date
     let time: String? // New: time in HH:mm format
     let timezone: String? // New: IANA timezone string (e.g., "America/Los_Angeles")
+    let status: String? // New: 'upcoming' or 'past' from admin panel
 
     init(id: String = UUID().uuidString, title: String, description: String, date: Date, location: String? = nil, createdAt: Date = Date(), time: String? = nil, timezone: String? = nil) {
         self.id = id
@@ -29,7 +30,7 @@ struct Event: Identifiable, Codable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, title, description, date, location, createdAt, time, timezone
+        case id, title, description, date, location, createdAt, time, timezone, status
     }
     
     init(from decoder: Decoder) throws {
@@ -52,6 +53,7 @@ struct Event: Identifiable, Codable {
         location = try container.decodeIfPresent(String.self, forKey: .location)
         time = try container.decodeIfPresent(String.self, forKey: .time)
         timezone = try container.decodeIfPresent(String.self, forKey: .timezone)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
         
         // Handle createdAt date (optional, can be missing or null)
         if let createdAtString = try? container.decodeIfPresent(String.self, forKey: .createdAt) {
