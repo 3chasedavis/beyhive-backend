@@ -49,4 +49,12 @@ router.delete('/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// GET a single event by id
+router.get('/:id', (req, res) => {
+  const events = readEvents();
+  const event = events.find(e => e.id === req.params.id);
+  if (!event) return res.status(404).json({ error: 'Event not found' });
+  res.json(event);
+});
+
 module.exports = router; 
