@@ -111,6 +111,23 @@
     <span id="maintenanceStatus" style="margin-left: 10px;"></span>
   </div>
   
+  <!-- Countdown Toggle Section -->
+  <hr/>
+  <h2>Countdown Timer</h2>
+  <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+    <label style="display: flex; align-items: center; font-size: 16px; font-weight: bold;">
+      <input type="checkbox" id="countdownToggle" style="margin-right: 10px; transform: scale(1.2);" />
+      Enable Countdown Timer
+    </label>
+    <p style="margin-top: 10px; color: #666; font-size: 14px;">
+      When enabled, users will see a countdown to the next Beyoncé show on the livestreams page.
+    </p>
+    <button onclick="saveCountdownMode()" style="margin-top: 10px; background: #e6b800; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px;">
+      Save Countdown Mode
+    </button>
+    <span id="countdownStatus" style="margin-left: 10px;"></span>
+  </div>
+  
   <h2>Livestreams Management</h2>
   <div id="livestreams"></div>
   <button onclick="addRow()">Add Row</button>

@@ -36,6 +36,25 @@ router.post('/maintenance-mode', (req, res) => {
   res.json({ success: true, isMaintenanceMode: data.isMaintenanceMode });
 });
 
+// Countdown mode endpoints (public - no authentication required)
+router.get('/countdown-mode', (req, res) => {
+  const countdownFile = path.join(__dirname, '../countdown.json');
+  if (fs.existsSync(countdownFile)) {
+    const data = JSON.parse(fs.readFileSync(countdownFile, 'utf8'));
+    res.json({ isCountdownEnabled: data.isCountdownEnabled || false });
+  } else {
+    res.json({ isCountdownEnabled: false });
+  }
+});
+
+router.post('/countdown-mode', (req, res) => {
+  const countdownFile = path.join(__dirname, '../countdown.json');
+  const { isCountdownEnabled } = req.body;
+  const data = { isCountdownEnabled: isCountdownEnabled || false };
+  fs.writeFileSync(countdownFile, JSON.stringify(data, null, 2));
+  res.json({ success: true, isCountdownEnabled: data.isCountdownEnabled });
+});
+
 // Middleware to require admin session
 function requireAdminSession(req, res, next) {
     if (req.session && req.session.isAdmin) {

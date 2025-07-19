@@ -673,6 +673,43 @@ window.addEventListener('DOMContentLoaded', function() {
 
   fetchMaintenanceMode();
 
+  // === Countdown Mode Management ===
+  const countdownToggle = document.getElementById('countdownToggle');
+  const countdownStatus = document.getElementById('countdownStatus');
+
+  function fetchCountdownMode() {
+    fetch('/api/admin/countdown-mode')
+      .then(res => res.json())
+      .then(data => {
+        countdownToggle.checked = data.isCountdownEnabled;
+      })
+      .catch(err => {
+        console.error('Error fetching countdown mode:', err);
+      });
+  }
+
+  window.saveCountdownMode = function() {
+    const isCountdownEnabled = countdownToggle.checked;
+    fetch('/api/admin/countdown-mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isCountdownEnabled })
+    })
+      .then(res => res.json())
+      .then(data => {
+        countdownStatus.textContent = 'Saved!';
+        setTimeout(() => {
+          countdownStatus.textContent = '';
+        }, 2000);
+      })
+      .catch(err => {
+        countdownStatus.textContent = 'Error saving';
+        console.error('Error saving countdown mode:', err);
+      });
+  };
+
+  fetchCountdownMode();
+
   // === Quiz Manager ===
   const quizManager = document.getElementById('quizManager');
   if (quizManager) {

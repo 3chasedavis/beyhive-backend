@@ -8,8 +8,18 @@ struct Livestream: Identifiable, Codable {
     let url: String
 }
 
+struct CountdownResponse: Codable {
+    let isCountdownEnabled: Bool
+}
+
 class LivestreamsViewModel: ObservableObject {
     @Published var livestreams: [Livestream] = []
+    @Published var isCountdownEnabled = false
+    @Published var currentTime = Date()
+    @Published var nextShowDate: Date? = nil
+    
+    // Timer for countdown updates
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     func fetchLivestreams() {
         print("fetchLivestreams called")
@@ -32,6 +42,83 @@ class LivestreamsViewModel: ObservableObject {
             }
         }.resume()
     }
+    
+    func fetchCountdownMode() {
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/admin/countdown-mode") else { return }
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let error = error {
+                print("❌ Error fetching countdown mode: \(error)")
+                return
+            }
+            if let data = data {
+                do {
+                    let response = try JSONDecoder().decode(CountdownResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        self.isCountdownEnabled = response.isCountdownEnabled
+                        print("✅ Countdown mode: \(response.isCountdownEnabled)")
+                    }
+                } catch {
+                    print("❌ Error decoding countdown response: \(error)")
+                }
+            }
+        }.resume()
+    }
+    
+    func fetchNextShowDate() {
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/events") else { return }
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let error = error {
+                print("❌ Error fetching events: \(error)")
+                return
+            }
+            if let data = data {
+                do {
+                    let response = try JSONDecoder().decode(EventsResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        // Find the next upcoming event
+                        let now = Date()
+                        let upcomingEvents = response.events.filter { event in
+                            if let localStartDate = event.localStartDate {
+                                return localStartDate > now
+                            } else {
+                                return event.date > now
+                            }
+                        }
+                        self.nextShowDate = upcomingEvents.first?.localStartDate ?? upcomingEvents.first?.date
+                        print("✅ Next show date: \(self.nextShowDate?.description ?? "none")")
+                    }
+                } catch {
+                    print("❌ Error decoding events response: \(error)")
+                }
+            }
+        }.resume()
+    }
+    
+    var countdownString: String {
+        guard let nextShow = nextShowDate else { return "" }
+        let timeInterval = nextShow.timeIntervalSince(currentTime)
+        
+        if timeInterval <= 0 { return "" }
+        
+        let days = Int(timeInterval) / (24 * 60 * 60)
+        let hours = Int(timeInterval) % (24 * 60 * 60) / (60 * 60)
+        let minutes = Int(timeInterval) % (60 * 60) / 60
+        let seconds = Int(timeInterval) % 60
+        
+        if days > 0 {
+            return "\(days)d \(hours)h \(minutes)m \(seconds)s"
+        } else if hours > 0 {
+            return "\(hours)h \(minutes)m \(seconds)s"
+        } else if minutes > 0 {
+            return "\(minutes)m \(seconds)s"
+        } else {
+            return "\(seconds)s"
+        }
+    }
+}
+
+struct EventsResponse: Codable {
+    let events: [Event]
 }
 
 struct LivestreamsView: View {
@@ -44,6 +131,26 @@ struct LivestreamsView: View {
                 .font(.title2).bold()
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.top, 16)
+
+            // Countdown Timer (only show when enabled and no livestreams)
+            if viewModel.isCountdownEnabled && viewModel.livestreams.isEmpty && !viewModel.countdownString.isEmpty {
+                VStack(spacing: 8) {
+                    Text("Next Show")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.gray)
+                    Text(viewModel.countdownString)
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .onReceive(viewModel.timer) { _ in
+                    viewModel.currentTime = Date()
+                }
+            }
 
             if viewModel.livestreams.isEmpty {
                 Spacer()
@@ -181,6 +288,8 @@ struct LivestreamsView: View {
         .onAppear {
             print("LivestreamsView appeared")
             viewModel.fetchLivestreams()
+            viewModel.fetchCountdownMode()
+            viewModel.fetchNextShowDate()
         }
     }
 } 
