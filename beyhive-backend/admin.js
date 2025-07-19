@@ -131,6 +131,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const eventTime = document.getElementById('eventTime');
   const eventLocation = document.getElementById('eventLocation');
   const eventDescription = document.getElementById('eventDescription');
+  const eventTimezone = document.getElementById('eventTimezone');
   const eventFormStatus = document.getElementById('eventFormStatus');
   const eventsTable = document.getElementById('eventsTable');
   const eventsTableBody = eventsTable.querySelector('tbody');
@@ -160,6 +161,7 @@ window.addEventListener('DOMContentLoaded', function() {
         <td>${event.time || ''}</td>
         <td>${event.location || ''}</td>
         <td>${event.description || ''}</td>
+        <td>${event.timezone || ''}</td>
         <td>
           <button onclick="editEvent('${event.id}')">Edit</button>
           <button class="remove-event-btn" onclick="deleteEvent('${event.id}')">Remove</button>
@@ -177,7 +179,8 @@ window.addEventListener('DOMContentLoaded', function() {
       date: eventDate.value,
       time: eventTime.value,
       location: eventLocation.value,
-      description: eventDescription.value
+      description: eventDescription.value,
+      timezone: eventTimezone.value
     };
     if (editingEventId) {
       // Update event
@@ -212,18 +215,16 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   window.editEvent = function(id) {
-    fetch('/api/events')
+    fetch(`/api/events/${id}`)
       .then(res => res.json())
-      .then(data => {
-        const event = (data.events || []).find(e => e.id === id);
-        if (!event) return;
+      .then(event => {
         eventTitle.value = event.title;
         eventDate.value = event.date;
-        eventTime.value = event.time || '';
-        eventLocation.value = event.location || '';
-        eventDescription.value = event.description || '';
+        eventTime.value = event.time;
+        eventLocation.value = event.location;
+        eventDescription.value = event.description;
+        eventTimezone.value = event.timezone || 'America/New_York';
         editingEventId = id;
-        eventFormStatus.textContent = 'Editing event...';
       });
   };
 
