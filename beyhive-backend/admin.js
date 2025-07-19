@@ -132,6 +132,7 @@ window.addEventListener('DOMContentLoaded', function() {
   const eventLocation = document.getElementById('eventLocation');
   const eventDescription = document.getElementById('eventDescription');
   const eventTimezone = document.getElementById('eventTimezone');
+  const eventStatus = document.getElementById('eventStatus');
   const eventFormStatus = document.getElementById('eventFormStatus');
   const eventsTable = document.getElementById('eventsTable');
   const eventsTableBody = eventsTable.querySelector('tbody');
@@ -162,6 +163,7 @@ window.addEventListener('DOMContentLoaded', function() {
         <td>${event.location || ''}</td>
         <td>${event.description || ''}</td>
         <td>${event.timezone || ''}</td>
+        <td>${event.status || 'upcoming'}</td>
         <td>
           <button onclick="editEvent('${event.id}')">Edit</button>
           <button class="remove-event-btn" onclick="deleteEvent('${event.id}')">Remove</button>
@@ -180,7 +182,8 @@ window.addEventListener('DOMContentLoaded', function() {
       time: eventTime.value,
       location: eventLocation.value,
       description: eventDescription.value,
-      timezone: eventTimezone.value
+      timezone: eventTimezone.value,
+      status: eventStatus.value
     };
     if (editingEventId) {
       // Update event
@@ -224,6 +227,7 @@ window.addEventListener('DOMContentLoaded', function() {
         eventLocation.value = event.location;
         eventDescription.value = event.description;
         eventTimezone.value = event.timezone || 'America/New_York';
+        eventStatus.value = event.status || 'upcoming';
         editingEventId = id;
       });
   };
