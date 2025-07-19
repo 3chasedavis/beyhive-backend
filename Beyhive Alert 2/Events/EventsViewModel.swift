@@ -64,6 +64,16 @@ class EventsViewModel: ObservableObject {
                 let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
                 self.events = eventsResponse.events.sorted { $0.date < $1.date }
                 print("✅ Successfully loaded \(self.events.count) events from backend")
+                
+                // Debug: Print event details
+                for (index, event) in self.events.enumerated() {
+                    print("📅 Event \(index + 1):")
+                    print("   Title: \(event.title)")
+                    print("   Date: \(event.date)")
+                    print("   Time: \(event.time ?? "nil")")
+                    print("   Timezone: \(event.timezone ?? "nil")")
+                    print("   Local Start Date: \(event.localStartDate?.description ?? "nil")")
+                }
             } else {
                 print("❌ Failed to fetch events (Status: \(httpResponse.statusCode))")
                 errorMessage = "Failed to fetch events (Status: \(httpResponse.statusCode))"

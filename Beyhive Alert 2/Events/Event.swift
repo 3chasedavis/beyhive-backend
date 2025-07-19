@@ -65,25 +65,41 @@ struct Event: Identifiable, Codable {
 
     // Computed property: event start time as Date in user's local timezone
     var localStartDate: Date? {
-        guard let time = time, let timezone = timezone else { return nil }
+        guard let time = time, let timezone = timezone else { 
+            print("❌ Missing time or timezone: time='\(time ?? "nil")', timezone='\(timezone ?? "nil")'")
+            return nil 
+        }
         
         // Create a date string with the event date and time
         let dateTimeString = "\(dateString)T\(time)"
+        print("🕐 Creating datetime string: \(dateTimeString)")
         
         // Parse the date and time in the event's timezone
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
-        formatter.timeZone = TimeZone(identifier: timezone)
         
-        guard let eventDateInEventTimezone = formatter.date(from: dateTimeString) else {
-            print("Failed to parse date: \(dateTimeString) with timezone: \(timezone)")
+        guard let eventTimezone = TimeZone(identifier: timezone) else {
+            print("❌ Invalid timezone identifier: \(timezone)")
             return nil
         }
         
+        formatter.timeZone = eventTimezone
+        
+        guard let eventDateInEventTimezone = formatter.date(from: dateTimeString) else {
+            print("❌ Failed to parse date: \(dateTimeString) with timezone: \(timezone)")
+            return nil
+        }
+        
+        print("✅ Parsed date in event timezone: \(eventDateInEventTimezone)")
+        
         // Convert to user's local timezone
         let userTimezone = TimeZone.current
-        let timezoneOffset = userTimezone.secondsFromGMT() - (formatter.timeZone?.secondsFromGMT() ?? 0)
-        let localDate = eventDateInEventTimezone.addingTimeInterval(TimeInterval(timezoneOffset))
+        let eventOffset = eventTimezone.secondsFromGMT(for: eventDateInEventTimezone)
+        let userOffset = userTimezone.secondsFromGMT(for: eventDateInEventTimezone)
+        let timezoneDifference = userOffset - eventOffset
+        
+        let localDate = eventDateInEventTimezone.addingTimeInterval(TimeInterval(timezoneDifference))
+        print("🔄 Converted to local time: \(localDate)")
         
         return localDate
     }
