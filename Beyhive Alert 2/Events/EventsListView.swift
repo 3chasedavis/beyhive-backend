@@ -116,7 +116,7 @@ struct EventRowView: View {
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                     }
-                    Text(dateFormatter.string(from: event.date))
+                    Text(dateFormatter.string(from: event.localStartDate ?? event.date))
                         .font(.system(size: 12))
                         .foregroundColor(.blue)
                 }
