@@ -92,18 +92,13 @@ struct Event: Identifiable, Codable {
         
         print("✅ Parsed date in event timezone: \(eventDateInEventTimezone)")
         
-        // Convert to user's local timezone using Calendar
-        let calendar = Calendar.current
+        // Convert to user's local timezone by adjusting the time offset
         let userTimezone = TimeZone.current
+        let eventOffset = eventTimezone.secondsFromGMT(for: eventDateInEventTimezone)
+        let userOffset = userTimezone.secondsFromGMT(for: eventDateInEventTimezone)
+        let timezoneDifference = userOffset - eventOffset
         
-        // Create a new date in the user's timezone
-        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: eventDateInEventTimezone)
-        components.timeZone = userTimezone
-        
-        guard let localDate = calendar.date(from: components) else {
-            print("❌ Failed to create local date")
-            return nil
-        }
+        let localDate = eventDateInEventTimezone.addingTimeInterval(TimeInterval(timezoneDifference))
         
         print("🔄 Converted to local time: \(localDate)")
         
