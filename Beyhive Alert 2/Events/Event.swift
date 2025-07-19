@@ -66,11 +66,26 @@ struct Event: Identifiable, Codable {
     // Computed property: event start time as Date in user's local timezone
     var localStartDate: Date? {
         guard let time = time, let timezone = timezone else { return nil }
+        
+        // Create a date string with the event date and time
         let dateTimeString = "\(dateString)T\(time)"
+        
+        // Parse the date and time in the event's timezone
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
         formatter.timeZone = TimeZone(identifier: timezone)
-        return formatter.date(from: dateTimeString)
+        
+        guard let eventDateInEventTimezone = formatter.date(from: dateTimeString) else {
+            print("Failed to parse date: \(dateTimeString) with timezone: \(timezone)")
+            return nil
+        }
+        
+        // Convert to user's local timezone
+        let userTimezone = TimeZone.current
+        let timezoneOffset = userTimezone.secondsFromGMT() - (formatter.timeZone?.secondsFromGMT() ?? 0)
+        let localDate = eventDateInEventTimezone.addingTimeInterval(TimeInterval(timezoneOffset))
+        
+        return localDate
     }
     // Helper to get the date string in yyyy-MM-dd format
     var dateString: String {
@@ -83,8 +98,6 @@ struct Event: Identifiable, Codable {
 // MARK: - Event Response Models
 struct EventsResponse: Codable {
     let events: [Event]
-    let success: Bool
-    let message: String?
 }
 
 struct EventDeleteResponse: Codable {

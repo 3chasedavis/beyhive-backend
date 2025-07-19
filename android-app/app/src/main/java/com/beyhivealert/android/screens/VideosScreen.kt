@@ -229,15 +229,17 @@ fun LivestreamCard(stream: Livestream) {
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                text = stream.title,
+                text = if (stream.title.isNotEmpty()) stream.title else stream.platform,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
-            Text(
-                text = stream.platform,
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
+            if (stream.title.isNotEmpty()) {
+                Text(
+                    text = stream.platform,
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {

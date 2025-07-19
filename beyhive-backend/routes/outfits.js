@@ -36,7 +36,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     imageUrl: imageUrl || null,
     isNew: req.body.isNew === 'true' || req.body.isNew === true,
   };
-  outfits.push(outfit);
+  outfits.unshift(outfit); // Add to beginning instead of end
   writeOutfits(outfits);
   res.json({ success: true, outfit });
 });

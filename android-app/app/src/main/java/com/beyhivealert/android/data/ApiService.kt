@@ -6,6 +6,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 import java.net.HttpURLConnection
 import java.net.URL
+import retrofit2.Retrofit
+import retrofit2.http.GET
+import retrofit2.http.Path
 
 @Serializable
 data class Event(
@@ -32,6 +35,11 @@ data class Livestream(
     val url: String = "",
     val platform: String = "",
     val startTime: String = ""
+)
+
+@Serializable
+data class MaintenanceResponse(
+    val isMaintenanceMode: Boolean
 )
 
 object ApiService {
@@ -65,6 +73,22 @@ object ApiService {
             Json.decodeFromString(response)
         } catch (e: Exception) {
             emptyList()
+        } finally {
+            connection.disconnect()
+        }
+    }
+    
+    fun checkMaintenanceMode(): MaintenanceResponse {
+        val url = URL("$BASE_URL/admin/maintenance-mode")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connectTimeout = 5000
+        connection.readTimeout = 5000
+        return try {
+            val response = connection.inputStream.bufferedReader().readText()
+            Json.decodeFromString(response)
+        } catch (e: Exception) {
+            MaintenanceResponse(false)
         } finally {
             connection.disconnect()
         }

@@ -19,7 +19,7 @@ class OutfitsViewModel: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decoded = try JSONDecoder().decode(OutfitsResponse.self, from: data)
-            self.outfits = decoded.outfits.reversed()
+            self.outfits = decoded.outfits
         } catch {
             errorMessage = "Failed to load outfits: \(error.localizedDescription)"
         }
@@ -29,6 +29,4 @@ class OutfitsViewModel: ObservableObject {
 
 struct OutfitsResponse: Codable {
     let outfits: [Outfit]
-    let success: Bool
-    let message: String?
 } 

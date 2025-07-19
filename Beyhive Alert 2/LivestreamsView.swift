@@ -3,6 +3,7 @@ import Foundation
 
 struct Livestream: Identifiable, Codable {
     var id: UUID { UUID() }
+    let title: String
     let platform: String
     let url: String
 }
@@ -15,11 +16,18 @@ class LivestreamsViewModel: ObservableObject {
         guard let url = URL(string: "https://beyhive-backend.onrender.com/api/livestreams") else { return }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data {
-                print(String(data: data, encoding: .utf8) ?? "No data") // Debug print statement
+                let responseString = String(data: data, encoding: .utf8) ?? "No data"
+                print("📡 Livestreams response: \(responseString)")
                 if let decoded = try? JSONDecoder().decode([Livestream].self, from: data) {
                     DispatchQueue.main.async {
                         self.livestreams = decoded
+                        print("✅ Loaded \(decoded.count) livestreams")
+                        for (index, stream) in decoded.enumerated() {
+                            print("   Stream \(index + 1): title='\(stream.title)', platform='\(stream.platform)', url='\(stream.url)'")
+                        }
                     }
+                } else {
+                    print("❌ Failed to decode livestreams data")
                 }
             }
         }.resume()
@@ -129,9 +137,16 @@ struct LivestreamsView: View {
                                             .frame(width: 40, height: 40)
                                     }
                                 }
-                                Text(stream.platform)
-                                    .font(.headline)
-                                    .foregroundColor(.black)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(stream.title.isEmpty ? stream.platform : stream.title)
+                                        .font(.headline)
+                                        .foregroundColor(.black)
+                                    if !stream.title.isEmpty {
+                                        Text(stream.platform)
+                                            .font(.caption)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
                                 Spacer()
                                 Button(action: {
                                     var link = stream.url

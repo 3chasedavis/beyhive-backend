@@ -79,6 +79,7 @@ window.addEventListener('DOMContentLoaded', function() {
     data.forEach((item, idx) => {
       const row = document.createElement('div');
       row.innerHTML = `
+        <input type="text" value="${item.title || ''}" placeholder="Stream Title (e.g. @beyonceupdates)" onchange="updateTitle(${idx}, this.value)" style="width: 200px;" />
         <select onchange="updatePlatform(${idx}, this.value)">
           ${platforms.map(p => `<option${p === item.platform ? ' selected' : ''}>${p}</option>`).join('')}
         </select>
@@ -89,12 +90,15 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
   function addRow() {
-    livestreams.push({ platform: platforms[0], url: '' });
+    livestreams.push({ title: '', platform: platforms[0], url: '' });
     renderRows(livestreams);
   }
   function removeRow(idx) {
     livestreams.splice(idx, 1);
     renderRows(livestreams);
+  }
+  function updateTitle(idx, value) {
+    livestreams[idx].title = value;
   }
   function updatePlatform(idx, value) {
     livestreams[idx].platform = value;
@@ -112,6 +116,7 @@ window.addEventListener('DOMContentLoaded', function() {
   // Attach to window for global access
   window.addRow = addRow;
   window.removeRow = removeRow;
+  window.updateTitle = updateTitle;
   window.updatePlatform = updatePlatform;
   window.updateUrl = updateUrl;
   window.saveLivestreams = saveLivestreams;
@@ -630,6 +635,43 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   fetchAlbumRankings();
+
+  // === Maintenance Mode Management ===
+  const maintenanceToggle = document.getElementById('maintenanceToggle');
+  const maintenanceStatus = document.getElementById('maintenanceStatus');
+
+  function fetchMaintenanceMode() {
+    fetch('/api/admin/maintenance-mode')
+      .then(res => res.json())
+      .then(data => {
+        maintenanceToggle.checked = data.isMaintenanceMode;
+      })
+      .catch(err => {
+        console.error('Error fetching maintenance mode:', err);
+      });
+  }
+
+  window.saveMaintenanceMode = function() {
+    const isMaintenanceMode = maintenanceToggle.checked;
+    fetch('/api/admin/maintenance-mode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isMaintenanceMode })
+    })
+      .then(res => res.json())
+      .then(data => {
+        maintenanceStatus.textContent = 'Saved!';
+        setTimeout(() => {
+          maintenanceStatus.textContent = '';
+        }, 2000);
+      })
+      .catch(err => {
+        maintenanceStatus.textContent = 'Error saving';
+        console.error('Error saving maintenance mode:', err);
+      });
+  };
+
+  fetchMaintenanceMode();
 
   // === Quiz Manager ===
   const quizManager = document.getElementById('quizManager');

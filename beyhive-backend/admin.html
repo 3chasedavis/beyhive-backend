@@ -31,6 +31,12 @@
       margin-top: 0.2em;
       margin-bottom: 1em;
     }
+    .partners-panel {
+      background: #ffe066;
+      padding: 24px;
+      border-radius: 14px;
+      margin-bottom: 40px;
+    }
   </style>
 </head>
 <body>
@@ -87,6 +93,24 @@
   <div id="deviceTokenCount" style="font-size: 1.2em; margin-bottom: 10px;">Total Device Tokens: 0</div>
   <div id="activeUserCount" style="font-size: 1.2em; margin-bottom: 10px;">Active Users: 0</div>
   <div id="onlineNow" style="font-size: 1.2em; margin-bottom: 30px;">Users Online Now: 0</div>
+  
+  <!-- Maintenance Mode Section -->
+  <hr/>
+  <h2>Maintenance Mode</h2>
+  <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+    <label style="display: flex; align-items: center; font-size: 16px; font-weight: bold;">
+      <input type="checkbox" id="maintenanceToggle" style="margin-right: 10px; transform: scale(1.2);" />
+      Enable Maintenance Mode
+    </label>
+    <p style="margin-top: 10px; color: #666; font-size: 14px;">
+      When enabled, users will see a maintenance message instead of the app content.
+    </p>
+    <button onclick="saveMaintenanceMode()" style="margin-top: 10px; background: #e6b800; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 16px;">
+      Save Maintenance Mode
+    </button>
+    <span id="maintenanceStatus" style="margin-left: 10px;"></span>
+  </div>
+  
   <h2>Livestreams Management</h2>
   <div id="livestreams"></div>
   <button onclick="addRow()">Add Row</button>
@@ -132,21 +156,23 @@
 
   <!-- Partners Management Section -->
   <hr/>
-  <h2>Manage Partners</h2>
-  <form id="partnerForm" style="margin-bottom: 20px;">
-    <input type="text" id="partnerName" placeholder="Partner Name" required />
-    <input type="text" id="partnerDescription" placeholder="Description" required />
-    <input type="file" id="partnerIcon" accept="image/*" />
-    <input type="url" id="partnerLink" placeholder="Partner URL (https://...)" required />
-    <button type="submit">Add Partner</button>
-    <span id="partnerFormStatus" style="margin-left:10px;"></span>
-  </form>
-  <table id="partnersTable" style="width:100%; margin-bottom:30px; display:none;">
-    <thead>
-      <tr><th>Name</th><th>Description</th><th>Icon</th><th>Link</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="partners-panel" style="margin-bottom: 40px;">
+    <h2>Manage Partners</h2>
+    <form id="partnerForm" style="margin-bottom: 20px;">
+      <input type="text" id="partnerName" placeholder="Partner Name" required />
+      <input type="text" id="partnerDescription" placeholder="Description" required />
+      <input type="file" id="partnerIcon" accept="image/*" />
+      <input type="url" id="partnerLink" placeholder="Partner URL (https://...)" required />
+      <button type="submit">Add Partner</button>
+      <span id="partnerFormStatus" style="margin-left:10px;"></span>
+    </form>
+    <table id="partnersTable" style="width:100%; margin-bottom:30px; display:none;">
+      <thead>
+        <tr><th>Name</th><th>Description</th><th>Icon</th><th>Link</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <h2>Manage Quizzes</h2>
   <div id="quizManager" style="margin-bottom: 40px;"></div>

@@ -675,32 +675,109 @@ struct TermsOfServiceContent: View {
 
 
 struct ContentView: View {
+    @StateObject private var tilesViewModel = TilesViewModel()
+    @StateObject private var eventsViewModel = EventsViewModel()
     @State private var selectedTab: BeyhiveTab = .home
+    @State private var isMaintenanceMode = false
+    @State private var isLoadingMaintenance = true
     
     var body: some View {
-        VStack(spacing: 0) {
-            TopBarBackground()
-            ZStack {
-                Color.white
-                Group {
-                    switch selectedTab {
-                    case .home: HomeView(selectedTab: $selectedTab)
-                    case .videos: LivestreamsView(selectedTab: $selectedTab)
-                    case .game: NotificationsView() // Free notifications view
-                    case .trackers: TrackersView()
-                    case .schedule: ScheduleView()
+        Group {
+            if isLoadingMaintenance {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.white)
+            } else if isMaintenanceMode {
+                MaintenanceView()
+            } else {
+                VStack(spacing: 0) {
+                    TopBarBackground()
+                    ZStack {
+                        Color.white
+                        Group {
+                            switch selectedTab {
+                            case .home: HomeView(selectedTab: $selectedTab)
+                            case .videos: LivestreamsView(selectedTab: $selectedTab)
+                            case .game: NotificationsView() // Free notifications view
+                            case .trackers: TrackersView()
+                            case .schedule: ScheduleView()
+                            }
+                        }
                     }
+                    .edgesIgnoringSafeArea(.all)
+                    Spacer(minLength: 0)
+                    CustomTabBar(selectedTab: $selectedTab, showShadow: true, height: 52) // Bottom bar
                 }
+                .onAppear {
+                    requestNotificationPermissions()
+                }
+                .font(.system(size: 11)) // Set default font size for all text in ContentView and children (even smaller)
+                .preferredColorScheme(.light)
             }
-            .edgesIgnoringSafeArea(.all)
-            Spacer(minLength: 0)
-            CustomTabBar(selectedTab: $selectedTab, showShadow: true, height: 52) // Bottom bar
         }
-        .onAppear {
-            requestNotificationPermissions()
+        .task {
+            await checkMaintenanceMode()
         }
-        .font(.system(size: 11)) // Set default font size for all text in ContentView and children (even smaller)
-        .preferredColorScheme(.light)
+    }
+    
+    private func checkMaintenanceMode() async {
+        guard let url = URL(string: "https://beyhive-backend.onrender.com/api/admin/maintenance-mode") else {
+            isLoadingMaintenance = false
+            return
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let response = try JSONDecoder().decode(MaintenanceResponse.self, from: data)
+            isMaintenanceMode = response.isMaintenanceMode
+        } catch {
+            print("Error checking maintenance mode: \(error)")
+        }
+        
+        isLoadingMaintenance = false
+    }
+}
+
+struct MaintenanceResponse: Codable {
+    let isMaintenanceMode: Bool
+}
+
+struct MaintenanceView: View {
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            
+            Image("Bee_Icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
+                .foregroundColor(.gray)
+            
+            VStack(spacing: 16) {
+                Text("🛠️ Under Maintenance")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.black)
+                
+                Text("We're currently updating the app to bring you the best Beyhive experience!")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                
+                Text("Please check back later.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            Text("🐝 Beyhive Alert")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.gray)
+                .padding(.bottom, 32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
     }
 }
 
@@ -1035,11 +1112,21 @@ struct HomeView: View {
                                         }
                                     }) {
                                         VStack(alignment: .center, spacing: 12) {
-                                            Image(systemName: partner.icon)
-                                                .resizable()
-                                                .scaledToFit()
+                                            if let iconUrl = partner.iconUrl, !iconUrl.isEmpty, let url = URL(string: iconUrl) {
+                                                AsyncImage(url: url) { image in
+                                                    image.resizable().aspectRatio(contentMode: .fit)
+                                                } placeholder: {
+                                                    Rectangle().fill(Color.gray.opacity(0.3)).overlay(ProgressView().scaleEffect(0.8))
+                                                }
                                                 .frame(width: 44, height: 44)
-                                                .foregroundColor(.black)
+                                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            } else {
+                                                Image(systemName: "building.2")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 44, height: 44)
+                                                    .foregroundColor(.black)
+                                            }
                                             Text(partner.name)
                                                 .font(.system(size: 20, weight: .bold, design: .rounded))
                                                 .foregroundColor(.black)
@@ -1706,7 +1793,36 @@ struct ScheduleView: View {
     @State private var showingCalendarAlert = false
     @State private var lastAddedEvent: Event?
     @State private var addedEventIDs: Set<String> = []
+    @State private var currentTime = Date()
     @EnvironmentObject var eventsViewModel: EventsViewModel
+    
+    // Timer for countdown updates
+    let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    
+    // Countdown to next Beyoncé show
+    private var nextShowDate: Date? {
+        let upcomingEvents = eventsViewModel.events.filter { $0.date > Date() }
+        return upcomingEvents.first?.localStartDate ?? upcomingEvents.first?.date
+    }
+    
+    private var countdownString: String {
+        guard let nextShow = nextShowDate else { return "" }
+        let timeInterval = nextShow.timeIntervalSince(currentTime)
+        
+        if timeInterval <= 0 { return "" }
+        
+        let days = Int(timeInterval) / (24 * 60 * 60)
+        let hours = Int(timeInterval) % (24 * 60 * 60) / (60 * 60)
+        let minutes = Int(timeInterval) % (60 * 60) / 60
+        
+        if days > 0 {
+            return "\(days)d \(hours)h \(minutes)m"
+        } else if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
     
     var filteredEvents: [Event] {
         let now = Date()
@@ -1736,6 +1852,23 @@ struct ScheduleView: View {
     var body: some View {
         VStack(spacing: 24) {
             CustomCalendarView(selectedDate: $selectedDate, events: eventsViewModel.events, showUpcoming: showUpcoming)
+            
+            // Countdown to next show
+            if !countdownString.isEmpty {
+                VStack(spacing: 8) {
+                    Text("Next Show")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.gray)
+                    Text(countdownString)
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+            }
             
             // Toggle for Upcoming/Past Events
             HStack(spacing: 16) {
@@ -1831,6 +1964,9 @@ struct ScheduleView: View {
             }
         }
         .background(Color.white.ignoresSafeArea())
+        .onReceive(timer) { _ in
+            currentTime = Date()
+        }
     }
     
     // Add event to user's calendar using EventKit
@@ -2229,7 +2365,7 @@ struct TrackersView: View {
     }
     var body: some View {
         ZStack {
-            Color(.systemGray6).ignoresSafeArea()
+            Color.white.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 0) {
                 // Segmented control
                 HStack(spacing: 12) {
@@ -2239,14 +2375,11 @@ struct TrackersView: View {
                             .foregroundColor(selectedTab == .setlist ? .black : .gray)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
-                            .background {
-                                if selectedTab == .setlist {
-                                    gradient
-                                } else {
-                                    Color(.lightGray)
-                                }
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+                            .background(
+                                selectedTab == .setlist
+                                    ? AnyView(gradient)
+                                    : AnyView(Color(.lightGray))
+                            )
                     }
                     Button(action: { selectedTab = .outfit }) {
                         Text("Outfit Tracker")
@@ -2254,18 +2387,15 @@ struct TrackersView: View {
                             .foregroundColor(selectedTab == .outfit ? .black : .gray)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 18)
-                            .background {
-                                if selectedTab == .outfit {
-                                    gradient
-                                } else {
-                                    Color(.lightGray)
-                                }
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+                            .background(
+                                selectedTab == .outfit
+                                    ? AnyView(gradient)
+                                    : AnyView(Color(.lightGray))
+                            )
                     }
                 }
                 .frame(height: 56)
-                .background(Color.clear)
+                .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
@@ -3007,9 +3137,9 @@ struct Partner: Identifiable, Codable {
     let id = UUID()
     let name: String
     let description: String
-    let icon: String
+    let iconUrl: String?
     let link: String
     enum CodingKeys: String, CodingKey {
-        case name, description, icon, link
+        case name, description, iconUrl, link
     }
 }
