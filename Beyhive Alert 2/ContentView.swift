@@ -682,7 +682,7 @@ struct ContentView: View {
     @State private var isLoadingMaintenance = true
     
     // Timer for checking maintenance mode periodically
-    let maintenanceTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
+    let maintenanceTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
     
     var body: some View {
         Group {
@@ -729,7 +729,7 @@ struct ContentView: View {
     }
     
     private func checkMaintenanceMode() async {
-        print("🔧 Checking maintenance mode...")
+        print("🔧 [DEBUG] Checking maintenance mode at \(Date()) ...")
         guard let url = URL(string: "https://beyhive-backend.onrender.com/api/admin/maintenance-mode") else {
             print("❌ Invalid maintenance mode URL")
             isLoadingMaintenance = false
@@ -739,10 +739,13 @@ struct ContentView: View {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let response = try JSONDecoder().decode(MaintenanceResponse.self, from: data)
-            print("✅ Maintenance mode response: \(response.isMaintenanceMode)")
+            print("✅ [DEBUG] Maintenance mode response at \(Date()): \(response.isMaintenanceMode)")
+            if isMaintenanceMode != response.isMaintenanceMode {
+                print("🔄 [DEBUG] Maintenance mode changed! Updating UI.")
+            }
             isMaintenanceMode = response.isMaintenanceMode
         } catch {
-            print("❌ Error checking maintenance mode: \(error)")
+            print("❌ [DEBUG] Error checking maintenance mode at \(Date()): \(error)")
         }
         
         isLoadingMaintenance = false
