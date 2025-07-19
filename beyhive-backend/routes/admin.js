@@ -17,6 +17,25 @@ console.log('ADMIN_PASSWORD at startup:', ADMIN_PASSWORD); // DEBUG: Remove afte
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
 
+// Maintenance mode endpoints (public - no authentication required)
+router.get('/maintenance-mode', (req, res) => {
+  const maintenanceFile = path.join(__dirname, '../maintenance.json');
+  if (fs.existsSync(maintenanceFile)) {
+    const data = JSON.parse(fs.readFileSync(maintenanceFile, 'utf8'));
+    res.json({ isMaintenanceMode: data.isMaintenanceMode || false });
+  } else {
+    res.json({ isMaintenanceMode: false });
+  }
+});
+
+router.post('/maintenance-mode', (req, res) => {
+  const maintenanceFile = path.join(__dirname, '../maintenance.json');
+  const { isMaintenanceMode } = req.body;
+  const data = { isMaintenanceMode: isMaintenanceMode || false };
+  fs.writeFileSync(maintenanceFile, JSON.stringify(data, null, 2));
+  res.json({ success: true, isMaintenanceMode: data.isMaintenanceMode });
+});
+
 // Middleware to require admin session
 function requireAdminSession(req, res, next) {
     if (req.session && req.session.isAdmin) {
@@ -192,25 +211,6 @@ router.post('/update-required', (req, res) => {
   };
   fs.writeFileSync(updateRequiredPath, JSON.stringify(data, null, 2));
   res.json({ success: true, ...data });
-});
-
-// Maintenance mode endpoints
-router.get('/maintenance-mode', (req, res) => {
-  const maintenanceFile = path.join(__dirname, '../maintenance.json');
-  if (fs.existsSync(maintenanceFile)) {
-    const data = JSON.parse(fs.readFileSync(maintenanceFile, 'utf8'));
-    res.json({ isMaintenanceMode: data.isMaintenanceMode || false });
-  } else {
-    res.json({ isMaintenanceMode: false });
-  }
-});
-
-router.post('/maintenance-mode', (req, res) => {
-  const maintenanceFile = path.join(__dirname, '../maintenance.json');
-  const { isMaintenanceMode } = req.body;
-  const data = { isMaintenanceMode: isMaintenanceMode || false };
-  fs.writeFileSync(maintenanceFile, JSON.stringify(data, null, 2));
-  res.json({ success: true, isMaintenanceMode: data.isMaintenanceMode });
 });
 
 module.exports = router; 

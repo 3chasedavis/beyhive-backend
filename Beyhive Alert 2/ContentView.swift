@@ -1793,36 +1793,7 @@ struct ScheduleView: View {
     @State private var showingCalendarAlert = false
     @State private var lastAddedEvent: Event?
     @State private var addedEventIDs: Set<String> = []
-    @State private var currentTime = Date()
     @EnvironmentObject var eventsViewModel: EventsViewModel
-    
-    // Timer for countdown updates
-    let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
-    
-    // Countdown to next Beyoncé show
-    private var nextShowDate: Date? {
-        let upcomingEvents = eventsViewModel.events.filter { $0.date > Date() }
-        return upcomingEvents.first?.localStartDate ?? upcomingEvents.first?.date
-    }
-    
-    private var countdownString: String {
-        guard let nextShow = nextShowDate else { return "" }
-        let timeInterval = nextShow.timeIntervalSince(currentTime)
-        
-        if timeInterval <= 0 { return "" }
-        
-        let days = Int(timeInterval) / (24 * 60 * 60)
-        let hours = Int(timeInterval) % (24 * 60 * 60) / (60 * 60)
-        let minutes = Int(timeInterval) % (60 * 60) / 60
-        
-        if days > 0 {
-            return "\(days)d \(hours)h \(minutes)m"
-        } else if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        } else {
-            return "\(minutes)m"
-        }
-    }
     
     var filteredEvents: [Event] {
         let now = Date()
@@ -1852,23 +1823,6 @@ struct ScheduleView: View {
     var body: some View {
         VStack(spacing: 24) {
             CustomCalendarView(selectedDate: $selectedDate, events: eventsViewModel.events, showUpcoming: showUpcoming)
-            
-            // Countdown to next show
-            if !countdownString.isEmpty {
-                VStack(spacing: 8) {
-                    Text("Next Show")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.gray)
-                    Text(countdownString)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(12)
-                }
-                .padding(.horizontal)
-            }
             
             // Toggle for Upcoming/Past Events
             HStack(spacing: 16) {
@@ -1964,9 +1918,6 @@ struct ScheduleView: View {
             }
         }
         .background(Color.white.ignoresSafeArea())
-        .onReceive(timer) { _ in
-            currentTime = Date()
-        }
     }
     
     // Add event to user's calendar using EventKit
