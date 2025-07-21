@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const { uploadImage } = require('../utils/cloudinary');
+const { uploadImage } = require('../utils/localStorage');
 const router = express.Router();
 
 const OUTFITS_FILE = path.join(__dirname, '../outfits.json');
@@ -27,10 +27,18 @@ router.get('/', (req, res) => {
 router.post('/', upload.single('image'), async (req, res) => {
   const outfits = readOutfits();
   let imageUrl = null;
+  
   if (req.file) {
-    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    imageUrl = await uploadImage(base64Image);
+    try {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      imageUrl = await uploadImage(base64Image, 'beyhive-outfits');
+    } catch (error) {
+      console.error('Local storage upload failed:', error);
+      // Continue without image rather than failing the entire request
+      imageUrl = null;
+    }
   }
+  
   const outfit = {
     ...req.body,
     imageUrl: imageUrl || null,
@@ -46,11 +54,19 @@ router.put('/:id', upload.single('image'), async (req, res) => {
   const outfits = readOutfits();
   const idx = outfits.findIndex(o => o.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Outfit not found' });
+  
   let imageUrl = outfits[idx].imageUrl;
   if (req.file) {
-    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    imageUrl = await uploadImage(base64Image);
+    try {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      imageUrl = await uploadImage(base64Image, 'beyhive-outfits');
+    } catch (error) {
+      console.error('Local storage upload failed:', error);
+      // Keep existing image URL if upload fails
+      imageUrl = outfits[idx].imageUrl;
+    }
   }
+  
   outfits[idx] = {
     ...outfits[idx],
     ...req.body,

@@ -2,7 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const { uploadImage } = require('../utils/cloudinary');
+const { uploadImage } = require('../utils/localStorage');
 const router = express.Router();
 
 const PARTNERS_FILE = path.join(__dirname, '../partners.json');
@@ -27,10 +27,18 @@ router.get('/', (req, res) => {
 router.post('/', upload.single('icon'), async (req, res) => {
   const partners = readPartners();
   let iconUrl = null;
+  
   if (req.file) {
-    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    iconUrl = await uploadImage(base64Image);
+    try {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      iconUrl = await uploadImage(base64Image, 'beyhive-partners');
+    } catch (error) {
+      console.error('Local storage upload failed:', error);
+      // Continue without image rather than failing the entire request
+      iconUrl = null;
+    }
   }
+  
   const partner = {
     ...req.body,
     iconUrl: iconUrl || null,
@@ -45,11 +53,19 @@ router.put('/:index', upload.single('icon'), async (req, res) => {
   const partners = readPartners();
   const idx = parseInt(req.params.index, 10);
   if (isNaN(idx) || idx < 0 || idx >= partners.length) return res.status(404).json({ error: 'Partner not found' });
+  
   let iconUrl = partners[idx].iconUrl;
   if (req.file) {
-    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    iconUrl = await uploadImage(base64Image);
+    try {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      iconUrl = await uploadImage(base64Image, 'beyhive-partners');
+    } catch (error) {
+      console.error('Local storage upload failed:', error);
+      // Keep existing icon URL if upload fails
+      iconUrl = partners[idx].iconUrl;
+    }
   }
+  
   partners[idx] = {
     ...partners[idx],
     ...req.body,
