@@ -26,8 +26,8 @@ struct InstagramFeedView: View {
     @State private var errorMessage: String? = nil
 
     let feeds: [(title: String, url: String, username: String, profileImageAsset: String, profileURL: String)] = [
-        ("Beyoncé Updates", "https://rss.app/feeds/KuLjNH2J9m11px6X.xml", "@beyonceupdatesz", "beyonceupdatespfp", "https://instagram.com/beyonceupdatesz"),
-        ("Arionce", "https://rss.app/feeds/jkitoQpu7zz7ldny.xml", "@arionce.lifee", "arioncepfp", "https://instagram.com/arionce.lifee")
+        ("Beyoncé Updates", "https://rss.app/feeds/tsqXwAfrzfpjLSzb.xml", "@beyonceupdatesz", "beyonceupdatespfp", "https://instagram.com/beyonceupdatesz"),
+        ("Arionce", "https://rss.app/feeds/IbhOSjEvEbRhT8Mu.xml", "@arionce.lifee", "arioncepfp", "https://instagram.com/arionce.lifee")
     ]
 
     var body: some View {

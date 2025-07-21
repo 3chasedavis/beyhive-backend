@@ -27,14 +27,14 @@ class InstagramFeedViewModel : ViewModel() {
     private val feeds = listOf(
         FeedConfig(
             title = "Beyoncé Updates",
-            url = "https://rss.app/feeds/KuLjNH2J9m11px6X.xml",
+            url = "https://rss.app/feeds/tsqXwAfrzfpjLSzb.xml",
             username = "@beyonceupdatesz",
             profileImageAsset = "beyonceupdatespfp",
             profileURL = "https://instagram.com/beyonceupdatesz"
         ),
         FeedConfig(
             title = "Arionce",
-            url = "https://rss.app/feeds/jkitoQpu7zz7ldny.xml",
+            url = "https://rss.app/feeds/IbhOSjEvEbRhT8Mu.xml",
             username = "@arionce.lifee",
             profileImageAsset = "arioncepfp",
             profileURL = "https://instagram.com/arionce.lifee"
