@@ -83,7 +83,12 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/beyhive-a
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/admin', adminRoutes);
+const adminLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: 'Too many admin requests from this IP, please try again later.'
+});
+app.use('/api/admin', adminLimiter, adminRoutes);
 app.use('/api/livestreams', livestreamsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/instagram-feed', instagramFeedRouter);
@@ -188,4 +193,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Beyhive Alert Backend running on port ${PORT}`);
   console.log(`📧 Email verification: ${process.env.EMAIL_USER ? 'Configured' : 'Not configured'}`);
   console.log(`🗄️  Database: ${process.env.MONGODB_URI ? 'Configured' : 'Using default'}`);
-}); 
+});
