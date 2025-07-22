@@ -22,6 +22,7 @@ const albumRankingsRouter = require('./routes/albumRankings'); // Add this line
 const partnersRouter = require('./routes/partners'); // Add this line
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy for correct rate limiting on Render
 const PORT = process.env.PORT || 3000;
 
 // Add session middleware for admin authentication
