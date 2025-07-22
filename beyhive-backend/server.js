@@ -56,6 +56,13 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Limit: max 5 requests per minute per IP for /register-device
+const registerDeviceLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,
+  message: 'Too many device registrations from this IP, please try again later.'
+});
+
 // CORS configuration - Allow requests from any origin for public API
 app.use(cors({
   origin: true, // Allow all origins for public API access
@@ -98,7 +105,7 @@ app.get('/api/device-tokens', async (req, res) => {
 });
 
 // Register device token from iOS app
-app.post('/register-device', async (req, res) => {
+app.post('/register-device', registerDeviceLimiter, async (req, res) => {
   const { deviceToken, preferences } = req.body;
   console.log('[DEBUG] /register-device called with:', { deviceToken, preferences });
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
