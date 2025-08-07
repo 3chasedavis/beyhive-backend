@@ -53,14 +53,14 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 500 // Increased from 100 to 500 requests per windowMs
 });
 app.use(limiter);
 
-// Limit: max 5 requests per minute per IP for /register-device
+// Limit: max 10 requests per minute per IP for /register-device (increased from 5)
 const registerDeviceLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 5,
+  max: 10, // Increased from 5 to 10
   message: 'Too many device registrations from this IP, please try again later.'
 });
 
@@ -86,7 +86,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 10,
+  max: 20, // Increased from 10 to 20
   message: 'Too many admin requests from this IP, please try again later.'
 });
 app.use('/api/admin', adminLimiter, adminRoutes);
