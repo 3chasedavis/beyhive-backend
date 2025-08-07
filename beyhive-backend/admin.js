@@ -365,7 +365,9 @@ window.addEventListener('DOMContentLoaded', function() {
         if (!outfit) return;
         outfitName.value = outfit.name;
         outfitLocation.value = outfit.location;
-        outfitIsNew.checked = !!outfit.isNew;
+        if (outfitIsNew) {
+          outfitIsNew.checked = !!outfit.isNew;
+        }
         outfitSection.value = outfit.section;
         outfitDescription.value = outfit.description || '';
         editingOutfitId = id;
@@ -513,20 +515,50 @@ window.addEventListener('DOMContentLoaded', function() {
   const ADMIN_PASSWORD = 'chase3870';
 
   function fetchDeviceStats() {
-    fetch('/api/admin/registereddevices')
-      .then(res => res.json())
+    fetch('/api/admin/registereddevices', {
+      credentials: 'include' // Include session cookies
+    })
+      .then(res => {
+        if (res.status === 401) {
+          console.log('Not authenticated for registereddevices');
+          return;
+        }
+        return res.json();
+      })
       .then(data => {
-        document.getElementById('registeredDevices').textContent = 'App Downloads (Unique Devices): ' + (data.count || 0);
+        if (data) {
+          document.getElementById('registeredDevices').textContent = 'App Downloads (Unique Devices): ' + (data.count || 0);
+        }
       });
-    fetch('/api/admin/devicetokencount')
-      .then(res => res.json())
+    fetch('/api/admin/devicetokencount', {
+      credentials: 'include' // Include session cookies
+    })
+      .then(res => {
+        if (res.status === 401) {
+          console.log('Not authenticated for devicetokencount');
+          return;
+        }
+        return res.json();
+      })
       .then(data => {
-        document.getElementById('deviceTokenCount').textContent = 'Total Device Tokens: ' + (data.count || 0);
+        if (data) {
+          document.getElementById('deviceTokenCount').textContent = 'Total Device Tokens: ' + (data.count || 0);
+        }
       });
-    fetch('/api/admin/onlinenow')
-      .then(res => res.json())
+    fetch('/api/admin/onlinenow', {
+      credentials: 'include' // Include session cookies
+    })
+      .then(res => {
+        if (res.status === 401) {
+          console.log('Not authenticated for onlinenow');
+          return;
+        }
+        return res.json();
+      })
       .then(data => {
-        document.getElementById('activeUserCount').textContent = 'Active Users: ' + (data.count || 0);
+        if (data) {
+          document.getElementById('activeUserCount').textContent = 'Active Users: ' + (data.count || 0);
+        }
       });
   }
 
@@ -557,8 +589,12 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/update-required')
       .then(res => res.json())
       .then(data => {
-        updateRequiredToggle.checked = !!data.updateRequired;
-        minVersionInput.value = data.minVersion || '';
+        if (updateRequiredToggle) {
+          updateRequiredToggle.checked = !!data.updateRequired;
+        }
+        if (minVersionInput) {
+          minVersionInput.value = data.minVersion || '';
+        }
       });
   }
 
@@ -649,7 +685,9 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/maintenance-mode')
       .then(res => res.json())
       .then(data => {
-        maintenanceToggle.checked = data.isMaintenanceMode;
+        if (maintenanceToggle) {
+          maintenanceToggle.checked = data.isMaintenanceMode;
+        }
       })
       .catch(err => {
         console.error('Error fetching maintenance mode:', err);
@@ -686,7 +724,9 @@ window.addEventListener('DOMContentLoaded', function() {
     fetch('/api/admin/countdown-mode')
       .then(res => res.json())
       .then(data => {
-        countdownToggle.checked = data.isCountdownEnabled;
+        if (countdownToggle) {
+          countdownToggle.checked = data.isCountdownEnabled;
+        }
       })
       .catch(err => {
         console.error('Error fetching countdown mode:', err);
