@@ -222,7 +222,8 @@ fun EmptyStateContent(context: android.content.Context) {
         // Games button
         Button(
             onClick = {
-                // TODO: Navigate to home tab when navigation is fixed
+                // TODO: Navigation will be implemented in a future update
+                // For now, this button shows the intent to navigate to games/home
             },
             modifier = Modifier
                 .wrapContentWidth()
