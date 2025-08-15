@@ -29,7 +29,9 @@ import android.net.Uri
 import kotlinx.coroutines.delay
 
 @Composable
-fun VideosScreen() {
+fun VideosScreen(
+    onNavigateToHome: () -> Unit = {}
+) {
     val viewModel: LivestreamsViewModel = viewModel()
     val livestreams by viewModel.livestreams
     val isLoading by viewModel.isLoading
@@ -220,7 +222,7 @@ fun EmptyStateContent(context: android.content.Context) {
         // Games button
         Button(
             onClick = {
-                // TODO: Navigate to games/home tab
+                // TODO: Navigate to home tab when navigation is fixed
             },
             modifier = Modifier
                 .wrapContentWidth()
@@ -243,7 +245,7 @@ fun EmptyStateContent(context: android.content.Context) {
                         ),
                         RoundedCornerShape(22.dp)
                     )
-                    .padding(18.dp)
+                    .padding(12.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -251,21 +253,21 @@ fun EmptyStateContent(context: android.content.Context) {
                 ) {
                     Text(
                         text = "Play our games now!",
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF21274A)
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Go",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White,
                         modifier = Modifier
-                            .padding(horizontal = 18.dp, vertical = 8.dp)
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
                             .background(
                                 Color.White.copy(alpha = 0.2f),
-                                RoundedCornerShape(16.dp)
+                                RoundedCornerShape(14.dp)
                             )
                     )
                 }
@@ -301,7 +303,7 @@ fun EmptyStateContent(context: android.content.Context) {
                         ),
                         RoundedCornerShape(22.dp)
                     )
-                    .padding(18.dp)
+                    .padding(12.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -309,21 +311,21 @@ fun EmptyStateContent(context: android.content.Context) {
                 ) {
                     Text(
                         text = "Follow us on Twitter/X",
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF21274A)
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Open",
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.White,
                         modifier = Modifier
-                            .padding(horizontal = 18.dp, vertical = 8.dp)
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
                             .background(
                                 Color.White.copy(alpha = 0.2f),
-                                RoundedCornerShape(16.dp)
+                                RoundedCornerShape(14.dp)
                             )
                     )
                 }

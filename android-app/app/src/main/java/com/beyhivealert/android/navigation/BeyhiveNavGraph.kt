@@ -62,7 +62,9 @@ fun MainScreen(navController: NavHostController) {
                     onNavigateToDailyTrivia = { navController.navigate("daily_trivia") },
                     onNavigateToAlbumRanker = { navController.navigate("album_ranker") }
                 )
-                1 -> VideosScreen()
+                1 -> VideosScreen(
+                    onNavigateToHome = { selectedTab = 0 }
+                )
                 2 -> NotificationsScreen() // MIDDLE button = Notifications
                 3 -> TrackersScreen() // Button to the RIGHT of middle = Outfit/Song tracker
                 4 -> ScheduleScreen()
