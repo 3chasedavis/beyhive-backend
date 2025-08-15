@@ -71,11 +71,19 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun getUpcomingEvents(): List<Event> {
-        return _events.value.sortedBy { parseEventDate(it.date) }
+        val now = Calendar.getInstance()
+        return _events.value.filter { event ->
+            val eventDate = parseEventDate(event.date)
+            eventDate != null && eventDate.after(now)
+        }.sortedBy { parseEventDate(it.date) }
     }
 
     fun getPastEvents(): List<Event> {
-        return _events.value.sortedByDescending { parseEventDate(it.date) }
+        val now = Calendar.getInstance()
+        return _events.value.filter { event ->
+            val eventDate = parseEventDate(event.date)
+            eventDate != null && eventDate.before(now)
+        }.sortedByDescending { parseEventDate(it.date) }
     }
     
     private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {

@@ -32,12 +32,19 @@ import java.util.*
 @Composable
 fun ScheduleScreen() {
     val viewModel: ScheduleViewModel = viewModel()
-    val events by viewModel.events
+    val allEvents by viewModel.events
     val isLoading by viewModel.isLoading
     val error by viewModel.error
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
     var currentMonth by remember { mutableStateOf(Calendar.getInstance()) }
     var showUpcoming by remember { mutableStateOf(true) }
+    
+    // Filter events based on showUpcoming state
+    val events = if (showUpcoming) {
+        viewModel.getUpcomingEvents()
+    } else {
+        viewModel.getPastEvents()
+    }
     
     Column(
         modifier = Modifier
