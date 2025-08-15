@@ -46,6 +46,7 @@ app.use('/api/outfits', outfitsRoutes);
 
 // Public events endpoint for iOS app
 app.use('/api/events', eventsRoutes);
+app.use('/api/partners', partnersRouter);
 
 // Security middleware
 app.use(helmet());
@@ -95,7 +96,6 @@ app.use('/api/news', newsRouter);
 app.use('/api/instagram-feed', instagramFeedRouter);
 app.use('/api/survivor-quiz', survivorRouter);
 app.use('/api', albumRankingsRouter); // Add this line
-app.use('/api/partners', partnersRouter); // Add this line
 
 // Do not restore survivorRouter
 
