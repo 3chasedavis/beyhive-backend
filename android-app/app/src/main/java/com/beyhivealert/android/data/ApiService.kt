@@ -6,6 +6,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Serializable
 data class Event(
@@ -98,37 +100,39 @@ object ApiService {
         }
     }
 
-    fun fetchLivestreams(): List<Livestream> {
-        val url = URL("$BASE_URL/livestreams")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connectTimeout = 10000
-        connection.readTimeout = 10000
-        connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
-        
-        return try {
-            println("Attempting to fetch livestreams from: $url") // Debug log
-            val responseCode = connection.responseCode
-            println("Livestreams API Response Code: $responseCode") // Debug log
+    suspend fun fetchLivestreams(): List<Livestream> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("$BASE_URL/livestreams")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
             
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().readText()
-                println("Livestreams API Response: $response") // Debug log
-                val livestreams = Json.decodeFromString<List<Livestream>>(response)
-                println("Parsed livestreams: $livestreams") // Debug log
-                livestreams
-            } else {
-                println("Livestreams API Error Response Code: $responseCode") // Debug log
-                val errorStream = connection.errorStream?.bufferedReader()?.readText()
-                println("Livestreams API Error Response: $errorStream") // Debug log
+            try {
+                println("Attempting to fetch livestreams from: $url") // Debug log
+                val responseCode = connection.responseCode
+                println("Livestreams API Response Code: $responseCode") // Debug log
+                
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    println("Livestreams API Response: $response") // Debug log
+                    val livestreams = Json.decodeFromString<List<Livestream>>(response)
+                    println("Parsed livestreams: $livestreams") // Debug log
+                    livestreams
+                } else {
+                    println("Livestreams API Error Response Code: $responseCode") // Debug log
+                    val errorStream = connection.errorStream?.bufferedReader()?.readText()
+                    println("Livestreams API Error Response: $errorStream") // Debug log
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                println("Error fetching livestreams: ${e.message}") // Debug log
+                e.printStackTrace()
                 emptyList()
+            } finally {
+                connection.disconnect()
             }
-        } catch (e: Exception) {
-            println("Error fetching livestreams: ${e.message}") // Debug log
-            e.printStackTrace()
-            emptyList()
-        } finally {
-            connection.disconnect()
         }
     }
     
