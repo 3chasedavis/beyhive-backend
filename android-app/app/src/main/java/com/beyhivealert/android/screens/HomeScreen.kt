@@ -70,13 +70,13 @@ fun HomeScreen(
             }
         }
         
-        // Fetch events
+        // Fetch events (for calendar use)
         scope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     val fetchedEvents = ApiService.fetchEvents()
                     events = fetchedEvents
-                    println("Fetched ${fetchedEvents.size} events") // Debug log
+                    println("Fetched ${fetchedEvents.size} events for calendar") // Debug log
                 }
             } catch (e: Exception) {
                 println("Error fetching events: ${e.message}") // Debug log
@@ -85,6 +85,7 @@ fun HomeScreen(
                 isLoadingEvents = false
             }
         }
+
     }
     
     Column(
@@ -344,65 +345,7 @@ fun HomeScreen(
                 }
             }
             
-            // Events Section
-            item {
-                Column {
-                    // Events title with bee icon
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.bee_icon),
-                            contentDescription = "Bee Icon",
-                            modifier = Modifier.size(70.dp),
-                            tint = Color.Unspecified
-                        )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Text(
-                            text = "Events",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                    
-                    if (isLoadingEvents) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else if (events.isEmpty()) {
-                        Text(
-                            text = "No events available",
-                            fontSize = 16.sp,
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 32.dp)
-                        )
-                    } else {
-                        // Events cards
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(20.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp)
-                        ) {
-                            items(events) { event ->
-                                HomeEventCard(event = event)
-                            }
-                        }
-                    }
-                }
-            }
+
             
             // Instagram Feed Section
             item {
