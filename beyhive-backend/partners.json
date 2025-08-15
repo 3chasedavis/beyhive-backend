@@ -1,18 +1,26 @@
 [
   {
-    "id": "discord",
+    "id": "beyhive-alert-discord",
     "name": "Beyhive Alert Discord",
-    "description": "The Official Beyhive Alert Discord",
+    "description": "The Official Beyhive Alert App Discord",
     "iconUrl": null,
     "link": "https://discord.gg/MQs936zxbu",
-    "createdAt": "2025-01-01T00:00:00.000Z"
+    "createdAt": "2025-01-15T00:00:00.000Z"
   },
   {
-    "id": "roseblush",
-    "name": "Rose Blush Studio",
-    "description": "Design Partner",
+    "id": "kb-productions-discord",
+    "name": "KB Productions Discord",
+    "description": "The Official KB Productions Discord",
     "iconUrl": null,
-    "link": "https://roseblush.studio",
-    "createdAt": "2025-01-01T00:00:00.000Z"
+    "link": "https://discord.gg/kbproductions",
+    "createdAt": "2025-01-15T00:00:00.000Z"
+  },
+  {
+    "id": "beyonce-discord-server",
+    "name": "Beyoncé Discord Server",
+    "description": "The Official Beyoncé based Discord Server",
+    "iconUrl": null,
+    "link": "https://discord.gg/4uDvgu2atC",
+    "createdAt": "2025-01-15T00:00:00.000Z"
   }
 ]
