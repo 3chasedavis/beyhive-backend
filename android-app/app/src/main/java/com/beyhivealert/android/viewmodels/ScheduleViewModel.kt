@@ -42,7 +42,12 @@ class ScheduleViewModel : ViewModel() {
 
     private fun parseEventDate(dateString: String): Calendar? {
         return try {
-            val datePart = dateString.split("T")[0]
+            // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM:SS.sssZ" formats
+            val datePart = if (dateString.contains("T")) {
+                dateString.split("T")[0]
+            } else {
+                dateString
+            }
             val parts = datePart.split("-")
             if (parts.size == 3) {
                 val calendar = Calendar.getInstance()
