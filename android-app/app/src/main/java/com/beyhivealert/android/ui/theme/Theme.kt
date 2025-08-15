@@ -20,7 +20,7 @@ private val LightColorScheme = lightColorScheme(
     primary = Color(0xFFFFEB3B), // Yellow
     secondary = Color(0xFFE91E63), // Pink
     tertiary = Color(0xFF2196F3), // Blue
-    background = Color(0xFFFFF7CC), // Light yellow
+    background = Color.White, // Pure white background to match iPhone
     surface = Color.White,
     onPrimary = Color.Black,
     onSecondary = Color.White,
@@ -45,14 +45,10 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun BeyhiveAlertTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

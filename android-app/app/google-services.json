@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "693969353260",
+    "project_id": "beyhive-alert-android",
+    "storage_bucket": "beyhive-alert-android.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693969353260:android:db9d78bf90edbb44a96f89",
+        "android_client_info": {
+          "package_name": "com.beyhivealert.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrNhzh-xQOaWLaX13OhRBro4pbWPQTPDQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

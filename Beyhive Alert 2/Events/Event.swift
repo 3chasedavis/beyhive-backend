@@ -18,7 +18,7 @@ struct Event: Identifiable, Codable {
     let timezone: String? // New: IANA timezone string (e.g., "America/Los_Angeles")
     let status: String? // New: 'upcoming' or 'past' from admin panel
 
-    init(id: String = UUID().uuidString, title: String, description: String, date: Date, location: String? = nil, createdAt: Date = Date(), time: String? = nil, timezone: String? = nil) {
+    init(id: String = UUID().uuidString, title: String, description: String, date: Date, location: String? = nil, createdAt: Date = Date(), time: String? = nil, timezone: String? = nil, status: String? = nil) {
         self.id = id
         self.title = title
         self.description = description
@@ -27,6 +27,7 @@ struct Event: Identifiable, Codable {
         self.createdAt = createdAt
         self.time = time
         self.timezone = timezone
+        self.status = status
     }
     
     enum CodingKeys: String, CodingKey {

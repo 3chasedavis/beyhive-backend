@@ -9,18 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.beyhivealert.android.components.TopBar
+
 
 @Composable
 fun GameScreen() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TopBar(
-            title = "Album Ranking",
-            onSettingsClick = { /* TODO: Show settings */ }
-        )
-        
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),

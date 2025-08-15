@@ -110,12 +110,14 @@ app.get('/api/device-tokens', async (req, res) => {
   }
 });
 
-// Register device token from iOS app
+// Register device token from iOS and Android apps
 app.post('/register-device', registerDeviceLimiter, async (req, res) => {
-  const { deviceToken, preferences } = req.body;
-  console.log('[DEBUG] /register-device called with:', { deviceToken, preferences });
+  const { deviceToken, preferences, platform } = req.body;
+  console.log('[DEBUG] /register-device called with:', { deviceToken, preferences, platform });
   if (!deviceToken) return res.status(400).json({ error: 'Device token required' });
+  
   const DeviceToken = require('./models/DeviceToken');
+  
   // Provide defaults for all known preferences
   const defaultPrefs = {
     beyonceOnStage: true,
@@ -126,14 +128,24 @@ app.post('/register-device', registerDeviceLimiter, async (req, res) => {
     sixteenCarriages: true,
     amen: true
   };
+  
   const mergedPrefs = { ...defaultPrefs, ...(preferences || {}) };
+  
+  // Determine platform if not provided (backward compatibility for iOS)
+  const detectedPlatform = platform || (deviceToken.length === 64 ? 'ios' : 'android');
+  
   const updateResult = await DeviceToken.updateOne(
     { token: deviceToken },
-    { $set: { preferences: mergedPrefs } },
+    { $set: { preferences: mergedPrefs, platform: detectedPlatform } },
     { upsert: true }
   );
+  
   console.log('[DEBUG] updateOne result:', updateResult);
-  res.json({ message: 'Device token and preferences registered', preferences: mergedPrefs });
+  res.json({ 
+    message: 'Device token and preferences registered', 
+    preferences: mergedPrefs,
+    platform: detectedPlatform
+  });
 });
 
 // GET notification preferences for a device token

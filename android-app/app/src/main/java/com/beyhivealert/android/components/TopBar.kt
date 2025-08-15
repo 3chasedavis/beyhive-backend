@@ -24,17 +24,17 @@ fun TopBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
-            .background(Color(0xFFFFF7CC)) // Light yellow background
+            .background(Color(0xFFEADFA7)) // New hex color #EADFA7
     ) {
         // Bee Icon on the left
         Icon(
             painter = painterResource(id = R.drawable.bee_icon),
             contentDescription = "Bee Icon",
             modifier = Modifier
-                .size(32.dp)
+                .size(120.dp) // Much bigger - increased from 64dp to 120dp
                 .padding(start = 16.dp)
                 .align(Alignment.CenterStart),
-            tint = Color.Black
+            tint = Color.Unspecified
         )
         
         // Title in center

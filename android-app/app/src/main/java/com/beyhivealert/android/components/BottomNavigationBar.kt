@@ -5,16 +5,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -27,79 +26,91 @@ fun BottomNavigationBar(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFE082), // Darker yellow background for better contrast
+        color = Color(0xFFEADFA7), // New hex color #EADFA7
         shadowElevation = 4.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Home Tab
-            BottomNavIcon(
-                icon = Icons.Filled.Home,
-                isSelected = selectedTab == 0,
-                onClick = { onTabSelected(0) }
-            )
-
-            // Videos Tab
-            BottomNavIcon(
-                icon = Icons.Filled.PlayArrow,
-                isSelected = selectedTab == 1,
-                onClick = { onTabSelected(1) }
-            )
-
-            // Center Bee Icon (not clickable)
-            Box(
+            // Home Tab - House icon (keep the same)
+            IconButton(
+                onClick = { onTabSelected(0) },
                 modifier = Modifier
                     .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFFFEB3B)) // Yellow
-                    .offset(y = (-12).dp),
-                contentAlignment = Alignment.Center
+                    .shadow(0.5.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.bee_icon),
-                    contentDescription = "Bee",
-                    modifier = Modifier.size(40.dp),
-                    tint = Color.Black
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = "Home",
+                    tint = Color.White, // White color as requested
+                    modifier = Modifier.size(40.dp) // Bigger icon as requested
                 )
             }
 
-            // Notifications Tab
-            BottomNavIcon(
-                icon = Icons.Filled.Notifications,
-                isSelected = selectedTab == 3,
-                onClick = { onTabSelected(3) }
-            )
+            // Videos Tab - Video camera icon
+            IconButton(
+                onClick = { onTabSelected(1) },
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(0.5.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow, // Using PlayArrow for videos
+                    contentDescription = "Videos",
+                    tint = Color.White, // White color as requested
+                    modifier = Modifier.size(40.dp) // Bigger icon as requested
+                )
+            }
 
-            // Calendar Tab
-            BottomNavIcon(
-                icon = Icons.Filled.DateRange,
-                isSelected = selectedTab == 4,
-                onClick = { onTabSelected(4) }
-            )
+            // Center Bee Icon (Notifications tab) - Yellow circle with bee icon
+            IconButton(
+                onClick = { onTabSelected(2) },
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFFFEB3B)) // Yellow background
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.bee_icon),
+                    contentDescription = "Notifications",
+                    modifier = Modifier.size(40.dp), // Made bigger from 32dp to 40dp
+                    tint = Color.Unspecified
+                )
+            }
+
+            // Trackers Tab - Favorite icon (represents favorite songs/tracks for singers)
+            IconButton(
+                onClick = { onTabSelected(3) },
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(0.5.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Favorite, // Using Favorite which represents favorites/tracks
+                    contentDescription = "Trackers",
+                    tint = Color.White, // White color as requested
+                    modifier = Modifier.size(40.dp) // Bigger icon as requested
+                )
+            }
+
+            // Calendar Tab - Calendar icon
+            IconButton(
+                onClick = { onTabSelected(4) },
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(0.5.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f), spotColor = Color.Black.copy(alpha = 0.05f))
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = "Calendar",
+                    tint = Color.White, // White color as requested
+                    modifier = Modifier.size(40.dp) // Bigger icon as requested
+                )
+            }
         }
-    }
-}
-
-@Composable
-private fun BottomNavIcon(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = Modifier.size(48.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(32.dp)
-        )
     }
 } 

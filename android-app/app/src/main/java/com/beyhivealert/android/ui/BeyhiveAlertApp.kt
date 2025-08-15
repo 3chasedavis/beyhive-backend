@@ -14,7 +14,7 @@ import com.beyhivealert.android.data.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.beyhivealert.android.ui.MaintenanceScreen
-import com.beyhivealert.android.ui.BeyhiveAlertTheme
+import com.beyhivealert.android.ui.theme.BeyhiveAlertTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +33,34 @@ fun BeyhiveAlertApp() {
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             try {
-                val response = ApiService.checkMaintenanceMode()
+                val response = ApiService.fetchMaintenanceMode()
                 isMaintenanceMode = response.isMaintenanceMode
+                println("🔧 [DEBUG] Initial maintenance mode: ${response.isMaintenanceMode}")
             } catch (e: Exception) {
                 // If maintenance check fails, continue with normal app
                 isMaintenanceMode = false
+                println("❌ [DEBUG] Initial maintenance check failed: ${e.message}")
             } finally {
                 isLoading = false
+            }
+        }
+    }
+    
+    // Check maintenance mode every 3 seconds (like iOS app)
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(3000) // 3 seconds
+            withContext(Dispatchers.IO) {
+                try {
+                    val response = ApiService.fetchMaintenanceMode()
+                    if (isMaintenanceMode != response.isMaintenanceMode) {
+                        println("🔄 [DEBUG] Maintenance mode changed! Updating UI.")
+                    }
+                    isMaintenanceMode = response.isMaintenanceMode
+                } catch (e: Exception) {
+                    // If maintenance check fails, continue with current state
+                    println("❌ [DEBUG] Error checking maintenance mode: ${e.message}")
+                }
             }
         }
     }

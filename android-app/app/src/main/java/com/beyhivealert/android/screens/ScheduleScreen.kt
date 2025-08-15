@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -13,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,73 +24,118 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.beyhivealert.android.components.TopBar
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.TextStyle
-import java.util.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.beyhivealert.android.viewmodels.ScheduleViewModel
 import com.beyhivealert.android.data.Event
+import java.util.*
 
 @Composable
 fun ScheduleScreen() {
     val viewModel: ScheduleViewModel = viewModel()
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var showUpcoming by remember { mutableStateOf(true) }
     val events by viewModel.events
     val isLoading by viewModel.isLoading
     val error by viewModel.error
+    var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
+    var currentMonth by remember { mutableStateOf(Calendar.getInstance()) }
+    var showUpcoming by remember { mutableStateOf(true) }
     
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .padding(16.dp)
     ) {
-        TopBar(
-            title = "Schedule",
-            onSettingsClick = { /* TODO: Show settings */ }
+        // Header
+        Text(
+            text = "Schedule",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+        
+        // Calendar Section
+        CalendarView(
+            currentMonth = currentMonth,
+            selectedDate = selectedDate,
+            onMonthChange = { currentMonth = it },
+            onDateSelected = { selectedDate = it },
+            hasEvent = { viewModel.hasEventOnDate(it) },
+            showUpcoming = showUpcoming
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Event Filters
+        EventFilters(
+            showUpcoming = showUpcoming,
+            onFilterChanged = { showUpcoming = it }
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Information Text
+        Text(
+            text = "All events are shown in your local time.",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
         if (isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
-            return
-        }
-        if (error != null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = error ?: "Unknown error", color = Color.Red)
+        } else if (error != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Error loading events:",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = error ?: "Unknown error",
+                        color = Color.Red,
+                        textAlign = TextAlign.Center
+                    )
+                    Button(
+                        onClick = { viewModel.fetchEvents() },
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text("Retry")
+                    }
+                }
             }
-            return
-        }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Calendar Section
-            item {
-                CalendarView(
-                    currentMonth = currentMonth,
-                    selectedDate = selectedDate,
-                    onMonthChange = { currentMonth = it },
-                    onDateSelected = { selectedDate = it },
-                    hasEvent = { viewModel.hasEventOnDate(it) }
+        } else if (events.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No events scheduled",
+                    fontSize = 18.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
                 )
             }
-            // Event Filters
-            item {
-                EventFilters(
-                    showUpcoming = showUpcoming,
-                    onFilterChanged = { showUpcoming = it }
-                )
-            }
+        } else {
             // Events List
-            item {
-                EventsList(
-                    events = if (showUpcoming) viewModel.getUpcomingEvents() else viewModel.getPastEvents()
-                )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(events) { event ->
+                    EventCard(event = event)
+                }
             }
         }
     }
@@ -98,16 +143,17 @@ fun ScheduleScreen() {
 
 @Composable
 fun CalendarView(
-    currentMonth: YearMonth,
-    selectedDate: LocalDate,
-    onMonthChange: (YearMonth) -> Unit,
-    onDateSelected: (LocalDate) -> Unit,
-    hasEvent: (LocalDate) -> Boolean
+    currentMonth: Calendar,
+    selectedDate: Calendar,
+    onMonthChange: (Calendar) -> Unit,
+    onDateSelected: (Calendar) -> Unit,
+    hasEvent: (Calendar) -> Boolean,
+    showUpcoming: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color.White), // White background like iOS
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -120,93 +166,95 @@ fun CalendarView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { onMonthChange(currentMonth.minusMonths(1)) }
+                    onClick = { 
+                        val newMonth = currentMonth.clone() as Calendar
+                        newMonth.add(Calendar.MONTH, -1)
+                        onMonthChange(newMonth)
+                    }
                 ) {
                     Icon(Icons.Default.ArrowBack, "Previous Month")
                 }
                 
                 Text(
-                    text = currentMonth.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    text = "${getMonthName(currentMonth.get(Calendar.MONTH))} ${currentMonth.get(Calendar.YEAR)}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 
                 IconButton(
-                    onClick = { onMonthChange(currentMonth.plusMonths(1)) }
+                    onClick = { 
+                        val newMonth = currentMonth.clone() as Calendar
+                        newMonth.add(Calendar.MONTH, 1)
+                        onMonthChange(newMonth)
+                    }
                 ) {
                     Icon(Icons.Default.ArrowForward, "Next Month")
                 }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Days of Week
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
-                    Text(
-                        text = day,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Gray,
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
             // Calendar Grid
-            val firstDayOfMonth = currentMonth.atDay(1)
-            val lastDayOfMonth = currentMonth.atEndOfMonth()
-            val firstDayOfWeek = firstDayOfMonth.dayOfWeek.value % 7
-            
-            val daysInMonth = lastDayOfMonth.dayOfMonth
-            val totalCells = firstDayOfWeek + daysInMonth
-            
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
-                modifier = Modifier.height(240.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(totalCells) { index ->
-                    val dayOfMonth = index - firstDayOfWeek + 1
-                    val date = if (dayOfMonth > 0 && dayOfMonth <= daysInMonth) {
-                        currentMonth.atDay(dayOfMonth)
-                    } else null
+                // Day headers
+                items(7) { dayOfWeek ->
+                    Text(
+                        text = getDayName(dayOfWeek),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = Color.Gray
+                    )
+                }
+                
+                // Calendar days
+                val firstDayOfMonth = getFirstDayOfMonth(currentMonth)
+                val daysInMonth = currentMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
+                
+                // Empty cells for days before the first day of the month
+                items(firstDayOfMonth) {
+                    Box(modifier = Modifier.size(32.dp))
+                }
+                
+                // Days of the month
+                items(daysInMonth) { day ->
+                    val dayCalendar = Calendar.getInstance()
+                    dayCalendar.set(currentMonth.get(Calendar.YEAR), currentMonth.get(Calendar.MONTH), day + 1)
+                    
+                    val isSelected = isSameDay(dayCalendar, selectedDate)
+                    val isCurrentDate = isSameDay(dayCalendar, Calendar.getInstance())
+                    val hasEventOnDay = hasEvent(dayCalendar)
                     
                     Box(
                         modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(2.dp)
+                            .size(32.dp)
                             .clip(CircleShape)
-                            .then(
-                                if (date != null) {
-                                    Modifier.clickable { onDateSelected(date) }
-                                } else Modifier
+                            .background(
+                                when {
+                                    isSelected -> Color.Transparent
+                                    hasEventOnDay && showUpcoming -> Color(0xFFFFF8DC) // Light yellow for upcoming events
+                                    hasEventOnDay && !showUpcoming -> Color.LightGray // Gray for past events
+                                    else -> Color.Transparent
+                                }
                             )
-                            .then(
-                                if (date == selectedDate) {
-                                    Modifier.border(2.dp, Color(0xFFE91E63))
-                                } else Modifier
+                            .border(
+                                width = if (isCurrentDate) 2.dp else 0.dp,
+                                color = if (isCurrentDate) Color.Red else Color.Transparent,
+                                shape = CircleShape
                             )
-                            .then(
-                                if (date != null && hasEvent(date)) {
-                                    Modifier.background(Color(0xFFFFEB3B))
-                                } else Modifier
-                            ),
+                            .clickable { onDateSelected(dayCalendar) },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (date != null) {
-                            Text(
-                                text = dayOfMonth.toString(),
-                                fontSize = 14.sp,
-                                fontWeight = if (date == selectedDate) FontWeight.Bold else FontWeight.Normal,
-                                color = if (date == selectedDate) Color(0xFFE91E63) else Color.Black
-                            )
-                        }
+                        Text(
+                            text = "${day + 1}",
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        )
                     }
                 }
             }
@@ -221,111 +269,117 @@ fun EventFilters(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp) // Add spacing between buttons
     ) {
-        FilterButton(
-            text = "Upcoming Events",
-            isSelected = showUpcoming,
-            onClick = { onFilterChanged(true) }
-        )
-        FilterButton(
-            text = "Past Events",
-            isSelected = !showUpcoming,
-            onClick = { onFilterChanged(false) }
-        )
-    }
-    
-    Text(
-        text = "All events are shown in your local time.",
-        fontSize = 12.sp,
-        color = Color.Gray,
-        modifier = Modifier.padding(top = 8.dp)
-    )
-}
-
-@Composable
-fun FilterButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFFFFEB3B) else Color(0xFFE0E0E0)
-        ),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Text(
-            text = text,
-            color = if (isSelected) Color.Black else Color.Gray,
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun EventsList(events: List<com.beyhivealert.android.data.Event>) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (events.isEmpty()) {
+        // Upcoming Events Button
+        Button(
+            onClick = { onFilterChanged(true) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (showUpcoming) Color(0xFFFFF8DC) else Color.LightGray
+            ),
+            shape = RoundedCornerShape(8.dp) // Fully rounded corners
+        ) {
             Text(
-                text = "No events",
-                fontSize = 16.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(16.dp)
+                text = "Upcoming Events",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (showUpcoming) Color.Black else Color.Gray
             )
-        } else {
-            events.forEach { event ->
-                EventItem(
-                    title = event.title ?: "",
-                    date = event.date.split("T")[0],
-                    location = event.location ?: ""
-                )
-            }
+        }
+        
+        // Past Events Button
+        Button(
+            onClick = { onFilterChanged(false) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (!showUpcoming) Color(0xFFFFF8DC) else Color.LightGray
+            ),
+            shape = RoundedCornerShape(8.dp) // Fully rounded corners
+        ) {
+            Text(
+                text = "Past Events",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (!showUpcoming) Color.Black else Color.Gray
+            )
         }
     }
 }
 
 @Composable
-fun EventItem(title: String, date: String, location: String) {
+fun EventCard(event: Event) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Text(
+                text = event.title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            
+            if (event.description.isNotEmpty()) {
+                Text(
+                    text = event.description,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            
+            Row(
+                modifier = Modifier.padding(top = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = date,
+                    text = "${event.date} ${event.time}",
                     fontSize = 14.sp,
+                    color = Color.Blue,
                     fontWeight = FontWeight.Medium
                 )
+            }
+            
+            if (event.location.isNotEmpty()) {
                 Text(
-                    text = title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = location,
+                    text = event.location,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
         }
     }
 }
 
-private fun hasEvent(date: LocalDate): Boolean {
-    // Mock function - in real app, check against actual events
-    val eventDates = listOf(4, 7, 10, 11, 13, 25)
-    return eventDates.contains(date.dayOfMonth)
+// Helper functions for Calendar operations
+private fun getMonthName(month: Int): String {
+    val monthNames = arrayOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
+    return monthNames[month]
+}
+
+private fun getDayName(dayOfWeek: Int): String {
+    val dayNames = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    return dayNames[dayOfWeek]
+}
+
+private fun getFirstDayOfMonth(calendar: Calendar): Int {
+    val temp = calendar.clone() as Calendar
+    temp.set(Calendar.DAY_OF_MONTH, 1)
+    return temp.get(Calendar.DAY_OF_WEEK) - 1
+}
+
+private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
+    return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+           cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
+           cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
 } 

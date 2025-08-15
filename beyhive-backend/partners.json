@@ -1,14 +1,18 @@
 [
   {
+    "id": "discord",
     "name": "Beyhive Alert Discord",
-    "description": "The offical beyhive alert discord",
+    "description": "The Official Beyhive Alert Discord",
     "iconUrl": null,
-    "link": "https://discord.gg/MQs936zxbu"
+    "link": "https://discord.gg/MQs936zxbu",
+    "createdAt": "2025-01-01T00:00:00.000Z"
   },
   {
+    "id": "roseblush",
     "name": "Rose Blush Studio",
     "description": "Design Partner",
     "iconUrl": null,
-    "link": "https://roseblush.studio"
+    "link": "https://roseblush.studio",
+    "createdAt": "2025-01-01T00:00:00.000Z"
   }
 ]
