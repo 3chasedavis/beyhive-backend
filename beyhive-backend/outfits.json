@@ -133,5 +133,275 @@
     "isNew": false,
     "section": "Los Angeles",
     "description": null
+  },
+  {
+    "id": "atlanta3",
+    "name": "Bandana Red Leotard",
+    "location": "Atlanta N3",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta4",
+    "name": "Red Short Dress",
+    "location": "Atlanta N3",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta5",
+    "name": "America Has A Problem",
+    "location": "Atlanta N3",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta6",
+    "name": "White Top and Bottom With White Fur Coat",
+    "location": "Atlanta N3",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta7",
+    "name": "Loewe Dress",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta8",
+    "name": "Loewe White Jumpsuit",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta9",
+    "name": "Gold Mugler Jumpsuit",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta10",
+    "name": "Light Up Dress",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta11",
+    "name": "Rabanne Red, White and Blue Dress",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta12",
+    "name": "Red, White and Blue Jersey",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta13",
+    "name": "Gold Top and a Gold Belt",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta14",
+    "name": "America Has A Problem",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta15",
+    "name": "Dolce & Gabbana White Jumpsuit with Chaps",
+    "location": "Atlanta N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta16",
+    "name": "Loewe Dress",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta17",
+    "name": "Loewe White Jumpsuit",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta18",
+    "name": "Gold Mugler Jumpsuit",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta19",
+    "name": "Light Up Dress",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta20",
+    "name": "Rabanne Red, White and Blue Dress",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta21",
+    "name": "Red, White and Blue Jersey",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta22",
+    "name": "Gold Top and a Gold Belt",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta23",
+    "name": "America Has A Problem",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "atlanta24",
+    "name": "White Top and Bottom With White Fur Coat",
+    "location": "Atlanta N1",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Atlanta",
+    "description": null
+  },
+  {
+    "id": "washington9",
+    "name": "White Dress With Red, Blue and White Fringe",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington10",
+    "name": "Light Up Dress",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington11",
+    "name": "Calvin Klein",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington12",
+    "name": "Rodeo Chitlin Circuit Jumpsuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington13",
+    "name": "Black Cowboy Carter Belt Jumpsuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington14",
+    "name": "America Has A Problem",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "washington15",
+    "name": "Fringe Red, White and Blue bodysuit",
+    "location": "Washington N2",
+    "imageUrl": null,
+    "isNew": false,
+    "section": "Washington",
+    "description": null
+  },
+  {
+    "id": "la4",
+    "name": "Custom Mugler White Western",
+    "location": "Los Angeles N1",
+    "imageUrl": null,
+    "isNew": true,
+    "section": "Los Angeles",
+    "description": null
   }
 ] 
