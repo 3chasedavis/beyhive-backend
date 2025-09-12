@@ -152,7 +152,26 @@ router.post('/notifications/send', async (req, res) => {
     if (!tokens.length) return res.status(400).json({ error: 'No tokens found for this group' });
     try {
       const result = await sendPushNotification(title, message, notifType, tokens);
-      return res.json({ success: true, result });
+      const sentCount = result.sent ? result.sent.length : 0;
+      const failedCount = result.failed ? result.failed.length : 0;
+      
+      // Save notification record
+      const sentNotification = new SentNotification({
+        title,
+        message,
+        notifType,
+        sentTo: sentCount,
+        failed: failedCount,
+        timestamp: new Date()
+      });
+      await sentNotification.save();
+      
+      return res.json({ 
+        success: true, 
+        sent: sentCount, 
+        failed: failedCount,
+        result 
+      });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
