@@ -53,7 +53,7 @@
     <button type="button" class="preset-btn" data-type="everyone" data-title="Announcement" data-message="A new announcement for everyone!">Everyone</button>
   </div>
   <form class="push-form" id="pushForm">
-    <h2>Send Push Notification</h2>
+    <h2>Send iOS Push Notification</h2>
     <div id="passwordDiv">
       <input type="password" id="password" placeholder="Admin Password" required />
     </div>
@@ -69,8 +69,29 @@
       <option value="sixteenCarriages">16 CARRIAGES starts</option>
       <option value="amen">AMEN starts</option>
     </select>
-    <button type="submit">Send Notification</button>
+    <button type="submit">Send iOS Notification</button>
     <div id="pushStatus"></div>
+  </form>
+
+  <form class="push-form" id="androidPushForm" style="background: #e8f5e8;">
+    <h2>Send Android Push Notification</h2>
+    <div id="androidPasswordDiv">
+      <input type="password" id="androidPassword" placeholder="Admin Password" required />
+    </div>
+    <input type="text" id="androidNotifTitle" placeholder="Notification Title" required />
+    <input type="text" id="androidNotifMessage" placeholder="Notification Message" required />
+    <select id="androidNotifType" required>
+      <option value="everyone">Everyone</option>
+      <option value="concertStart">Concert Start</option>
+      <option value="beyonceOnStage">Beyoncé on Stage</option>
+      <option value="americaHasAProblem">AMERICA HAS A PROBLEM starts</option>
+      <option value="tyrant">TYRANT starts</option>
+      <option value="lastAct">Last Act starts</option>
+      <option value="sixteenCarriages">16 CARRIAGES starts</option>
+      <option value="amen">AMEN starts</option>
+    </select>
+    <button type="submit">Send Android Notification</button>
+    <div id="androidPushStatus"></div>
   </form>
   <div id="lastNotification" style="background:#fff3cd; padding:12px; border-radius:8px; margin-bottom:30px; display:none;"></div>
   <h2>Notification History</h2>

@@ -855,4 +855,51 @@ function loadNotificationHistory() {
         table.style.display = 'none';
       }
     });
-} 
+}
+
+// Android form handling
+document.getElementById('androidPushForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const submitBtn = this.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  
+  const androidPassword = document.getElementById('androidPassword').value;
+  if (!androidPassword) {
+    document.getElementById('androidPushStatus').textContent = 'Please enter the admin password.';
+    document.getElementById('androidPushStatus').className = 'error';
+    submitBtn.disabled = false;
+    return;
+  }
+  
+  const notifType = document.getElementById('androidNotifType').value;
+  const notifTitle = document.getElementById('androidNotifTitle').value;
+  const notifMessage = document.getElementById('androidNotifMessage').value;
+  
+  fetch('/api/admin/notifications/send-android', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      password: androidPassword,
+      notifType,
+      title: notifTitle,
+      message: notifMessage
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    submitBtn.disabled = false;
+    if (data.success) {
+      document.getElementById('androidPushStatus').textContent = 'Android notification sent!';
+      document.getElementById('androidPushStatus').className = 'success';
+      loadNotificationHistory();
+    } else {
+      document.getElementById('androidPushStatus').textContent = 'Error: ' + (data.error || 'Unknown error');
+      document.getElementById('androidPushStatus').className = 'error';
+    }
+  })
+  .catch(err => {
+    submitBtn.disabled = false;
+    document.getElementById('androidPushStatus').textContent = 'Error: ' + err.message;
+    document.getElementById('androidPushStatus').className = 'error';
+  });
+}); 

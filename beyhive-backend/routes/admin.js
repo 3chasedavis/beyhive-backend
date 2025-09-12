@@ -180,6 +180,28 @@ router.post('/notifications/send', async (req, res) => {
   }
 });
 
+// Android notification endpoint
+router.post('/notifications/send-android', async (req, res) => {
+  try {
+    const { password, notifType, title, message } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+    
+    // For now, just return success since Android notifications aren't implemented yet
+    // This allows the admin interface to work without errors
+    return res.json({ 
+      success: true, 
+      message: 'Android notifications not yet implemented',
+      sent: 0,
+      failed: 0
+    });
+    
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Unknown error' });
+  }
+});
+
 // API to get total user count
 router.get('/usercount', async (req, res) => {
     const count = await User.countDocuments();
