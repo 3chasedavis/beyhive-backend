@@ -3,16 +3,29 @@ const fetch = require('node-fetch');
 const router = express.Router();
 const Notification = require('../models/Notification');
 const bodyParser = require('body-parser');
-const { sendPushNotification } = require('../utils/pushService'); // You need to implement this util
+const { sendPushNotification } = require('../utils/pushService'); // iOS notifications
 const User = require('../models/User');
 const SentNotification = require('../models/SentNotification');
 const DeviceToken = require('../models/DeviceToken');
-// REMOVE: const admin = require('firebase-admin');
+const admin = require('firebase-admin');
 const session = require('express-session');
 const path = require('path');
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chase3870';
 console.log('ADMIN_PASSWORD at startup:', ADMIN_PASSWORD); // DEBUG: Remove after verifying
+
+// Initialize Firebase Admin SDK for Android notifications
+if (!admin.apps.length) {
+  try {
+    const serviceAccount = require('../beyhive-alert-firebase-adminsdk-fbsvc-b97b379ccb.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log('Firebase Admin SDK initialized for Android notifications');
+  } catch (error) {
+    console.warn('Firebase Admin SDK initialization failed:', error.message);
+  }
+}
 
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
@@ -185,13 +198,69 @@ router.post('/notifications/send-android', async (req, res) => {
   try {
     const { notifType, title, message } = req.body;
     
-    // For now, just return success since Android notifications aren't implemented yet
-    // This allows the admin interface to work without errors
+    if (!admin.apps.length) {
+      return res.status(500).json({ error: 'Firebase not initialized' });
+    }
+    
+    // Get Android device tokens
+    let tokens = [];
+    if (notifType === 'everyone') {
+      tokens = await DeviceToken.find({ platform: 'android' }).distinct('token');
+    } else {
+      tokens = await DeviceToken.find({ 
+        platform: 'android',
+        [`preferences.${notifType}`]: true 
+      }).distinct('token');
+    }
+    
+    if (!tokens.length) {
+      return res.status(400).json({ error: 'No Android tokens found for this group' });
+    }
+    
+    // Send Android notifications via FCM
+    const fcmMessage = {
+      notification: {
+        title: title,
+        body: message
+      },
+      data: {
+        notifType: notifType
+      },
+      android: {
+        priority: 'high'
+      }
+    };
+    
+    let sentCount = 0;
+    let failedCount = 0;
+    
+    // Send to each token individually
+    for (const token of tokens) {
+      try {
+        await admin.messaging().send({ ...fcmMessage, token: token });
+        sentCount++;
+      } catch (error) {
+        console.error('Failed to send to token:', token, error.message);
+        failedCount++;
+      }
+    }
+    
+    // Save notification record
+    const sentNotification = new SentNotification({
+      title,
+      message,
+      notifType,
+      sentTo: sentCount,
+      failed: failedCount,
+      timestamp: new Date()
+    });
+    await sentNotification.save();
+    
     return res.json({ 
       success: true, 
-      message: 'Android notifications not yet implemented',
-      sent: 0,
-      failed: 0
+      sent: sentCount,
+      failed: failedCount,
+      message: `Android notifications sent: ${sentCount} successful, ${failedCount} failed`
     });
     
   } catch (err) {
