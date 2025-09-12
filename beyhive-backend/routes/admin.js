@@ -14,7 +14,7 @@ const path = require('path');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'chase3870';
 console.log('ADMIN_PASSWORD at startup:', ADMIN_PASSWORD); // DEBUG: Remove after verifying
 
-// Initialize Firebase Admin SDK for Android notifications
+// Initialize Firebase Admin SDK for Android notifications only
 if (!admin.apps.length) {
   try {
     // Try environment variables first (for production)
@@ -47,6 +47,7 @@ if (!admin.apps.length) {
     console.warn('Firebase Admin SDK initialization failed:', error.message);
   }
 }
+
 
 const fs = require('fs');
 const updateRequiredPath = require('path').join(__dirname, '../update-required.json');
@@ -214,29 +215,27 @@ router.post('/notifications/send', async (req, res) => {
   }
 });
 
-// Android notification endpoint
+// Send notification to Android users only
 router.post('/notifications/send-android', async (req, res) => {
   try {
-    const { notifType, title, message } = req.body;
+    const { title, message, notifType } = req.body;
+    if (!notifType) return res.status(400).json({ error: 'Notification type required' });
     
     if (!admin.apps.length) {
       return res.status(500).json({ error: 'Firebase not initialized' });
     }
     
-    // Get Android device tokens
     let tokens = [];
     if (notifType === 'everyone') {
       tokens = await DeviceToken.find({ platform: 'android' }).distinct('token');
     } else {
       tokens = await DeviceToken.find({ 
-        platform: 'android',
-        [`preferences.${notifType}`]: true 
+        [`preferences.${notifType}`]: true,
+        platform: 'android'
       }).distinct('token');
     }
     
-    if (!tokens.length) {
-      return res.status(400).json({ error: 'No Android tokens found for this group' });
-    }
+    if (!tokens.length) return res.status(400).json({ error: 'No Android tokens found for this group' });
     
     // Send Android notifications via FCM
     const fcmMessage = {
