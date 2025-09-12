@@ -183,10 +183,7 @@ router.post('/notifications/send', async (req, res) => {
 // Android notification endpoint
 router.post('/notifications/send-android', async (req, res) => {
   try {
-    const { password, notifType, title, message } = req.body;
-    if (password !== ADMIN_PASSWORD) {
-      return res.status(401).json({ error: 'Invalid password' });
-    }
+    const { notifType, title, message } = req.body;
     
     // For now, just return success since Android notifications aren't implemented yet
     // This allows the admin interface to work without errors
