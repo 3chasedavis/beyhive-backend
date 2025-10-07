@@ -15,4 +15,4 @@ Backend API for Beyhive Alert app.
 
 This backend is deployed on Render.com and automatically redeploys when changes are pushed to the main branch.
 
-<!-- Last updated: 2025-01-27 --> 
+<!-- Last updated: 2025-01-27 --> # Restart backend
