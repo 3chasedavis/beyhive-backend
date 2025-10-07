@@ -229,6 +229,37 @@
     <tbody></tbody>
   </table>
 
+  <!-- Setlists Management Section -->
+  <hr/>
+  <div class="partners-panel" style="margin-bottom: 40px;">
+    <h2>Manage Setlists</h2>
+    <form id="setlistForm" style="margin-bottom: 20px;">
+      <input type="text" id="setlistId" placeholder="Setlist ID (e.g., act1-intro)" required />
+      <input type="text" id="setlistTitle" placeholder="Setlist Title (e.g., Act 1 - Intro)" required />
+      <div id="songsContainer">
+        <h4>Songs:</h4>
+        <div class="song-item" style="margin-bottom: 10px;">
+          <input type="text" class="song-name" placeholder="Song Name" required />
+          <input type="number" class="song-order" placeholder="Order" min="1" required />
+          <input type="text" class="song-notes" placeholder="Notes (optional)" />
+          <button type="button" onclick="removeSong(this)" style="background: #ff4d4f; color: white; border: none; padding: 5px 10px; border-radius: 4px;">Remove</button>
+        </div>
+      </div>
+      <button type="button" onclick="addSong()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-bottom: 10px;">Add Song</button>
+      <br/>
+      <input type="checkbox" id="setlistIsActive" checked /> <label for="setlistIsActive">Is Active?</label>
+      <br/>
+      <button type="submit">Add Setlist</button>
+      <span id="setlistFormStatus" style="margin-left:10px;"></span>
+    </form>
+    <table id="setlistsTable" style="width:100%; margin-bottom:30px; display:none;">
+      <thead>
+        <tr><th>ID</th><th>Title</th><th>Songs Count</th><th>Active</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
   <!-- Partners Management Section -->
   <hr/>
   <div class="partners-panel" style="margin-bottom: 40px;">

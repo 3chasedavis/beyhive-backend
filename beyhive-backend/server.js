@@ -20,6 +20,7 @@ const newsRouter = require('./routes/news');
 const instagramFeedRouter = require('./routes/instagramFeed');
 const albumRankingsRouter = require('./routes/albumRankings'); // Add this line
 const partnersRouter = require('./routes/partners'); // Add this line
+const setlistsRouter = require('./routes/setlists'); // Add this line
 
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy for correct rate limiting on Render
@@ -47,6 +48,7 @@ app.use('/api/outfits', outfitsRoutes);
 // Public events endpoint for iOS app
 app.use('/api/events', eventsRoutes);
 app.use('/api/partners', partnersRouter);
+app.use('/api/setlists', setlistsRouter);
 
 // Security middleware
 app.use(helmet());
