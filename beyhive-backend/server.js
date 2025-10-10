@@ -22,6 +22,7 @@ const albumRankingsRouter = require('./routes/albumRankings'); // Add this line
 const partnersRouter = require('./routes/partners'); // Add this line
 const setlistsRouter = require('./routes/setlists'); // Add this line
 const appRoutes = require('./routes/app'); // Add this line
+const spotifyRoutes = require('./routes/spotify'); // Add this line
 
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy for correct rate limiting on Render
@@ -100,6 +101,7 @@ app.use('/api/instagram-feed', instagramFeedRouter);
 app.use('/api/survivor-quiz', survivorRouter);
 app.use('/api', albumRankingsRouter); // Add this line
 app.use('/api/app', appRoutes); // Add this line
+app.use('/api/spotify', spotifyRoutes); // Add this line
 
 // Do not restore survivorRouter
 
