@@ -168,6 +168,91 @@ router.get('/beyonce', async (req, res) => {
     }
 });
 
+// Fetch Billboard 200 data (albums)
+async function fetchBillboard200() {
+    try {
+        console.log('Fetching Billboard 200 data...');
+        
+        // Billboard 200 URL
+        const url = 'https://www.billboard.com/charts/billboard-200/';
+        
+        const response = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            timeout: 10000
+        });
+
+        const $ = cheerio.load(response.data);
+        const albums = [];
+
+        // Parse Billboard 200 chart
+        $('.chart-element__wrapper').each((index, element) => {
+            if (index >= 200) return; // Limit to top 200
+
+            const rank = $(element).find('.chart-element__rank__number').text().trim();
+            const title = $(element).find('.chart-element__information__song').text().trim();
+            const artist = $(element).find('.chart-element__information__artist').text().trim();
+            const lastWeek = $(element).find('.chart-element__information__delta__text').text().trim();
+
+            if (rank && title && artist) {
+                albums.push({
+                    rank: parseInt(rank),
+                    title: title,
+                    artist: artist,
+                    lastWeek: lastWeek,
+                    movement: getMovement(lastWeek)
+                });
+            }
+        });
+
+        return albums;
+    } catch (error) {
+        console.error('Error fetching Billboard 200 data:', error);
+        throw error;
+    }
+}
+
+// Filter for Beyoncé albums
+function filterBeyonceAlbums(albums) {
+    const beyonceVariations = [
+        'beyoncé', 'beyonce', 'beyonce knowles', 'beyoncé knowles',
+        'beyonce carter', 'beyoncé carter', 'destiny\'s child', 'destinys child'
+    ];
+
+    return albums.filter(album => {
+        const artistLower = album.artist.toLowerCase();
+        return beyonceVariations.some(variation => artistLower.includes(variation));
+    });
+}
+
+// GET /api/billboard/billboard200 - Get only Beyoncé albums from Billboard 200
+router.get('/billboard200', async (req, res) => {
+    try {
+        // Fetch Billboard 200 data
+        const albums = await fetchBillboard200();
+        const beyonceAlbums = filterBeyonceAlbums(albums);
+        
+        res.json({
+            success: true,
+            data: {
+                songs: beyonceAlbums, // Using same structure as Hot 100
+                chartDate: new Date().toISOString().split('T')[0],
+                totalBeyonceSongs: beyonceAlbums.length
+            },
+            cached: false,
+            lastUpdated: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error in /billboard200 endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch Beyoncé Billboard 200 data',
+            message: error.message
+        });
+    }
+});
+
 // GET /api/billboard/refresh - Force refresh cache (admin only)
 router.get('/refresh', async (req, res) => {
     try {
