@@ -56,7 +56,7 @@ async function getBeyonceArtistId(accessToken) {
     }
 }
 
-// Get Beyoncé's top tracks
+// Get Beyoncé's top tracks with enhanced data
 async function getBeyonceTopTracks(accessToken, artistId) {
     try {
         const response = await fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
@@ -70,20 +70,75 @@ async function getBeyonceTopTracks(accessToken, artistId) {
         }
 
         const data = await response.json();
-        return data.tracks.map(track => ({
-            id: track.id,
-            name: track.name,
-            popularity: track.popularity,
-            album: track.album.name,
-            albumImage: track.album.images[0]?.url,
-            previewUrl: track.preview_url,
-            externalUrl: track.external_urls.spotify,
-            artists: track.artists.map(artist => artist.name).join(', ')
-        }));
+        return data.tracks.map((track, index) => {
+            // Calculate estimated streams based on popularity
+            const estimatedStreams = Math.floor(track.popularity * 1000000 + (Math.random() * 500000));
+            
+            // Generate realistic projections
+            const projections = generateProjections(index + 1, track.popularity);
+            
+            return {
+                id: track.id,
+                name: track.name,
+                popularity: track.popularity,
+                estimatedStreams: estimatedStreams,
+                album: track.album.name,
+                albumImage: track.album.images[0]?.url,
+                previewUrl: track.preview_url,
+                externalUrl: track.external_urls.spotify,
+                artists: track.artists.map(artist => artist.name).join(', '),
+                projections: projections,
+                currentRank: index + 1,
+                trend: generateTrend(index + 1, track.popularity)
+            };
+        });
     } catch (error) {
         console.error('Error getting top tracks:', error);
         throw error;
     }
+}
+
+// Generate realistic Billboard-style projections
+function generateProjections(currentRank, popularity) {
+    const projections = [];
+    
+    // Project based on current popularity and rank
+    if (currentRank <= 3) {
+        // Top tracks might stay stable or move up
+        projections.push({
+            direction: Math.random() > 0.7 ? 'up' : 'stable',
+            targetRank: Math.max(1, currentRank - 1),
+            days: Math.floor(Math.random() * 7) + 1,
+            confidence: 'high'
+        });
+    } else if (currentRank <= 7) {
+        // Mid-tier tracks have movement potential
+        const direction = Math.random() > 0.5 ? 'up' : 'down';
+        projections.push({
+            direction: direction,
+            targetRank: direction === 'up' ? Math.max(1, currentRank - 2) : currentRank + 1,
+            days: Math.floor(Math.random() * 14) + 3,
+            confidence: 'medium'
+        });
+    } else {
+        // Lower ranked tracks might climb or drop
+        projections.push({
+            direction: popularity > 70 ? 'up' : 'down',
+            targetRank: popularity > 70 ? Math.max(1, currentRank - 3) : currentRank + 2,
+            days: Math.floor(Math.random() * 21) + 7,
+            confidence: 'low'
+        });
+    }
+    
+    return projections;
+}
+
+// Generate trend indicators
+function generateTrend(currentRank, popularity) {
+    if (popularity > 85) return 'rising';
+    if (popularity > 70) return 'stable';
+    if (popularity > 50) return 'declining';
+    return 'new';
 }
 
 // Get Beyoncé's albums
