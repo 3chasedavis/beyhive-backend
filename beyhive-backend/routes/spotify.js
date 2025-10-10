@@ -98,36 +98,69 @@ async function getBeyonceTopTracks(accessToken, artistId) {
     }
 }
 
-// Generate realistic Billboard-style projections
+// Generate realistic Billboard Top 100 projections
 function generateProjections(currentRank, popularity) {
     const projections = [];
     
-    // Project based on current popularity and rank
-    if (currentRank <= 3) {
-        // Top tracks might stay stable or move up
-        projections.push({
-            direction: Math.random() > 0.7 ? 'up' : 'stable',
-            targetRank: Math.max(1, currentRank - 1),
-            days: Math.floor(Math.random() * 7) + 1,
-            confidence: 'high'
-        });
-    } else if (currentRank <= 7) {
-        // Mid-tier tracks have movement potential
-        const direction = Math.random() > 0.5 ? 'up' : 'down';
+    // Billboard Top 100 style projections
+    if (currentRank <= 5) {
+        // Top 5 tracks - high chance to stay or climb
+        if (currentRank === 1) {
+            projections.push({
+                direction: 'stable',
+                targetRank: 1,
+                days: Math.floor(Math.random() * 14) + 7,
+                confidence: 'high',
+                description: 'PROJECTED TO MAINTAIN #1 SPOT'
+            });
+        } else {
+            projections.push({
+                direction: Math.random() > 0.6 ? 'up' : 'stable',
+                targetRank: Math.max(1, currentRank - 1),
+                days: Math.floor(Math.random() * 10) + 3,
+                confidence: 'high',
+                description: `PROJECTED TO HIT #${Math.max(1, currentRank - 1)} IN BILLBOARD TOP 100`
+            });
+        }
+    } else if (currentRank <= 20) {
+        // Top 20 - strong Billboard potential
+        const direction = Math.random() > 0.4 ? 'up' : 'stable';
         projections.push({
             direction: direction,
-            targetRank: direction === 'up' ? Math.max(1, currentRank - 2) : currentRank + 1,
-            days: Math.floor(Math.random() * 14) + 3,
-            confidence: 'medium'
+            targetRank: direction === 'up' ? Math.max(1, currentRank - 5) : currentRank,
+            days: Math.floor(Math.random() * 21) + 7,
+            confidence: 'high',
+            description: `PROJECTED TO ENTER TOP ${direction === 'up' ? Math.max(1, currentRank - 5) : currentRank} IN BILLBOARD TOP 100`
+        });
+    } else if (currentRank <= 50) {
+        // Top 50 - Billboard chart potential
+        const direction = popularity > 75 ? 'up' : 'stable';
+        projections.push({
+            direction: direction,
+            targetRank: direction === 'up' ? Math.max(1, currentRank - 10) : currentRank,
+            days: Math.floor(Math.random() * 28) + 14,
+            confidence: 'medium',
+            description: `PROJECTED TO ENTER TOP ${direction === 'up' ? Math.max(1, currentRank - 10) : currentRank} IN BILLBOARD TOP 100`
         });
     } else {
-        // Lower ranked tracks might climb or drop
-        projections.push({
-            direction: popularity > 70 ? 'up' : 'down',
-            targetRank: popularity > 70 ? Math.max(1, currentRank - 3) : currentRank + 2,
-            days: Math.floor(Math.random() * 21) + 7,
-            confidence: 'low'
-        });
+        // Lower ranked - long shot for Billboard
+        if (popularity > 80) {
+            projections.push({
+                direction: 'up',
+                targetRank: Math.max(1, currentRank - 20),
+                days: Math.floor(Math.random() * 42) + 28,
+                confidence: 'low',
+                description: `LONG SHOT TO ENTER TOP ${Math.max(1, currentRank - 20)} IN BILLBOARD TOP 100`
+            });
+        } else {
+            projections.push({
+                direction: 'stable',
+                targetRank: currentRank,
+                days: Math.floor(Math.random() * 21) + 7,
+                confidence: 'low',
+                description: 'PROJECTED TO STAY OUTSIDE BILLBOARD TOP 100'
+            });
+        }
     }
     
     return projections;
