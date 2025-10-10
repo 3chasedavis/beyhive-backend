@@ -149,7 +149,95 @@ router.get('/charts', async (req, res) => {
             });
         }
 
-        // Fetch new data
+        // Check if Spotify credentials are set up
+        if (!SPOTIFY_CLIENT_ID || SPOTIFY_CLIENT_ID === 'your_spotify_client_id') {
+            // Return mock data if credentials not set up
+            const mockData = {
+                topTracks: [
+                    {
+                        id: "1",
+                        name: "CUFF IT",
+                        popularity: 95,
+                        album: "RENAISSANCE",
+                        albumImage: null,
+                        previewUrl: null,
+                        externalUrl: "https://open.spotify.com/track/1xzi1Jcr7mEi9K2RfzLOqM",
+                        artists: "Beyoncé"
+                    },
+                    {
+                        id: "2", 
+                        name: "BREAK MY SOUL",
+                        popularity: 92,
+                        album: "RENAISSANCE",
+                        albumImage: null,
+                        previewUrl: null,
+                        externalUrl: "https://open.spotify.com/track/2KcM7XyknVEsWHOVLd3Nkc",
+                        artists: "Beyoncé"
+                    },
+                    {
+                        id: "3",
+                        name: "ALIEN SUPERSTAR",
+                        popularity: 88,
+                        album: "RENAISSANCE", 
+                        albumImage: null,
+                        previewUrl: null,
+                        externalUrl: "https://open.spotify.com/track/6r3sv8XH4mXt1nzTz2vWfR",
+                        artists: "Beyoncé"
+                    },
+                    {
+                        id: "4",
+                        name: "VIRGO'S GROOVE",
+                        popularity: 85,
+                        album: "RENAISSANCE",
+                        albumImage: null,
+                        previewUrl: null,
+                        externalUrl: "https://open.spotify.com/track/4I7u2jF0AljBaaH2aI34Zt",
+                        artists: "Beyoncé"
+                    },
+                    {
+                        id: "5",
+                        name: "HEATED",
+                        popularity: 82,
+                        album: "RENAISSANCE",
+                        albumImage: null,
+                        previewUrl: null,
+                        externalUrl: "https://open.spotify.com/track/5c3I1pHdNaw0ye40Y5b2V4",
+                        artists: "Beyoncé"
+                    }
+                ],
+                albums: [
+                    {
+                        id: "1",
+                        name: "RENAISSANCE",
+                        releaseDate: "2022-07-29",
+                        albumImage: null,
+                        externalUrl: "https://open.spotify.com/album/4F2H0NqHwHbo2tX3f7N0sG",
+                        totalTracks: 16
+                    },
+                    {
+                        id: "2",
+                        name: "COWBOY CARTER",
+                        releaseDate: "2024-03-29",
+                        albumImage: null,
+                        externalUrl: "https://open.spotify.com/album/4XLP22erBmewl3PWTqV2w1",
+                        totalTracks: 27
+                    }
+                ],
+                lastUpdated: new Date().toISOString()
+            };
+            
+            chartDataCache = mockData;
+            lastCacheTime = now;
+            
+            return res.json({
+                success: true,
+                data: mockData,
+                cached: false,
+                mock: true
+            });
+        }
+
+        // Fetch new data from Spotify
         const chartData = await fetchChartData();
         
         // Update cache
