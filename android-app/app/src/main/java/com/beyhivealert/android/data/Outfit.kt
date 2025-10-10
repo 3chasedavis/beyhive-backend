@@ -16,5 +16,7 @@ data class Outfit(
 
 @Serializable
 data class OutfitsResponse(
-    val outfits: List<Outfit>
+    val outfits: List<Outfit>,
+    val success: Boolean = false,
+    val message: String? = null
 )

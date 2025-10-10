@@ -2,8 +2,6 @@ package com.beyhivealert.android.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,12 +22,21 @@ import com.beyhivealert.android.viewmodels.InstagramFeedViewModel
 
 @Composable
 fun InstagramFeedSection() {
-    val viewModel = remember { InstagramFeedViewModel() }
+    println("=== INSTAGRAM FEED SECTION DEBUG ===")
+    println("InstagramFeedSection Composable called")
+    
+    val viewModel = remember { 
+        println("Creating new InstagramFeedViewModel")
+        InstagramFeedViewModel() 
+    }
     val sections by viewModel.sections.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
-    
+
+    println("Current state - isLoading: $isLoading, sections: ${sections.size}, error: $errorMessage")
+
     LaunchedEffect(Unit) {
+        println("LaunchedEffect triggered - calling viewModel.loadFeeds()")
         viewModel.loadFeeds()
     }
     
@@ -37,30 +44,56 @@ fun InstagramFeedSection() {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Beyoncé Updates Section
-        InstagramSectionHeader(
-            title = "Beyoncé Updates",
-            username = "@beyonceupdatesz"
-        )
-        
-        // Arionce Section
-        InstagramSectionHeader(
-            title = "Arionce",
-            username = "@arionce.lifee"
-        )
-        
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-        }
-        
-        errorMessage?.let { error ->
+        } else if (errorMessage != null) {
             Text(
-                text = error,
+                text = errorMessage ?: "Failed to load feeds",
                 color = Color.Red,
                 modifier = Modifier.padding(16.dp)
             )
+        } else {
+            // Display each section with its feed items
+            sections.forEach { section ->
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Section header
+                    InstagramSectionHeader(
+                        title = section.title,
+                        username = section.username
+                    )
+                    
+                    // Feed items for this section
+                    if (section.items.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 600.dp), // Limit height to prevent infinite constraints
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Show only first 2 items to prevent too much content
+                            section.items.take(2).forEach { item ->
+                                InstagramFeedCard(
+                                    item = item,
+                                    username = section.username,
+                                    profileImageAsset = section.profileImageAsset,
+                                    profileURL = section.profileURL
+                                )
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = "No posts available",
+                            color = Color.Gray,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -97,6 +130,8 @@ fun InstagramFeedCard(
     profileImageAsset: String,
     profileURL: String
 ) {
+    val context = LocalContext.current
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,14 +149,33 @@ fun InstagramFeedCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                AsyncImage(
-                    model = profileImageAsset,
-                    contentDescription = "Profile",
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(18.dp)),
-                    contentScale = ContentScale.Crop
+                // Use local asset for profile image
+                val resourceId = context.resources.getIdentifier(
+                    profileImageAsset, 
+                    "drawable", 
+                    context.packageName
                 )
+                
+                if (resourceId != 0) {
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(id = resourceId),
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(18.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Fallback to bee icon if asset not found
+                    androidx.compose.foundation.Image(
+                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.bee_icon),
+                        contentDescription = "Profile",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(18.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 
                 Text(
                     text = username,
@@ -132,7 +186,14 @@ fun InstagramFeedCard(
                 Spacer(modifier = Modifier.weight(1f))
                 
                 Button(
-                    onClick = { /* TODO: Open profile URL */ }
+                    onClick = { 
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(profileURL))
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            println("Error opening profile URL: ${e.message}")
+                        }
+                    }
                 ) {
                     Text("See Profile")
                 }
@@ -151,7 +212,14 @@ fun InstagramFeedCard(
             
             // Post link
             TextButton(
-                onClick = { /* TODO: Open post URL */ }
+                onClick = { 
+                    try {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.postURL))
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        println("Error opening post URL: ${e.message}")
+                    }
+                }
             ) {
                 Text("View more on Instagram")
             }

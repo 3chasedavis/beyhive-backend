@@ -161,16 +161,15 @@ fun DailyTriviaScreen(
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.TopStart)
+                .background(Color.White.copy(alpha = 0.9f), CircleShape)
+                .size(48.dp)
         ) {
-                            Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(Color.White.copy(alpha = 0.7f), CircleShape)
-                        .padding(12.dp)
-                )
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black,
+                modifier = Modifier.size(24.dp)
+            )
         }
 
         if (showFinal) {

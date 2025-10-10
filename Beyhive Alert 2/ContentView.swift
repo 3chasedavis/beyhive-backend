@@ -679,6 +679,7 @@ struct TermsOfServiceContent: View {
 struct ContentView: View {
     @StateObject private var tilesViewModel = TilesViewModel()
     @StateObject private var eventsViewModel = EventsViewModel()
+    @StateObject private var updateManager = UpdateManager()
     @State private var selectedTab: BeyhiveTab = .home
     @State private var isMaintenanceMode = false
     @State private var isLoadingMaintenance = true
@@ -692,6 +693,14 @@ struct ContentView: View {
                 ProgressView("Loading...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.white)
+            } else if updateManager.needsUpdate {
+                UpdateView(
+                    currentVersion: updateManager.currentVersion,
+                    latestVersion: updateManager.latestVersion,
+                    updateMessage: updateManager.updateMessage
+                ) {
+                    updateManager.openAppStore()
+                }
             } else if isMaintenanceMode {
                 MaintenanceView()
             } else {

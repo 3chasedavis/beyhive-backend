@@ -30,6 +30,21 @@ class ScheduleViewModel : ViewModel() {
             try {
                 val fetchedEvents = ApiService.fetchEvents()
                 println("ViewModel fetched ${fetchedEvents.size} events") // Debug log
+                println("First event: ${fetchedEvents.firstOrNull()}") // Debug log
+                
+                // Debug: Count events by date (not description)
+                val now = Calendar.getInstance()
+                val pastCount = fetchedEvents.count { event ->
+                    val eventDate = parseEventDate(event.date)
+                    eventDate != null && eventDate < now
+                }
+                val upcomingCount = fetchedEvents.count { event ->
+                    val eventDate = parseEventDate(event.date)
+                    eventDate != null && eventDate >= now
+                }
+                println("Past events count (by date): $pastCount") // Debug log
+                println("Upcoming events count (by date): $upcomingCount") // Debug log
+                
                 _events.value = fetchedEvents
             } catch (e: Exception) {
                 println("ViewModel error: ${e.message}") // Debug log
@@ -72,18 +87,28 @@ class ScheduleViewModel : ViewModel() {
 
     fun getUpcomingEvents(): List<Event> {
         val now = Calendar.getInstance()
-        return _events.value.filter { event ->
+        val upcomingEvents = _events.value.filter { event ->
             val eventDate = parseEventDate(event.date)
-            eventDate != null && eventDate.after(now)
+            eventDate != null && eventDate >= now
         }.sortedBy { parseEventDate(it.date) }
+        println("DEBUG: getUpcomingEvents() returning ${upcomingEvents.size} events")
+        upcomingEvents.forEach { event ->
+            println("DEBUG: Upcoming event - ${event.title}: ${event.description}")
+        }
+        return upcomingEvents
     }
 
     fun getPastEvents(): List<Event> {
         val now = Calendar.getInstance()
-        return _events.value.filter { event ->
+        val pastEvents = _events.value.filter { event ->
             val eventDate = parseEventDate(event.date)
-            eventDate != null && eventDate.before(now)
+            eventDate != null && eventDate < now
         }.sortedByDescending { parseEventDate(it.date) }
+        println("DEBUG: getPastEvents() returning ${pastEvents.size} events")
+        pastEvents.forEach { event ->
+            println("DEBUG: Past event - ${event.title}: ${event.description}")
+        }
+        return pastEvents
     }
     
     private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {

@@ -42,6 +42,72 @@
 <body>
   <a href="device-tokens.html" style="display:inline-block;margin-bottom:20px;font-weight:bold;color:#e6b800;">Device Token Log</a>
   <h1>Beyhive Admin</h1>
+  
+  <!-- Update Manager Section -->
+  <div class="update-manager" style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 40px;">
+    <h2 style="color: #e6b800; margin-top: 0;">🐝 Update Manager</h2>
+    
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <h3 style="margin-top: 0;">📊 Current Status</h3>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span><strong>Latest Version:</strong></span>
+        <span id="currentVersion">Loading...</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span><strong>Update Required:</strong></span>
+        <span id="updateRequired">Loading...</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span><strong>Force Update:</strong></span>
+        <span id="forceUpdate">Loading...</span>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <h3 style="margin-top: 0;">🚀 Quick Actions</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <button onclick="triggerMinorUpdate()" style="background: #4caf50; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
+          <strong>📱 Minor Update</strong><br>
+          <small>Bug fixes & improvements</small>
+        </button>
+        <button onclick="triggerMajorUpdate()" style="background: #2196f3; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
+          <strong>🎉 Major Update</strong><br>
+          <small>New features & big changes</small>
+        </button>
+        <button onclick="triggerCriticalUpdate()" style="background: #f44336; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
+          <strong>🚨 Critical Update</strong><br>
+          <small>Security fixes - force update</small>
+        </button>
+        <button onclick="disableUpdates()" style="background: #9e9e9e; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
+          <strong>✅ No Updates</strong><br>
+          <small>Disable update prompts</small>
+        </button>
+      </div>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+      <h3 style="margin-top: 0;">⚙️ Custom Update</h3>
+      <div style="margin-bottom: 10px;">
+        <label><strong>New Version Number:</strong></label>
+        <input type="text" id="newVersion" placeholder="e.g., 1.2.0" style="width: 100%; padding: 8px; margin-top: 5px;">
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label><strong>Update Message:</strong></label>
+        <textarea id="updateMessage" placeholder="🐝 New features and bug fixes! Update now..." style="width: 100%; padding: 8px; margin-top: 5px; height: 60px;"></textarea>
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label>
+          <input type="checkbox" id="forceUpdateCheck"> <strong>Force all users to update</strong>
+        </label>
+      </div>
+      <button onclick="applyCustomUpdate()" style="background: #e6b800; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+        Apply Custom Update
+      </button>
+    </div>
+    
+    <div id="updateAlert" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+  </div>
+  
   <div id="presetButtons" style="margin-bottom: 20px;">
     <button type="button" class="preset-btn" data-type="concertStart" data-title="Concert Starting!" data-message="The concert is about to begin!">Concert Start</button>
     <button type="button" class="preset-btn" data-type="beyonceOnStage" data-title="Beyoncé is on stage!" data-message="Beyoncé has taken the stage! Tune in now!">Beyoncé on Stage</button>
@@ -323,13 +389,15 @@ function adminLogin() {
     document.getElementById('admin-login-error').style.display = 'block';
   });
 }
-// On page load, check if authenticated
+// On page load, check if authenticated and load update status
 window.onload = function() {
   fetch('/api/admin/check-auth')
     .then(res => res.json())
     .then(data => {
       if (data.authenticated) {
         document.getElementById('admin-login-overlay').style.display = 'none';
+        // Load update status after authentication
+        loadCurrentStatus();
       } else {
         document.getElementById('admin-login-overlay').style.display = 'flex';
         document.getElementById('admin-login-password').focus();
@@ -340,6 +408,113 @@ window.onload = function() {
       document.getElementById('admin-login-password').focus();
     });
 };
+
+// Update Manager Functions
+async function loadCurrentStatus() {
+    try {
+        const response = await fetch('/api/app/version-check');
+        const data = await response.json();
+        
+        document.getElementById('currentVersion').textContent = data.latestVersion;
+        document.getElementById('updateRequired').textContent = data.forceUpdate ? 'Yes (Forced)' : 'No';
+        document.getElementById('forceUpdate').textContent = data.forceUpdate ? 'Yes' : 'No';
+        
+        // Set current values in form
+        document.getElementById('newVersion').value = data.latestVersion;
+        document.getElementById('updateMessage').value = data.updateMessage || '';
+        document.getElementById('forceUpdateCheck').checked = data.forceUpdate || false;
+        
+    } catch (error) {
+        showUpdateAlert('Error loading current status: ' + error.message, 'error');
+    }
+}
+
+async function triggerMinorUpdate() {
+    const currentVersion = document.getElementById('currentVersion').textContent;
+    const versionParts = currentVersion.split('.');
+    const newVersion = `${versionParts[0]}.${parseInt(versionParts[1]) + 1}.0`;
+    
+    await applyUpdate(newVersion, '🐝 Bug fixes and performance improvements! Update now for a smoother experience.', false);
+}
+
+async function triggerMajorUpdate() {
+    const currentVersion = document.getElementById('currentVersion').textContent;
+    const versionParts = currentVersion.split('.');
+    const newVersion = `${parseInt(versionParts[0]) + 1}.0.0`;
+    
+    await applyUpdate(newVersion, '🎉 Major update with new features! New games, improved notifications, and more Beyoncé content!', false);
+}
+
+async function triggerCriticalUpdate() {
+    const currentVersion = document.getElementById('currentVersion').textContent;
+    const versionParts = currentVersion.split('.');
+    const newVersion = `${versionParts[0]}.${parseInt(versionParts[1]) + 1}.${parseInt(versionParts[2]) + 1}`;
+    
+    await applyUpdate(newVersion, '🚨 Critical security update required! Please update immediately to continue using the app safely.', true);
+}
+
+async function disableUpdates() {
+    await applyUpdate('1.0.0', 'No updates available.', false);
+}
+
+async function applyCustomUpdate() {
+    const newVersion = document.getElementById('newVersion').value;
+    const updateMessage = document.getElementById('updateMessage').value;
+    const forceUpdate = document.getElementById('forceUpdateCheck').checked;
+    
+    if (!newVersion) {
+        showUpdateAlert('Please enter a version number', 'error');
+        return;
+    }
+    
+    await applyUpdate(newVersion, updateMessage, forceUpdate);
+}
+
+async function applyUpdate(version, message, force) {
+    try {
+        showUpdateAlert('Applying update...', 'success');
+        
+        const response = await fetch('/api/app/update-version', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                latestVersion: version,
+                updateMessage: message,
+                forceUpdate: force
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showUpdateAlert(`✅ Update applied! Version ${version} is now live. ${force ? 'All users will be forced to update.' : 'Users with older versions will see the update prompt.'}`, 'success');
+        } else {
+            showUpdateAlert('Error: ' + result.error, 'error');
+        }
+        
+        // Reload status
+        setTimeout(loadCurrentStatus, 1000);
+        
+    } catch (error) {
+        showUpdateAlert('Error applying update: ' + error.message, 'error');
+    }
+}
+
+function showUpdateAlert(message, type) {
+    const alert = document.getElementById('updateAlert');
+    alert.textContent = message;
+    alert.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+    alert.style.color = type === 'success' ? '#155724' : '#721c24';
+    alert.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+    alert.style.display = 'block';
+    
+    setTimeout(() => {
+        alert.style.display = 'none';
+    }, 5000);
+}
+
 </script>
   <script src="admin.js"></script>
 </body>

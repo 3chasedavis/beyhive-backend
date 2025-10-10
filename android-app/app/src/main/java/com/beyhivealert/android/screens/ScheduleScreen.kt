@@ -46,6 +46,15 @@ fun ScheduleScreen() {
         viewModel.getPastEvents()
     }
     
+    // Debug logging
+    LaunchedEffect(showUpcoming, events) {
+        println("=== SCHEDULE SCREEN DEBUG ===")
+        println("showUpcoming: $showUpcoming")
+        println("events count: ${events.size}")
+        println("events: ${events.map { "${it.title} - ${it.description}" }}")
+        println("=============================")
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -76,7 +85,10 @@ fun ScheduleScreen() {
         // Event Filters
         EventFilters(
             showUpcoming = showUpcoming,
-            onFilterChanged = { showUpcoming = it }
+            onFilterChanged = { newValue ->
+                println("DEBUG: Button clicked, changing showUpcoming from $showUpcoming to $newValue")
+                showUpcoming = newValue
+            }
         )
         
         Spacer(modifier = Modifier.height(8.dp))

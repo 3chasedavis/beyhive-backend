@@ -13,7 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun GamesSection() {
+fun GamesSection(
+    onNavigateToTrivia: () -> Unit = {},
+    onNavigateToAlbumRanking: () -> Unit = {}
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -52,7 +55,7 @@ fun GamesSection() {
                     color = Color.Gray
                 )
                 Button(
-                    onClick = { /* TODO: Navigate to game */ },
+                    onClick = onNavigateToAlbumRanking,
                     modifier = Modifier.align(Alignment.End),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF1976D2) // Primary blue
@@ -91,7 +94,7 @@ fun GamesSection() {
                     color = Color.Gray
                 )
                 Button(
-                    onClick = { /* TODO: Navigate to trivia */ },
+                    onClick = onNavigateToTrivia,
                     modifier = Modifier.align(Alignment.End),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF1976D2) // Primary blue

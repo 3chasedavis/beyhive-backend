@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.beyhivealert.android.data.InstagramFeedItem
 import com.beyhivealert.android.data.InstagramFeedSection
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.net.URL
@@ -27,14 +29,14 @@ class InstagramFeedViewModel : ViewModel() {
     private val feeds = listOf(
         FeedConfig(
             title = "Beyoncé Updates",
-            url = "https://rss.app/feeds/KuLjNH2J9m11px6X.xml",
+            url = "https://rss.app/feeds/tsqXwAfrzfpjLSzb.xml",
             username = "@beyonceupdatesz",
             profileImageAsset = "beyonceupdatespfp",
             profileURL = "https://instagram.com/beyonceupdatesz"
         ),
         FeedConfig(
             title = "Arionce",
-            url = "https://rss.app/feeds/jkitoQpu7zz7ldny.xml",
+            url = "https://rss.app/feeds/IbhOSjEvEbRhT8Mu.xml",
             username = "@arionce.lifee",
             profileImageAsset = "arioncepfp",
             profileURL = "https://instagram.com/arionce.lifee"
@@ -42,15 +44,23 @@ class InstagramFeedViewModel : ViewModel() {
     )
     
     fun loadFeeds() {
+        println("=== INSTAGRAM FEED VIEWMODEL DEBUG ===")
+        println("loadFeeds() called")
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             
             try {
+                println("=== RSS FEED LOADING DEBUG ===")
+                println("Starting to load ${feeds.size} feeds")
+                
                 val sectionResults = mutableListOf<InstagramFeedSection>()
                 
                 feeds.forEach { feed ->
+                    println("Fetching feed: ${feed.title} from ${feed.url}")
                     val items = fetchFeed(feed.url)
+                    println("Fetched ${items.size} items for ${feed.title}")
+                    
                     sectionResults.add(
                         InstagramFeedSection(
                             title = feed.title,
@@ -62,8 +72,13 @@ class InstagramFeedViewModel : ViewModel() {
                     )
                 }
                 
+                println("Total sections created: ${sectionResults.size}")
                 _sections.value = sectionResults
+                println("=== RSS FEED LOADING COMPLETE ===")
             } catch (e: Exception) {
+                println("=== RSS FEED ERROR ===")
+                println("Error: ${e.message}")
+                e.printStackTrace()
                 _errorMessage.value = "Failed to load feeds: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -71,57 +86,85 @@ class InstagramFeedViewModel : ViewModel() {
         }
     }
     
-    private suspend fun fetchFeed(urlString: String): List<InstagramFeedItem> {
-        return try {
-            val url = URL(urlString)
-            val connection = url.openConnection()
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
+            private suspend fun fetchFeed(urlString: String): List<InstagramFeedItem> {
+                return withContext(Dispatchers.IO) {
+                    try {
+                        println("Fetching RSS feed from: $urlString")
+                        val url = URL(urlString)
+                        val connection = url.openConnection()
+                        connection.connectTimeout = 15000
+                        connection.readTimeout = 15000
+                        connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
+                        
+                        println("DEBUG: About to connect to URL...")
+                        val inputStream = connection.getInputStream()
+                        println("DEBUG: Successfully opened input stream")
+                        val content = inputStream.bufferedReader().readText()
+                        println("DEBUG: Raw RSS content length: ${content.length}")
+                        println("DEBUG: First 200 chars of content: ${content.take(200)}")
             
-            val inputStream = connection.getInputStream()
-            val parserFactory = XmlPullParserFactory.newInstance()
-            val parser = parserFactory.newPullParser()
-            parser.setInput(inputStream, null)
-            
+            // Split content by </item> to get individual items
             val items = mutableListOf<InstagramFeedItem>()
-            var currentItem: MutableMap<String, String>? = null
-            var currentElement = ""
             
-            var eventType = parser.eventType
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                when (eventType) {
-                    XmlPullParser.START_TAG -> {
-                        currentElement = parser.name
-                        if (currentElement == "item") {
-                            currentItem = mutableMapOf()
-                        }
-                    }
-                    XmlPullParser.TEXT -> {
-                        currentItem?.let { item ->
-                            when (currentElement) {
-                                "title" -> item["title"] = parser.text
-                                "description" -> item["description"] = parser.text
-                                "link" -> item["link"] = parser.text
-                                "pubDate" -> item["pubDate"] = parser.text
-                                "author" -> item["author"] = parser.text
-                            }
-                        }
-                    }
-                    XmlPullParser.END_TAG -> {
-                        if (parser.name == "item" && currentItem != null) {
-                            items.add(createFeedItem(currentItem))
-                            currentItem = null
-                        }
-                    }
+            // Split by </item> and filter out empty strings
+            val itemStrings = content.split("</item>")
+                .filter { it.contains("<item>") }
+                .map { it.substringAfter("<item>") }
+            
+            println("DEBUG: Found ${itemStrings.size} item strings")
+            
+            itemStrings.forEach { itemContent ->
+                val itemData = mutableMapOf<String, String>()
+                
+                // Extract title
+                val titleMatch = Regex("<title><!\\[CDATA\\[(.*?)\\]\\]></title>", RegexOption.DOT_MATCHES_ALL).find(itemContent)
+                if (titleMatch != null) {
+                    itemData["title"] = titleMatch.groupValues[1].trim()
                 }
-                eventType = parser.next()
+                
+                // Extract description
+                val descMatch = Regex("<description><!\\[CDATA\\[(.*?)\\]\\]></description>", RegexOption.DOT_MATCHES_ALL).find(itemContent)
+                if (descMatch != null) {
+                    itemData["description"] = descMatch.groupValues[1].trim()
+                }
+                
+                // Extract link
+                val linkMatch = Regex("<link>(.*?)</link>").find(itemContent)
+                if (linkMatch != null) {
+                    itemData["link"] = linkMatch.groupValues[1].trim()
+                }
+                
+                // Extract pubDate
+                val dateMatch = Regex("<pubDate>(.*?)</pubDate>").find(itemContent)
+                if (dateMatch != null) {
+                    itemData["pubDate"] = dateMatch.groupValues[1].trim()
+                }
+                
+                // Extract creator (author)
+                val creatorMatch = Regex("<dc:creator><!\\[CDATA\\[(.*?)\\]\\]></dc:creator>", RegexOption.DOT_MATCHES_ALL).find(itemContent)
+                if (creatorMatch != null) {
+                    itemData["author"] = creatorMatch.groupValues[1].trim()
+                }
+                
+                println("DEBUG: Parsed item: $itemData")
+                if (itemData.isNotEmpty()) {
+                    items.add(createFeedItem(itemData))
+                }
             }
             
             inputStream.close()
+            println("Successfully parsed ${items.size} items from RSS feed using regex")
             items
-        } catch (e: Exception) {
-            emptyList()
-        }
+                    } catch (e: Exception) {
+                        println("=== RSS FEED ERROR ===")
+                        println("Error fetching RSS feed: ${e.message}")
+                        println("Error type: ${e.javaClass.simpleName}")
+                        println("Error details: ${e.toString()}")
+                        e.printStackTrace()
+                        println("=== END RSS FEED ERROR ===")
+                        emptyList()
+                    }
+                }
     }
     
     private fun createFeedItem(itemData: Map<String, String>): InstagramFeedItem {

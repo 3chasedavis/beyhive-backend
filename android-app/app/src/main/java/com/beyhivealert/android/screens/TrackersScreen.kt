@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.beyhivealert.android.viewmodels.OutfitsViewModel
+import com.beyhivealert.android.viewmodels.SetlistViewModel
 import com.beyhivealert.android.data.Outfit
+import com.beyhivealert.android.data.Setlist
 import coil.compose.AsyncImage
 import androidx.compose.ui.geometry.Offset
 
@@ -30,74 +32,6 @@ enum class TrackerTab { SETLIST, OUTFIT }
 @Composable
 fun TrackersScreen() {
     var selectedTab by remember { mutableStateOf(TrackerTab.SETLIST) }
-    
-    val acts = listOf(
-        "Act 1 - Intro" to listOf(
-            "Intro (contains elements of 'AMERIICAN REQUIEM')",
-            "AMERIICAN REQUIEM",
-            "Blackbird (The Beatles cover) (\"COWBOY CARTER\" version)",
-            "The Star-Spangled Banner (John Stafford Smith & Francis Scott Key cover) (includes elements of Jimi Hendrix's instrumental arrangement originally performed at Woodstock)",
-            "Freedom (shortened)",
-            "YA YA / Why Don't You Love Me",
-            "Song played from tape: OH LOUISIANA"
-        ),
-        "Act 2 - Revolution" to listOf(
-            "PROPAGANDA (contains elements of Those Guys' 'An American Poem' and Death Grips' 'You Might Think He Loves…')",
-            "AMERICA HAS A PROBLEM (contains elements of 'AMERICA HAS A PROBLEM (feat. Kendrick Lamar)' & 'SPAGHETTII')",
-            "SPAGHETTII (contains elements of 'ESSA TÁ QUENTE', 'WTHELLY', 'Flawless', 'Run the World (Girls)' & 'MY POWER')",
-            "Formation (shortened)",
-            "MY HOUSE (contains elements of Wisp's 'Your Face' and 'Bow Down')",
-            "Diva"
-        ),
-        "Act 3 - Refuge TRAILER" to listOf(
-            "TRAILER (contains elements of Justice's 'Genesis', JPEGMAFIA's 'don't rely on other men' and 'I Been On')",
-            "ALLIIGATOR TEARS (shortened)",
-            "JUST FOR FUN (shortened)",
-            "PROTECTOR (with Rumi Carter) (contains elements of 'Dangerously In Love 2')",
-            "Song played from tape: The First Time Ever I Saw Your Face (Ewan MacColl & Peggy Seeger song) (Roberta Flack version)",
-            "FLAMENCO"
-        ),
-        "Act 4 - Marfa" to listOf(
-            "PEEP SHOW (contains elements of Marian Anderson's 'Deep River', Nancy Sinatra's 'Lightning's Girl')",
-            "DESERT EAGLE (extended intro)",
-            "RIIVERDANCE (shortened)",
-            "II HANDS II HEAVEN (shortened)",
-            "TYRANT (shortened; contains elements of 'Haunted')",
-            "THIQUE (shortened; contains elements of 'TYRANT', 'Bills, Bills, Bills' & 'Say My Name')",
-            "LEVII'S JEANS (shortened; contains elements of 'THIQUE')",
-            "SWEET ★ HONEY ★ BUCKIIN' / PURE/HONEY / SUMMER RENAISSANCE (contains elements of 69 Boyz' 'Tootsie Roll')"
-        ),
-        "Act 5 - Tease" to listOf(
-            "OUTLAW (50FT COWBOY) (contains elements of BigXthaPlug's 'The Largest', Esther Marrow's 'Walk Tall' & '7/11')",
-            "TEXAS HOLD 'EM (extended intro; contains elements of 'TEXAS HOLD 'EM (PONY UP REMIX)' & 'CHURCH GIRL')",
-            "Crazy in Love (Homecoming version; contains elements of Cassidy's 'I'm a Hustla')",
-            "Single Ladies (Put a Ring on It) (shortened; contains elements of 'Get Me Bodied')",
-            "Love on Top (shortened; contains elements of 'Freakum Dress')",
-            "Irreplaceable (shortened)",
-            "If I Were a Boy (shortened; contains elements of 'JOLENE')",
-            "DOLLY P",
-            "Jolene (Dolly Parton cover) (COWBOY CARTER version; contains elements of 'Daddy Lessons')",
-            "Daddy Lessons (shortened)",
-            "BODYGUARD",
-            "II MOST WANTED (snippet; contains elements of 'Blow')",
-            "Dance for You / SMOKE HOUR II (contains elements of 'CUFF IT (WETTER REMIX)')",
-            "HEATED (shortened; contains elements of 803Fresh's 'Boots on the Ground')",
-            "Before I Let Go (Maze cover)"
-        ),
-        "Act 6 - Renaissance" to listOf(
-            "HOLY DAUGHTER (contains elements of 'Ghost' & 'I Care')",
-            "DAUGHTER (extended outro)",
-            "OPERA (contains elements of 'ENERGY' & 'An American Poem')",
-            "I'M THAT GIRL (shortened; contains elements of 'APESHIT')",
-            "COZY",
-            "ALIEN SUPERSTAR (Shortened)",
-            "Song played from tape: Déjà Vu (with Blue Ivy Carter) (dance Interlude)"
-        ),
-        "Act 7 - Reclaimation" to listOf(
-            "LEGACY (contains elements of Michael Jackson's 'I Wanna Be Where You Are' & Those Guys' 'An American Poem')",
-            "AMEN (extended intro & outro)"
-        )
-    )
     
     Column(
         modifier = Modifier
@@ -152,41 +86,7 @@ fun TrackersScreen() {
         // Main Content
         if (selectedTab == TrackerTab.SETLIST) {
             // Song Tracker Content
-            Column {
-                Text(
-                    text = "Trackers",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                Text(
-                    text = "Track songs and outfits from each show.",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-                
-                Text(
-                    text = "Setlist",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-                
-                // Setlist Cards
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(acts.indices.toList()) { idx ->
-                        val act = acts[idx]
-                        SetlistCard(act = act)
-                    }
-                }
-            }
+            SetlistView()
         } else {
             // Outfit Tracker Content
             OutfitsView()
@@ -195,7 +95,71 @@ fun TrackersScreen() {
 }
 
 @Composable
-fun SetlistCard(act: Pair<String, List<String>>) {
+fun SetlistView() {
+    val viewModel: SetlistViewModel = viewModel()
+    val setlists by viewModel.setlists
+    val isLoading by viewModel.isLoading
+    val errorMessage by viewModel.errorMessage
+    
+    Column {
+        Text(
+            text = "Trackers",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        Text(
+            text = "Track songs and outfits from each show.",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+        
+        Text(
+            text = "Setlist",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (errorMessage != null) {
+            Text(
+                text = "Error: $errorMessage",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else if (setlists.isEmpty()) {
+            Text(
+                text = "No setlists available",
+                color = Color.Gray,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else {
+            // Setlist Cards
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(setlists) { setlist ->
+                    SetlistCard(setlist = setlist)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SetlistCard(setlist: Setlist) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -206,13 +170,13 @@ fun SetlistCard(act: Pair<String, List<String>>) {
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = act.first,
+                text = setlist.title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black, // Black text for contrast on yellow
                 modifier = Modifier.padding(bottom = 12.dp)
             )
-            act.second.forEach { song ->
+            setlist.songs.sortedBy { it.order }.forEach { song ->
                 Row(
                     verticalAlignment = Alignment.Top,
                     modifier = Modifier.padding(vertical = 4.dp)
@@ -229,7 +193,7 @@ fun SetlistCard(act: Pair<String, List<String>>) {
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     Text(
-                        text = song,
+                        text = song.name,
                         fontSize = 14.sp,
                         color = Color.Black // Black text for contrast on yellow
                     )

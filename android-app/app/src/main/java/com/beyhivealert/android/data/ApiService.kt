@@ -16,7 +16,7 @@ data class Event(
     val description: String = "",
     val date: String = "",
     val location: String = "",
-    val createdAt: String = "",
+    val createdAt: String? = null,
     val time: String = "",
     val timezone: String = ""
 )
@@ -25,7 +25,7 @@ data class Event(
 data class EventsResponse(
     val events: List<Event> = emptyList(),
     val success: Boolean = false,
-    val message: String = ""
+    val message: String? = null
 )
 
 @Serializable
@@ -66,37 +66,39 @@ data class PartnersResponse(
 object ApiService {
     private const val BASE_URL = "https://beyhive-backend.onrender.com/api"
 
-    fun fetchEvents(): List<Event> {
-        val url = URL("$BASE_URL/events")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connectTimeout = 10000
-        connection.readTimeout = 10000
-        connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
-        
-        return try {
-            println("Attempting to fetch events from: $url") // Debug log
-            val responseCode = connection.responseCode
-            println("Events API Response Code: $responseCode") // Debug log
+    suspend fun fetchEvents(): List<Event> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("$BASE_URL/events")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
             
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().readText()
-                println("Events API Response: $response") // Debug log
-                val eventsResponse = Json.decodeFromString<EventsResponse>(response)
-                println("Parsed events: ${eventsResponse.events}") // Debug log
-                eventsResponse.events
-            } else {
-                println("Events API Error Response Code: $responseCode") // Debug log
-                val errorStream = connection.errorStream?.bufferedReader()?.readText()
-                println("Events API Error Response: $errorStream") // Debug log
+            try {
+                println("Attempting to fetch events from: $url") // Debug log
+                val responseCode = connection.responseCode
+                println("Events API Response Code: $responseCode") // Debug log
+                
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    println("Events API Response: $response") // Debug log
+                    val eventsResponse = Json.decodeFromString<EventsResponse>(response)
+                    println("Parsed events: ${eventsResponse.events}") // Debug log
+                    eventsResponse.events
+                } else {
+                    println("Events API Error Response Code: $responseCode") // Debug log
+                    val errorStream = connection.errorStream?.bufferedReader()?.readText()
+                    println("Events API Error Response: $errorStream") // Debug log
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                println("Error fetching events: ${e.message}") // Debug log
+                e.printStackTrace()
                 emptyList()
+            } finally {
+                connection.disconnect()
             }
-        } catch (e: Exception) {
-            println("Error fetching events: ${e.message}") // Debug log
-            e.printStackTrace()
-            emptyList()
-        } finally {
-            connection.disconnect()
         }
     }
 
@@ -154,58 +156,111 @@ object ApiService {
         }
     }
     
-    fun fetchOutfits(): List<Outfit> {
-        val url = URL("$BASE_URL/outfits")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connectTimeout = 5000
-        connection.readTimeout = 5000
-        return try {
-            val response = connection.inputStream.bufferedReader().readText()
-            println("Outfits API Response: $response") // Debug log
-            val outfitsResponse = Json.decodeFromString<OutfitsResponse>(response)
-            println("Parsed outfits: ${outfitsResponse.outfits}") // Debug log
-            outfitsResponse.outfits
-        } catch (e: Exception) {
-            println("Error fetching outfits: ${e.message}") // Debug log
-            e.printStackTrace()
-            emptyList()
-        } finally {
-            connection.disconnect()
+    suspend fun fetchOutfits(): List<Outfit> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("$BASE_URL/outfits")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
+            
+            try {
+                println("Attempting to fetch outfits from: $url") // Debug log
+                val responseCode = connection.responseCode
+                println("Outfits API Response Code: $responseCode") // Debug log
+                
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    println("Outfits API Response: $response") // Debug log
+                    val outfitsResponse = Json.decodeFromString<OutfitsResponse>(response)
+                    println("Parsed outfits: ${outfitsResponse.outfits}") // Debug log
+                    outfitsResponse.outfits
+                } else {
+                    println("Outfits API Error Response Code: $responseCode") // Debug log
+                    val errorStream = connection.errorStream?.bufferedReader()?.readText()
+                    println("Outfits API Error Response: $errorStream") // Debug log
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                println("Error fetching outfits: ${e.message}") // Debug log
+                e.printStackTrace()
+                emptyList()
+            } finally {
+                connection.disconnect()
+            }
         }
     }
     
-    fun fetchPartners(): List<Partner> {
-        val url = URL("$BASE_URL/partners")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connectTimeout = 10000
-        connection.readTimeout = 10000
-        connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
-        
-        return try {
-            println("Attempting to fetch partners from: $url") // Debug log
-            val responseCode = connection.responseCode
-            println("Partners API Response Code: $responseCode") // Debug log
-            
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().readText()
-                println("Partners API Response: $response") // Debug log
-                val partnersResponse = Json.decodeFromString<PartnersResponse>(response)
-                println("Parsed partners: ${partnersResponse.partners}") // Debug log
-                partnersResponse.partners
-            } else {
-                println("Partners API Error Response Code: $responseCode") // Debug log
-                val errorStream = connection.errorStream?.bufferedReader()?.readText()
-                println("Partners API Error Response: $errorStream") // Debug log
+    suspend fun fetchPartners(): List<Partner> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("$BASE_URL/partners")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
+
+            try {
+                println("Attempting to fetch partners from: $url") // Debug log
+                val responseCode = connection.responseCode
+                println("Partners API Response Code: $responseCode") // Debug log
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    println("Partners API Response: $response") // Debug log
+                    val partnersResponse = Json.decodeFromString<PartnersResponse>(response)
+                    println("Parsed partners: ${partnersResponse.partners}") // Debug log
+                    partnersResponse.partners
+                } else {
+                    println("Partners API Error Response Code: $responseCode") // Debug log
+                    val errorStream = connection.errorStream?.bufferedReader()?.readText()
+                    println("Partners API Error Response: $errorStream") // Debug log
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                println("Error fetching partners: ${e.message}") // Debug log
+                e.printStackTrace()
                 emptyList()
+            } finally {
+                connection.disconnect()
             }
-        } catch (e: Exception) {
-            println("Error fetching partners: ${e.message}") // Debug log
-            e.printStackTrace()
-            emptyList()
-        } finally {
-            connection.disconnect()
+        }
+    }
+
+    suspend fun fetchSetlists(): List<Setlist> {
+        return withContext(Dispatchers.IO) {
+            val url = URL("$BASE_URL/setlists")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("User-Agent", "BeyhiveAlert-Android/1.0")
+
+            try {
+                println("Attempting to fetch setlists from: $url") // Debug log
+                val responseCode = connection.responseCode
+                println("Setlists API Response Code: $responseCode") // Debug log
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    println("Setlists API Response: $response") // Debug log
+                    val setlistsResponse = Json.decodeFromString<SetlistsResponse>(response)
+                    println("Parsed setlists: ${setlistsResponse.setlists}") // Debug log
+                    setlistsResponse.setlists
+                } else {
+                    println("Setlists API Error Response Code: $responseCode") // Debug log
+                    val errorStream = connection.errorStream?.bufferedReader()?.readText()
+                    println("Setlists API Error Response: $errorStream") // Debug log
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                println("Error fetching setlists: ${e.message}") // Debug log
+                e.printStackTrace()
+                emptyList()
+            } finally {
+                connection.disconnect()
+            }
         }
     }
     
