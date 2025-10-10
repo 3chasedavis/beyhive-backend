@@ -18,15 +18,6 @@ class EventsViewModel: ObservableObject {
     private let baseURL = "https://beyhive-backend.onrender.com"
     
     init() {
-#if DEBUG
-        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-            // Load mock data for preview
-            self.events = [
-                Event(id: "1", title: "Preview Event", description: "This is a preview event.", date: Date(), location: "Preview Venue, Preview City, PC", createdAt: Date(), time: "19:00", timezone: "America/New_York")
-            ]
-            return
-        }
-#endif
         Task {
             await fetchEvents()
         }

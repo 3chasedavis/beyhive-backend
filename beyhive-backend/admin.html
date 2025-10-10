@@ -216,9 +216,10 @@
   </div>
   
   <h2>Livestreams Management</h2>
+  <p style="color: #666; margin-bottom: 15px;">💡 <strong>Tip:</strong> Drag and drop livestreams to reorder them. The order here will be the same in your app!</p>
   <div id="livestreams"></div>
   <button onclick="addRow()">Add Row</button>
-  <button onclick="saveLivestreams()">Save</button>
+  <button onclick="saveLivestreams()" style="margin-left: 10px;">Save Livestreams</button>
   <!-- Calendar Events Management Section -->
   <hr/>
   <h2>Manage Calendar Events</h2>
@@ -300,8 +301,13 @@
   <div class="partners-panel" style="margin-bottom: 40px;">
     <h2>Manage Setlists</h2>
     <form id="setlistForm" style="margin-bottom: 20px;">
-      <input type="text" id="setlistId" placeholder="Setlist ID (e.g., act1-intro)" required />
-      <input type="text" id="setlistTitle" placeholder="Setlist Title (e.g., Act 1 - Intro)" required />
+      <div style="margin-bottom: 15px;">
+        <label><strong>Setlist Title:</strong></label>
+        <input type="text" id="setlistTitle" placeholder="e.g., Act 1 - Intro" style="width: 100%; padding: 8px; margin-top: 5px;" required />
+        <div style="margin-top: 5px; color: #666; font-size: 14px;">
+          <strong>Auto-generated Setlist ID:</strong> <span id="autoSetlistId">(enter title above)</span>
+        </div>
+      </div>
       <div id="songsContainer">
         <h4>Songs:</h4>
         <div class="song-item" style="margin-bottom: 10px;">
@@ -347,6 +353,48 @@
   </div>
 
   <h2>Manage Quizzes</h2>
+  
+  <!-- Create New Quiz Form -->
+  <div class="quiz-creator" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+    <h3 style="margin-top: 0;">🎮 Create New Survivor Quiz</h3>
+    
+    <form id="createQuizForm" style="margin-bottom: 20px;">
+      <div style="margin-bottom: 15px;">
+        <label><strong>Quiz Title:</strong></label>
+        <input type="text" id="newQuizTitle" placeholder="e.g., Las Vegas Night 3" style="width: 100%; padding: 8px; margin-top: 5px;" required />
+        <div style="margin-top: 5px; color: #666; font-size: 14px;">
+          <strong>Auto-generated Quiz ID:</strong> <span id="autoQuizId">(enter title above)</span>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <div>
+          <label><strong>Open At:</strong></label>
+          <input type="datetime-local" id="newQuizOpenAt" style="width: 100%; padding: 8px; margin-top: 5px;" />
+        </div>
+        <div>
+          <label><strong>Close At:</strong></label>
+          <input type="datetime-local" id="newQuizCloseAt" style="width: 100%; padding: 8px; margin-top: 5px;" />
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label><strong>Questions:</strong></label>
+        <div id="questionsContainer" style="margin-top: 10px;">
+          <!-- Questions will be added dynamically -->
+        </div>
+        <button type="button" onclick="addQuestion()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+          ➕ Add Question
+        </button>
+      </div>
+      
+      <button type="submit" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer;">
+        🚀 Create Quiz
+      </button>
+      <span id="createQuizStatus" style="margin-left: 15px;"></span>
+    </form>
+  </div>
+  
   <div id="quizManager" style="margin-bottom: 40px;"></div>
   <div id="deviceTokensSection">
     <h2>Device Tokens</h2>

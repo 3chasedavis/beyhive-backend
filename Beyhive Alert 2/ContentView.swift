@@ -36,39 +36,55 @@ enum BeyhiveTab: Int, CaseIterable {
 struct TopBarBackground: View {
     @State private var showSettings = false
     var body: some View {
-        ZStack(alignment: .center) {
-            Color.yellow.opacity(0.3)
-                .ignoresSafeArea(edges: .top)
+        HStack {
+            Image("Bee_Icon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+            
+            Spacer()
             
             Text("Beyhive Alert")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.black)
-                .frame(maxWidth: .infinity, alignment: .center)
             
-            HStack {
-                Image("Bee_Icon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
-                    .padding(.leading, 16)
-                Spacer()
-            }
-            HStack {
-                Spacer()
-                Button(action: {
-                    showSettings = true
-                }) {
-                    Image(systemName: "gearshape.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 28, height: 28)
-                        .foregroundColor(.black)
-                        .padding(.trailing, 20)
-                }
+            Spacer()
+            
+            Button(action: {
+                showSettings = true
+            }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundColor(.black)
             }
         }
-        .frame(height: 50)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            ZStack {
+                // Glass background like bottom navigation
+                RoundedRectangle(cornerRadius: 25)
+                    .fill(Color.yellow.opacity(0.3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.white.opacity(0.6),
+                                        Color.white.opacity(0.1)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -5)
+            }
+        )
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
@@ -96,6 +112,7 @@ struct SettingsView: View {
     @State private var showDeleteAlert = false
     @StateObject private var storeKitManager = StoreKitManager()
     @State private var isRestoring = false
+    @State private var showNonAffiliationSheet = false
     @State private var restoreMessage: String? = nil
     var body: some View {
         VStack(spacing: 0) {
@@ -119,6 +136,10 @@ struct SettingsView: View {
             }
             .frame(height: 60)
             .background(Color(red: 1.0, green: 0.98, blue: 0.8))
+            
+            // Non-Affiliation Banner
+            BeyonceNonAffiliationBanner(showSheet: $showNonAffiliationSheet)
+            
             // Contact Info Section
             VStack(alignment: .leading, spacing: 8) {
                 Text("Sign Up / Log In")
@@ -232,6 +253,9 @@ struct SettingsView: View {
                 URL(string: "https://apps.apple.com/us/app/beyhive-alert/id6748089455")!
             ])
         }
+        .sheet(isPresented: $showNonAffiliationSheet) {
+            BeyonceNonAffiliationSheet(onClose: { showNonAffiliationSheet = false })
+        }
         .alert("Are you sure you want to delete your account? This cannot be undone.", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
                 // Delete user data
@@ -334,7 +358,7 @@ struct PrivacyTermsView: View {
                 
                 // Content
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 16) {
                         if selectedTab == 0 {
                             PrivacyPolicyContent()
                         } else {
@@ -822,8 +846,9 @@ struct CustomTabBar: View {
                 }) {
                     if tab == .game {
                         ZStack {
+                            // Standard yellow circle background
                             Circle()
-                                .fill(Color.yellow)
+                                .fill(Color.yellow) // Standard yellow
                                 .frame(width: 60, height: 60)
                             Image("Bee_Icon")
                                 .resizable()
@@ -831,30 +856,6 @@ struct CustomTabBar: View {
                                 .frame(width: 50, height: 50)
                         }
                         .offset(y: -12)
-                    } else if tab == .home {
-                        Image(systemName: tab.icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 34, height: 34)
-                            .foregroundColor(selectedTab == tab ? .pink : .white)
-                    } else if tab == .videos {
-                        Image(systemName: tab.icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 34, height: 34)
-                            .foregroundColor(selectedTab == tab ? .blue : .white)
-                    } else if tab == .trackers {
-                        Image(systemName: tab.icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 34, height: 34)
-                            .foregroundColor(selectedTab == tab ? .yellow : .white)
-                    } else if tab == .schedule {
-                        Image(systemName: tab.icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 34, height: 34)
-                            .foregroundColor(selectedTab == tab ? .yellow : .white)
                     } else {
                         Image(systemName: tab.icon)
                             .resizable()
@@ -866,13 +867,13 @@ struct CustomTabBar: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .frame(height: height + 20)
-        .padding(.vertical, 0)
-        .background(
-            Color.yellow.opacity(0.3)
-                .ignoresSafeArea(edges: .bottom)
-        )
-        .shadow(radius: showShadow ? 8 : 0)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(Color.yellow.opacity(0.3)) // Semi-transparent yellow like top bar
+        .cornerRadius(25)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -5)
     }
 }
 
@@ -981,6 +982,7 @@ struct HomeView: View {
     @State private var showAlbumRanker = false
     @State private var showNonAffiliationSheet = false
     @State private var showDailyTrivia = false
+    @State private var showDailyGames = false
     @State private var partners: [Partner] = []
     @State private var isLoadingPartners = true
     @State private var partnersError: String? = nil
@@ -1010,116 +1012,101 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 32) {
-                BeyonceNonAffiliationBanner(showSheet: $showNonAffiliationSheet)
-                // Welcome Section
-                VStack(spacing: 0) {
-                    Image("Bee_Icon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                    Text("Welcome to Beyhive Alert!")
-                        .font(.system(size: 18, weight: .medium))
-                    Spacer().frame(height: 8)
-                    Text("Stay connected to Beyoncé's tour and the Beyhive community.")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.black.opacity(0.9))
-                }
-                // Card Buttons Section
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 8) {
-                        Image("Bee_Icon")
-                            .resizable()
-                            .frame(width: 70, height: 70)
-                        Text("Games")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
-                        Spacer()
-                    }
-                    .padding(.horizontal)
+                // Games Section (moved to very top)
+                VStack(alignment: .leading, spacing: 8) {
+                    ModernSectionHeader(title: "Games", iconName: "gameslogo")
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 20) {
-                            Button(action: { showSurvivor = true }) {
-                                VStack(alignment: .center, spacing: 12) {
-                                    Image(systemName: "gamecontroller.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 44, height: 44)
-                                        .foregroundColor(.black)
-                                    Text("Survivor Game")
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundColor(.black)
-                                    Text("Guess outfits, songs, and more during every show!")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
-                                        .frame(maxWidth: 240)
-                                }
-                                .frame(width: 340, height: 140)
-                                .background(
-                                    LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                                )
-                                .cornerRadius(28)
+                            ModernCardView.survivorCard {
+                                showSurvivor = true
                             }
-                            Button(action: { showDailyTrivia = true }) {
-                                VStack(alignment: .center, spacing: 12) {
-                                    Image(systemName: "questionmark.circle.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 44, height: 44)
-                                        .foregroundColor(.black)
-                                    Text("Daily Trivia")
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundColor(.black)
-                                    Text("Test your Beyoncé knowledge with a new question every day!")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
-                                        .frame(maxWidth: 240)
-                                }
-                                .frame(width: 340, height: 140)
-                                .background(
-                                    LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                                )
-                                .cornerRadius(28)
+                            ModernCardView.triviaCard {
+                                showDailyTrivia = true
                             }
-                            Button(action: { showAlbumRanker = true }) {
-                                VStack(alignment: .center, spacing: 12) {
-                                    Image(systemName: "music.note.list")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 44, height: 44)
-                                        .foregroundColor(.black)
-                                    Text("Album Ranker")
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundColor(.black)
-                                    Text("Rank Beyoncé's albums and see community favorites!")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
-                                        .frame(maxWidth: 240)
-                                }
-                                .frame(width: 340, height: 140)
-                                .background(
-                                    LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                                )
-                                .cornerRadius(28)
+                            ModernCardView.albumRankerCard {
+                                showAlbumRanker = true
                             }
                         }
                         .padding(.horizontal)
                     }
                 }
+                
+                // Daily Games - Special centered card with unique style
+                VStack {
+                    Spacer().frame(height: 20)
+                    
+                    Button(action: {
+                        showDailyGames = true
+                    }) {
+                        ZStack {
+                            // Special gradient background with glow effect
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.purple.opacity(0.8),
+                                            Color.blue.opacity(0.6),
+                                            Color.cyan.opacity(0.7)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.8),
+                                                    Color.white.opacity(0.2)
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                                .shadow(color: .purple.opacity(0.4), radius: 15, x: 0, y: 8)
+                                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                            
+                            // Content
+                            VStack(spacing: 12) {
+                                // Special icon with glow
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                        .blur(radius: 1)
+                                    
+                                    Image(systemName: "gamecontroller.fill")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                                
+                                VStack(spacing: 4) {
+                                    Text("DAILY GAMES")
+                                        .font(.system(size: 20, weight: .black, design: .rounded))
+                                        .foregroundColor(.white)
+                                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                                    
+                                    Text("Play all your favorites!")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.9))
+                                        .shadow(color: .black.opacity(0.2), radius: 1, x: 0, y: 1)
+                                }
+                            }
+                            .padding(20)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .frame(width: 240, height: 140)
+                    
+                    Spacer().frame(height: 20)
+                }
+                
                 // Partners Section (dynamic)
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 8) {
-                        Image("Bee_Icon")
-                            .resizable()
-                            .frame(width: 70, height: 70)
-                        Text("Partners")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.black)
-                        Spacer()
-                    }
-                    .padding(.horizontal)
+                    ModernSectionHeader(title: "Partners", iconName: "partnerslogo")
                     if isLoadingPartners {
                         ProgressView("Loading partners...")
                             .padding()
@@ -1131,41 +1118,10 @@ struct HomeView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 20) {
                                 ForEach(partners) { partner in
-                                    Button(action: {
+                                    ModernPartnerCard(partner: partner) {
                                         if let url = URL(string: partner.link) {
                                             UIApplication.shared.open(url)
                                         }
-                                    }) {
-                                        VStack(alignment: .center, spacing: 12) {
-                                            if let iconUrl = partner.iconUrl, !iconUrl.isEmpty, let url = URL(string: iconUrl) {
-                                                AsyncImage(url: url) { image in
-                                                    image.resizable().aspectRatio(contentMode: .fit)
-                                                } placeholder: {
-                                                    Rectangle().fill(Color.gray.opacity(0.3)).overlay(ProgressView().scaleEffect(0.8))
-                                                }
-                                                .frame(width: 44, height: 44)
-                                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                            } else {
-                                                Image(systemName: "building.2")
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(width: 44, height: 44)
-                                                    .foregroundColor(.black)
-                                            }
-                                            Text(partner.name)
-                                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                                .foregroundColor(.black)
-                                            Text(partner.description)
-                                                .font(.system(size: 13, weight: .medium))
-                                                .foregroundColor(.black)
-                                                .multilineTextAlignment(.center)
-                                                .frame(maxWidth: 240)
-                                        }
-                                        .frame(width: 340, height: 140)
-                                        .background(
-                                            LinearGradient(gradient: Gradient(colors: [Color.red, Color.white, Color.blue]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                                        )
-                                        .cornerRadius(28)
                                     }
                                 }
                             }
@@ -1199,6 +1155,9 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showDailyTrivia) {
             DailyTriviaView()
+        }
+        .sheet(isPresented: $showDailyGames) {
+            DailyGamesView()
         }
     }
 }
@@ -3117,5 +3076,36 @@ struct Partner: Identifiable, Codable {
     let link: String
     enum CodingKeys: String, CodingKey {
         case name, description, iconUrl, link
+    }
+}
+
+struct DailyGamesView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text("Daily Games")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .padding()
+                
+                Text("Coming Soon!")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                    .padding()
+                
+                Spacer()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }

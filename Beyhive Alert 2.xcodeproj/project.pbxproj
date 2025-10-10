@@ -44,8 +44,10 @@
 				Events/EventsViewModel.swift,
 				InstagramFeedView.swift,
 				LivestreamsView.swift,
+				ModernCardView.swift,
 				OutfitsView.swift,
 				OutfitsViewModel.swift,
+				UpdateView.swift,
 			);
 			target = 4F9D93052E14661600829250 /* Beyhive Alert 2 */;
 		};
@@ -55,6 +57,8 @@
 				ContentView.swift,
 				DailyTriviaView.swift,
 				LivestreamsView.swift,
+				ModernCardView.swift,
+				UpdateView.swift,
 			);
 			target = 4F9D93122E14661700829250 /* Beyhive Alert 2Tests */;
 		};
@@ -72,8 +76,10 @@
 				Events/EventsViewModel.swift,
 				InstagramFeedView.swift,
 				LivestreamsView.swift,
+				ModernCardView.swift,
 				OutfitsView.swift,
 				OutfitsViewModel.swift,
+				UpdateView.swift,
 			);
 			target = 4F9D931C2E14661700829250 /* Beyhive Alert 2UITests */;
 		};

@@ -101,6 +101,8 @@ struct UpdateView: View {
             }
         }
         .preferredColorScheme(.light)
+        .ignoresSafeArea(.all) // Ensure it covers the entire screen
+        .interactiveDismissDisabled(true) // Prevent any dismissal gestures
     }
 }
 
@@ -111,7 +113,7 @@ class UpdateManager: ObservableObject {
     @Published var latestVersion = ""
     @Published var updateMessage = ""
     
-    private let backendURL = "https://beyhive-backend.onrender.com/api/app/version-check"
+    private let backendURL = "http://localhost:3000/api/app/version-check" // Change to local for testing
     
     init() {
         getCurrentVersion()
@@ -153,11 +155,17 @@ class UpdateManager: ObservableObject {
     }
     
     func openAppStore() {
-        // Replace with your actual App Store URL
-        let appStoreURL = "https://apps.apple.com/app/beyhive-alert/id[YOUR_APP_ID]"
+        // Open App Store to your app's page
+        let appStoreURL = "https://apps.apple.com/app/beyhive-alert/id6739148629"
         
         if let url = URL(string: appStoreURL) {
             UIApplication.shared.open(url)
+        } else {
+            // Fallback to App Store search
+            let searchURL = "https://apps.apple.com/search?term=Beyhive+Alert"
+            if let fallbackURL = URL(string: searchURL) {
+                UIApplication.shared.open(fallbackURL)
+            }
         }
     }
 }

@@ -233,7 +233,7 @@ struct LivestreamsView: View {
                     VStack(spacing: 16) {
                         ForEach(viewModel.livestreams) { stream in
                             HStack {
-                                // Use custom icons for TikTok and Instagram
+                                // Use custom icons for all platforms
                                 Group {
                                     if stream.platform.lowercased() == "tiktok" {
                                         Image("Tiktoklogo")
@@ -241,6 +241,22 @@ struct LivestreamsView: View {
                                             .frame(width: 40, height: 40)
                                     } else if stream.platform.lowercased() == "instagram" {
                                         Image("Instagramlogo")
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                    } else if stream.platform.lowercased() == "youtube" {
+                                        Image("youtubelogo")
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                    } else if stream.platform.lowercased() == "discord" {
+                                        Image("discordlogo")
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                    } else if stream.platform.lowercased() == "x" {
+                                        Image("xlogo")
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                    } else if stream.platform.lowercased() == "other" {
+                                        Image("Bee_Icon")
                                             .resizable()
                                             .frame(width: 40, height: 40)
                                     } else {

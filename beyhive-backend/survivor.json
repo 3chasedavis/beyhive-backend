@@ -3,7 +3,7 @@
     "id": "vegas_n1",
     "title": "Las Vegas Night 1",
     "openAt": "2024-07-01T00:00:00Z",
-    "closeAt": "2024-07-31T23:59:59Z",
+    "closeAt": "2024-01-01T00:00:00Z",
     "questions": [
       {
         "text": "What will the opening outfit be?",
@@ -81,7 +81,7 @@
     "id": "vegas_n2",
     "title": "Las Vegas Night 2",
     "openAt": "2024-07-01T00:00:00Z",
-    "closeAt": "2024-07-31T23:59:59Z",
+    "closeAt": "2024-01-01T00:00:00Z",
     "questions": [
       {
         "text": "What will the opening outfit be?",

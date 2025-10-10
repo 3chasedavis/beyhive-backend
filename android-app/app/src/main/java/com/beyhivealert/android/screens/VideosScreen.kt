@@ -355,6 +355,10 @@ fun LivestreamCard(livestream: Livestream) {
             val iconRes = when (livestream.platform.lowercase()) {
                 "tiktok" -> R.drawable.tiktoklogo
                 "instagram" -> R.drawable.instagramlogo
+                "youtube" -> R.drawable.youtubelogo
+                "discord" -> R.drawable.discordlogo
+                "x" -> R.drawable.xlogo
+                "other" -> R.drawable.bee_icon
                 else -> R.drawable.bee_icon // fallback
             }
             

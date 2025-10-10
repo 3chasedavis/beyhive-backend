@@ -45,6 +45,57 @@ router.get('/:quizId', (req, res) => {
   res.json({ success: true, quiz });
 });
 
+// POST / - create a new quiz
+router.post('/', (req, res) => {
+  const { id, title, openAt, closeAt, questions } = req.body;
+  
+  if (!id || !title || !questions || !Array.isArray(questions)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Missing required fields: id, title, questions (array)' 
+    });
+  }
+
+  let quizzes = [];
+  if (fs.existsSync(SURVIVOR_FILE)) {
+    try {
+      quizzes = JSON.parse(fs.readFileSync(SURVIVOR_FILE, 'utf8'));
+    } catch (e) {
+      return res.status(500).json({ success: false, message: 'Error reading quiz data', error: e.message });
+    }
+  }
+
+  // Check if quiz with this ID already exists
+  if (quizzes.find(q => q.id === id)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Quiz with this ID already exists' 
+    });
+  }
+
+  const newQuiz = {
+    id,
+    title,
+    openAt: openAt || new Date().toISOString(),
+    closeAt: closeAt || null,
+    questions: questions.map((q, index) => ({
+      text: q.text,
+      points: q.points || 1,
+      options: q.options || [],
+      icon: q.icon || null
+    }))
+  };
+
+  quizzes.push(newQuiz);
+  
+  try {
+    fs.writeFileSync(SURVIVOR_FILE, JSON.stringify(quizzes, null, 2));
+    res.json({ success: true, quiz: newQuiz });
+  } catch (e) {
+    res.status(500).json({ success: false, message: 'Error saving quiz', error: e.message });
+  }
+});
+
 // PUT /:quizId - update openAt/closeAt for a quiz
 router.put('/:quizId', (req, res) => {
   const { quizId } = req.params;
