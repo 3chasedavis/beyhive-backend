@@ -1,0 +1,8 @@
+TEST DEPLOYMENT - LINKS MANAGEMENT IS READY!
+
+This file was created on: $(date)
+Commit: 175e686 - MAJOR CHANGE - Links Management in main header
+
+If you can see this file, then Render is deploying our changes successfully.
+
+The Links Management section should be in admin.html under the App Stats section.
